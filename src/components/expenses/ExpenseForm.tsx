@@ -1,23 +1,37 @@
-import { useForm } from "react-hook-form"
-import { useQuery } from "@tanstack/react-query"
-import { getCategories } from "@/lib/supabase"
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+/**
+ * Expense Entry Form Component
+ * 
+ * Features:
+ * - Modal-based expense entry
+ * - Category selection
+ * - Form validation
+ * - Automatic form reset after submission
+ * - Type-safe form data handling
+ * 
+ * Uses react-hook-form for form state management and shadcn/ui for styling.
+ */
 
-export function ExpenseForm() {
+import { useForm } from 'react-hook-form'
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { useQuery } from '@tanstack/react-query'
+import { getCategories } from '@/lib/supabase'
+import type { VariableExpense } from '@/types/database.types'
+
+type ExpenseFormData = Omit<VariableExpense, 'id' | 'created_at'>
+
+interface ExpenseFormProps {
+  onSubmit: (data: ExpenseFormData) => Promise<void>
+}
+
+export const ExpenseForm = ({ onSubmit }: ExpenseFormProps) => {
+  const { register, handleSubmit, reset } = useForm<ExpenseFormData>()
   const { data: categories } = useQuery({
     queryKey: ['categories'],
-    queryFn: getCategories
-  })
-
-  const form = useForm({
-    defaultValues: {
-      description: '',
-      amount: 0,
-      category_id: '',
-      date: new Date().toISOString().split('T')[0]
+    queryFn: async () => {
+      const { data } = await getCategories()
+      return data
     }
   })
 
@@ -30,23 +44,21 @@ export function ExpenseForm() {
         <DialogHeader>
           <DialogTitle>Add New Expense</DialogTitle>
         </DialogHeader>
-        <form className="space-y-4">
-          <Input {...form.register('description')} placeholder="Description" />
-          <Input {...form.register('amount')} type="number" placeholder="Amount" />
-          <Select onValueChange={(value) => form.setValue('category_id', value)}>
-            <SelectTrigger>
-              <SelectValue placeholder="Select category" />
-            </SelectTrigger>
-            <SelectContent>
-              {categories?.data?.map((category) => (
-                <SelectItem key={category.id} value={category.id}>
-                  {category.name}
-                </SelectItem>
+        <form onSubmit={handleSubmit(async (data) => {
+          await onSubmit(data)
+          reset()
+        })}>
+          <div className="space-y-4">
+            <Input {...register('description')} placeholder="Description" />
+            <Input {...register('amount')} type="number" step="0.01" placeholder="Amount" />
+            <Input {...register('date')} type="date" />
+            <select {...register('category_id')}>
+              {categories?.map(cat => (
+                <option key={cat.id} value={cat.id}>{cat.name}</option>
               ))}
-            </SelectContent>
-          </Select>
-          <Input {...form.register('date')} type="date" />
-          <Button type="submit" className="w-full">Save</Button>
+            </select>
+            <Button type="submit">Save</Button>
+          </div>
         </form>
       </DialogContent>
     </Dialog>

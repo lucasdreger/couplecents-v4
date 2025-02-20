@@ -1,22 +1,69 @@
-import { Outlet } from 'react-router-dom'
-import { useAuth } from '@/lib/hooks/useAuth'
-import { Navbar } from './Navbar'
-import { Sidebar } from './Sidebar'
+/**
+ * Application Layout Component
+ * 
+ * Provides:
+ * - Authentication protection
+ * - Navigation menu
+ * - Consistent layout structure
+ * - Sign out functionality
+ * - Responsive design
+ * 
+ * All routes wrapped in this layout are protected and require authentication.
+ */
 
-export function MainLayout() {
-  const { user } = useAuth()
+import { Link, Outlet, useLocation } from 'react-router-dom'
+import { useAuth } from '@/hooks/useAuth'
+import {
+  NavigationMenu,
+  NavigationMenuContent,
+  NavigationMenuItem,
+  NavigationMenuLink,
+  NavigationMenuList,
+  NavigationMenuTrigger,
+} from "@/components/ui/navigation-menu"
 
-  if (!user) return <Navigate to="/login" />
+export const MainLayout = () => {
+  const { isAuthenticated, signOut } = useAuth()
+  const location = useLocation()
+
+  if (!isAuthenticated) {
+    return <Navigate to="/login" state={{ from: location }} replace />
+  }
 
   return (
-    <div className="flex h-screen">
-      <Sidebar />
-      <div className="flex-1 overflow-auto">
-        <Navbar />
-        <main className="container mx-auto p-6">
-          <Outlet />
-        </main>
-      </div>
+    <div className="min-h-screen bg-background">
+      <header className="border-b">
+        <div className="container flex h-16 items-center px-4">
+          <NavigationMenu>
+            <NavigationMenuList>
+              <NavigationMenuItem>
+                <Link to="/">Dashboard</Link>
+              </NavigationMenuItem>
+              <NavigationMenuItem>
+                <Link to="/expenses">Expenses</Link>
+              </NavigationMenuItem>
+              <NavigationMenuItem>
+                <Link to="/investments">Investments</Link>
+              </NavigationMenuItem>
+              <NavigationMenuItem>
+                <Link to="/reserves">Reserves</Link>
+              </NavigationMenuItem>
+              <NavigationMenuItem>
+                <Link to="/income">Income</Link>
+              </NavigationMenuItem>
+              <NavigationMenuItem>
+                <Link to="/fixed-expenses">Fixed Expenses</Link>
+              </NavigationMenuItem>
+            </NavigationMenuList>
+          </NavigationMenu>
+          <div className="ml-auto">
+            <button onClick={() => signOut()}>Sign out</button>
+          </div>
+        </div>
+      </header>
+      <main className="container px-4 py-6">
+        <Outlet />
+      </main>
     </div>
   )
 }

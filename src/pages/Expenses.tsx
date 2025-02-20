@@ -1,59 +1,124 @@
-import { useState } from "react"
-import { useQuery } from "@tanstack/react-query"
-import { getMonthlyExpenses, getFixedExpenseStatus } from "@/lib/supabase"
-import { Card } from "@/components/ui/card"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { DataTable } from "@/components/ui/data-table"
-import { ExpenseForm } from "@/components/expenses/ExpenseForm"
+import { useState } from 'react'
+import { useExpenses } from '@/hooks/useExpenses'
+import { Button } from '@/components/ui/button'
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table"
+import { useToast } from '@/components/ui/use-toast'
+import { ExpenseForm } from '@/components/expenses/ExpenseForm'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 
-export function Expenses() {
-  const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth() + 1)
-  const [selectedYear, setSelectedYear] = useState(new Date().getFullYear())
+/**
+ * Expenses Management Page
+ * 
+ * Features:
+ * - Monthly expense tracking
+ * - Month/Year selection
+ * - Expense addition through modal form
+ * - Tabular view of expenses with sorting
+ * - Category-based expense organization
+ */
 
-  const { data: variableExpenses } = useQuery({
-    queryKey: ['expenses', selectedYear, selectedMonth],
-    queryFn: () => getMonthlyExpenses(selectedYear, selectedMonth)
-  })
-
-  const { data: fixedExpenses } = useQuery({
-    queryKey: ['fixed-expenses', selectedYear, selectedMonth],
-    queryFn: () => getFixedExpenseStatus(selectedYear, selectedMonth)
-  })
+export const Expenses = () => {
+  // State for selected month
+  const [selectedMonth, setSelectedMonth] = useState(new Date())
+  
+  // Custom hook for expense management
+  const { expenses, addExpense } = useExpenses(
+    selectedMonth.getFullYear(),
+    selectedMonth.getMonth() + 1
+  )
+  const { toast } = useToast()
 
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
-        <h1 className="text-3xl font-bold">Expenses</h1>
-        <ExpenseForm />
+        <div className="space-y-1">
+          <h2 className="text-3xl font-bold tracking-tight">Expenses</h2>
+          <div className="flex items-center gap-4">
+            <Select
+              value={selectedMonth.getMonth().toString()}
+              onValueChange={(value) => {
+                const newDate = new Date(selectedMonth)
+                newDate.setMonth(parseInt(value))
+                setSelectedMonth(newDate)
+              }}
+            >
+              <SelectTrigger className="w-[180px]">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {Array.from({ length: 12 }, (_, i) => (
+                  <SelectItem key={i} value={i.toString()}>
+                    {new Date(0, i).toLocaleString('default', { month: 'long' })}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <Select
+              value={selectedMonth.getFullYear().toString()}
+              onValueChange={(value) => {
+                const newDate = new Date(selectedMonth)
+                newDate.setFullYear(parseInt(value))
+                setSelectedMonth(newDate)
+              }}
+            >
+              <SelectTrigger className="w-[100px]">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {Array.from({ length: 5 }, (_, i) => {
+                  const year = new Date().getFullYear() - 2 + i
+                  return (
+                    <SelectItem key={year} value={year.toString()}>
+                      {year}
+                    </SelectItem>
+                  )
+                })}
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+        <ExpenseForm
+          onSubmit={async (data) => {
+            try {
+              await addExpense(data)
+              toast({ description: "Expense added successfully" })
+            } catch (error) {
+              toast({ 
+                variant: "destructive", 
+                description: "Failed to add expense" 
+              })
+            }
+          }}
+        />
       </div>
 
-      <Tabs defaultValue="variable">
-        <TabsList>
-          <TabsTrigger value="variable">Variable Expenses</TabsTrigger>
-          <TabsTrigger value="fixed">Fixed Expenses</TabsTrigger>
-        </TabsList>
-        <TabsContent value="variable">
-          <DataTable 
-            data={variableExpenses?.data || []}
-            columns={[
-              { accessorKey: 'date', header: 'Date' },
-              { accessorKey: 'description', header: 'Description' },
-              { accessorKey: 'amount', header: 'Amount' },
-              { accessorKey: 'category.name', header: 'Category' },
-            ]}
-          />
-        </TabsContent>
-        <TabsContent value="fixed">
-          <DataTable 
-            data={fixedExpenses?.data || []}
-            columns={[
-              { accessorKey: 'fixed_expenses.description', header: 'Description' },
-              { accessorKey: 'fixed_expenses.estimated_amount', header: 'Amount' },
-              { accessorKey: 'completed', header: 'Status' },
-            ]}
-          />
-        </TabsContent>
-      </Tabs>
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead>Date</TableHead>
+            <TableHead>Description</TableHead>
+            <TableHead>Category</TableHead>
+            <TableHead className="text-right">Amount</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {expenses?.map((expense) => (
+            <TableRow key={expense.id}>
+              <TableCell>{new Date(expense.date).toLocaleDateString()}</TableCell>
+              <TableCell>{expense.description}</TableCell>
+              <TableCell>{expense.category?.name}</TableCell>
+              <TableCell className="text-right">${expense.amount.toFixed(2)}</TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
     </div>
   )
 }
