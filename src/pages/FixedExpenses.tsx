@@ -1,3 +1,4 @@
+
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { getFixedExpenses, updateFixedExpenseStatus } from '@/lib/supabase'
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -15,8 +16,11 @@ export const FixedExpenses = () => {
   })
 
   const { mutate: toggleStatus } = useMutation({
-    mutationFn: ({ id, completed }: { id: string; completed: boolean }) =>
-      updateFixedExpenseStatus(id, completed),
+    mutationFn: async ({ id, completed }: { id: string; completed: boolean }) => {
+      const { data, error } = await updateFixedExpenseStatus(id, completed)
+      if (error) throw error
+      return data
+    },
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['fixed-expenses'] })
   })
 

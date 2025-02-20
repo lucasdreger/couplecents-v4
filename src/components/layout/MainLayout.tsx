@@ -1,3 +1,4 @@
+
 /**
  * Application Layout Component
  * 
@@ -11,7 +12,7 @@
  * All routes wrapped in this layout are protected and require authentication.
  */
 
-import { Link, Outlet, useLocation } from 'react-router-dom'
+import { Link, Navigate, Outlet, useLocation } from 'react-router-dom'
 import { useAuth } from '@/hooks/useAuth'
 import {
   NavigationMenu,

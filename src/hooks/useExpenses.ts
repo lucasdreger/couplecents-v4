@@ -1,3 +1,4 @@
+
 /**
  * Expenses Management Hook
  * 
@@ -31,8 +32,11 @@ export const useExpenses = (year: number, month: number) => {
 
   // Mutation for adding new expenses
   const { mutate: addExpense } = useMutation({
-    mutationFn: (expense: Omit<VariableExpense, 'id' | 'created_at'>) =>
-      addVariableExpense(expense),
+    mutationFn: async (expense: Omit<VariableExpense, 'id' | 'created_at'>) => {
+      const { data, error } = await addVariableExpense(expense)
+      if (error) throw error
+      return data
+    },
     // Invalidate and refetch expenses after adding new one
     onSuccess: () => queryClient.invalidateQueries({ queryKey })
   })
