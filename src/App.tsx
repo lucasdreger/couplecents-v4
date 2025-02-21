@@ -37,6 +37,10 @@ const router = createBrowserRouter([
       },
     ],
   },
+  {
+    path: "*",  // Handle 404 routes
+    element: <div>Page not found</div>,
+  },
 ]);
 
 const App: React.FC = () => {
