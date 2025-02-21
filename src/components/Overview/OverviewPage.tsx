@@ -26,32 +26,38 @@ import { CategoryBreakdown } from './CategoryBreakdown';
 export const OverviewPage: React.FC = () => {
   return (
     <div className="container mx-auto p-6 space-y-6">
+      <h2 className="text-3xl font-bold tracking-tight mb-6">Overview</h2>
+
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <BudgetTile />
         <ReservesTile />
       </div>
       
-      <InvestmentsTile />
+      <div className="mt-6">
+        <InvestmentsTile />
+      </div>
       
-      <Card>
-        <CardHeader>
-          <CardTitle>Monthly Budget vs Actual</CardTitle>
-          <CardDescription>Compare planned versus actual spending</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <MonthlyChart />
-        </CardContent>
-      </Card>
-      
-      <Card>
-        <CardHeader>
-          <CardTitle>Category Breakdown</CardTitle>
-          <CardDescription>Expenses by category</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <CategoryBreakdown />
-        </CardContent>
-      </Card>
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <Card>
+          <CardHeader>
+            <CardTitle>Monthly Budget vs Actual</CardTitle>
+            <CardDescription>Compare planned versus actual spending</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <MonthlyChart />
+          </CardContent>
+        </Card>
+        
+        <Card>
+          <CardHeader>
+            <CardTitle>Category Breakdown</CardTitle>
+            <CardDescription>Expenses by category</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <CategoryBreakdown />
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 };

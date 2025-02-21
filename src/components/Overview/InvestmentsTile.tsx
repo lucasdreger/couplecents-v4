@@ -9,7 +9,7 @@
  */
 
 import React from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { useAuth } from '@/hooks/useAuth';
 import { useInvestments } from '@/hooks/useInvestments';
@@ -34,16 +34,19 @@ export const InvestmentsTile = () => {
   }));
 
   return (
-    <Card className="col-span-2">
+    <Card className="w-full">
       <CardHeader>
         <div className="flex justify-between items-center">
-          <CardTitle>Investments</CardTitle>
+          <div>
+            <CardTitle>Investments</CardTitle>
+            <CardDescription>Manage your investment portfolio</CardDescription>
+          </div>
           <span className="text-xl font-semibold">Total: ${totalInvestments.toFixed(2)}</span>
         </div>
       </CardHeader>
       <CardContent>
-        <div className="grid md:grid-cols-2 gap-4">
-          <div className="h-[200px]">
+        <div className="grid md:grid-cols-2 gap-8">
+          <div className="h-[300px]">
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
                 <Pie
@@ -52,6 +55,7 @@ export const InvestmentsTile = () => {
                   nameKey="name"
                   cx="50%"
                   cy="50%"
+                  outerRadius={100}
                   label
                 >
                   {pieData?.map((_, index) => (
@@ -63,26 +67,29 @@ export const InvestmentsTile = () => {
             </ResponsiveContainer>
           </div>
           
-          <div className="space-y-4">
-            {investments?.map((investment) => (
-              <div key={investment.id} className="flex items-center gap-4">
-                <span className="min-w-[120px] font-medium">{investment.name}</span>
-                <Input
-                  type="number"
-                  className="w-32"
-                  defaultValue={investment.current_value}
-                  onChange={e => {
-                    const value = parseFloat(e.target.value);
-                    if (!isNaN(value)) {
-                      updateValue({ id: investment.id, value, userId: user?.id || '' });
-                    }
-                  }}
-                />
-                <span className="text-sm text-muted-foreground whitespace-nowrap">
-                  {new Date(investment.last_updated).toLocaleDateString()}
-                </span>
-              </div>
-            ))}
+          <div className="space-y-6">
+            <h3 className="font-semibold">Current Values</h3>
+            <div className="space-y-4">
+              {investments?.map((investment) => (
+                <div key={investment.id} className="flex items-center gap-4">
+                  <span className="min-w-[120px] font-medium">{investment.name}</span>
+                  <Input
+                    type="number"
+                    className="w-32"
+                    defaultValue={investment.current_value}
+                    onChange={e => {
+                      const value = parseFloat(e.target.value);
+                      if (!isNaN(value)) {
+                        updateValue({ id: investment.id, value, userId: user?.id || '' });
+                      }
+                    }}
+                  />
+                  <span className="text-sm text-muted-foreground whitespace-nowrap">
+                    Last updated: {new Date(investment.last_updated).toLocaleDateString()}
+                  </span>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       </CardContent>
