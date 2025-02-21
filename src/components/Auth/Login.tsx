@@ -25,7 +25,7 @@ export const Login: React.FC = () => {
 
       if (data.session) {
         localStorage.setItem('isAuthenticated', 'true');
-        navigate('/overview');
+        navigate('/'); // Changed from '/overview' to '/'
       }
     } catch (err: any) {
       setError(err.message || 'Invalid username or password. Please try again.');
