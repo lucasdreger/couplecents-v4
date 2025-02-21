@@ -41,9 +41,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   // Auth change effect for navigation
   useEffect(() => {
-    if (!session && window.location.pathname !== '/login') {
-      navigate('/login')
-    } else if (session && window.location.pathname === '/login') {
+    // Let PrivateRoute handle the navigation
+    if (session && window.location.hash === '#/login') {
       navigate('/')
     }
   }, [session, navigate])
