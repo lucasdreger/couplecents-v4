@@ -25,13 +25,36 @@ const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8'];
 
 export const InvestmentsTile = () => {
   const { user } = useAuth();
-  const { investments, updateValue } = useInvestments();
+  const { investments, isLoading, updateValue } = useInvestments();
+  console.log('Investments data:', { investments, isLoading }); // Debug log
 
   const totalInvestments = investments?.reduce((sum, inv) => sum + inv.current_value, 0) || 0;
   const pieData = investments?.map(inv => ({
     name: inv.name,
     value: inv.current_value
   }));
+
+  if (isLoading) {
+    return (
+      <Card className="w-full">
+        <CardHeader>
+          <CardTitle>Investments</CardTitle>
+          <CardDescription>Loading investment data...</CardDescription>
+        </CardHeader>
+      </Card>
+    );
+  }
+
+  if (!investments?.length) {
+    return (
+      <Card className="w-full">
+        <CardHeader>
+          <CardTitle>Investments</CardTitle>
+          <CardDescription>No investments found</CardDescription>
+        </CardHeader>
+      </Card>
+    );
+  }
 
   return (
     <Card className="w-full">

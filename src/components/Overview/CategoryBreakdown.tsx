@@ -1,105 +1,71 @@
-
-/**
- * Category Breakdown Component
- * 
- * Displays a detailed breakdown of expenses by category including:
- * - Category totals
- * - Percentage of total budget
- * - Monthly comparisons
- */
-
 import React from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabaseClient';
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table"
+  PieChart,
+  Pie,
+  Cell,
+  ResponsiveContainer,
+  Tooltip,
+  Legend,
+} from 'recharts';
 
-interface CategoryData {
-  amount: number;
-  category: {
-    name: string;
-  } | null;
-}
-
-interface SupabaseResponse {
-  amount: number;
-  category: {
-    name: string;
-  } | null;
-}
+const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8'];
 
 export const CategoryBreakdown = () => {
-  const { data: categories } = useQuery<CategoryData[]>({
+  const { data: categoryData } = useQuery({
     queryKey: ['categoryBreakdown'],
     queryFn: async () => {
       const { data, error } = await supabase
         .from('variable_expenses')
         .select(`
-          amount,
-          category:categories(name)
+          category:categories (name),
+          amount
         `)
-        .order('category->name');
-      
+        .eq('year', new Date().getFullYear())
+        .eq('month', new Date().getMonth() + 1);
       if (error) throw error;
-      
-      // First cast to unknown, then to our expected type to handle the type mismatch safely
-      const rawData = data as unknown as SupabaseResponse[];
-      
-      // Transform the data to match our CategoryData interface
-      const transformedData = rawData.map(item => ({
-        amount: item.amount,
-        category: item.category
-      }));
 
-      return transformedData;
+      // Aggregate by category
+      const categoryTotals = data.reduce((acc: Record<string, number>, curr) => {
+        const categoryName = curr.category?.name || 'Uncategorized';
+        acc[categoryName] = (acc[categoryName] || 0) + curr.amount;
+        return acc;
+      }, {});
+
+      // Convert to array format for recharts
+      return Object.entries(categoryTotals).map(([name, value]) => ({
+        name,
+        value,
+      }));
     },
   });
 
-  // Group and calculate totals by category
-  const breakdown = React.useMemo(() => {
-    if (!categories || categories.length === 0) return [];
-
-    const groupedData = categories.reduce<Record<string, number>>((acc, item) => {
-      const categoryName = item.category?.name || 'Uncategorized';
-      acc[categoryName] = (acc[categoryName] || 0) + item.amount;
-      return acc;
-    }, {});
-
-    const total = Object.values(groupedData).reduce((sum, amount) => sum + amount, 0);
-
-    return Object.entries(groupedData).map(([category, amount]) => ({
-      category,
-      total: amount,
-      percentage: total > 0 ? (amount / total) * 100 : 0,
-    }));
-  }, [categories]);
+  if (!categoryData?.length) {
+    return <div>No data available</div>;
+  }
 
   return (
-    <Table>
-      <TableHeader>
-        <TableRow>
-          <TableHead>Category</TableHead>
-          <TableHead className="text-right">Total</TableHead>
-          <TableHead className="text-right">Percentage</TableHead>
-        </TableRow>
-      </TableHeader>
-      <TableBody>
-        {breakdown.map((row) => (
-          <TableRow key={row.category}>
-            <TableCell>{row.category}</TableCell>
-            <TableCell className="text-right">${row.total.toFixed(2)}</TableCell>
-            <TableCell className="text-right">
-              {row.percentage.toFixed(1)}%
-            </TableCell>
-          </TableRow>
-        ))}
-      </TableBody>
-    </Table>
+    <div className="h-[300px]">
+      <ResponsiveContainer width="100%" height="100%">
+        <PieChart>
+          <Pie
+            data={categoryData}
+            dataKey="value"
+            nameKey="name"
+            cx="50%"
+            cy="50%"
+            outerRadius={100}
+            label
+          >
+            {categoryData.map((entry, index) => (
+              <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+            ))}
+          </Pie>
+          <Tooltip />
+          <Legend />
+        </PieChart>
+      </ResponsiveContainer>
+    </div>
   );
 };

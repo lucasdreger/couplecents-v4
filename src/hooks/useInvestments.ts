@@ -1,15 +1,17 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { getInvestments, updateInvestment, addInvestmentHistory } from '@/lib/supabase'
+import { getInvestments, updateInvestment, addInvestmentHistory } from '@/lib/supabase/queries'
+import type { Investment } from '@/types/database.types'
 
 export const useInvestments = () => {
   const queryClient = useQueryClient()
   const queryKey = ['investments']
 
-  const { data: investments } = useQuery({
+  const { data: investments, isLoading } = useQuery<Investment[]>({
     queryKey,
     queryFn: async () => {
-      const { data } = await getInvestments()
-      return data
+      const { data, error } = await getInvestments()
+      if (error) throw error
+      return data || []
     }
   })
 
@@ -21,8 +23,13 @@ export const useInvestments = () => {
         await updateInvestment(id, value)
       }
     },
-    onSuccess: () => queryClient.invalidateQueries({ queryKey })
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey })
+    },
+    onError: (error) => {
+      console.error('Failed to update investment:', error)
+    }
   })
 
-  return { investments, updateValue }
+  return { investments: investments || [], isLoading, updateValue }
 }

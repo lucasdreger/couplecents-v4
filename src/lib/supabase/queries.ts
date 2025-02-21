@@ -1,5 +1,5 @@
 import { supabase } from '../supabaseClient';
-import type { VariableExpense, FixedExpense, Income } from '@/types/database.types';
+import type { VariableExpense, FixedExpense, Income, Investment } from '@/types/database.types';
 
 // Variable Expenses
 export const getMonthlyExpenses = async (year: number, month: number) => {
@@ -102,10 +102,20 @@ export const updateMonthlyIncome = async (id: string, income: Partial<Income>) =
 
 // Investments
 export const getInvestments = async () => {
-  return supabase
-    .from('investments')
-    .select('*')
-    .order('name');
+  console.log('Fetching investments...'); // Debug log
+  try {
+    const result = await supabase
+      .from('investments')
+      .select('*')
+      .order('name')
+      .throwOnError();
+      
+    console.log('Investments result:', result); // Debug log
+    return result;
+  } catch (error) {
+    console.error('Error fetching investments:', error);
+    throw error;
+  }
 };
 
 export const updateInvestment = async (id: string, current_value: number) => {
