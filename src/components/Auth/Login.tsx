@@ -24,8 +24,8 @@ export const Login: React.FC = () => {
       if (error) throw error;
 
       if (data.session) {
+        // AuthProvider will handle navigation
         localStorage.setItem('isAuthenticated', 'true');
-        navigate('/overview');
       }
     } catch (err: any) {
       setError(err.message || 'Invalid username or password. Please try again.');

@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { HashRouter, Routes, Route } from "react-router-dom"
 import { ThemeProvider } from "@/components/theme-provider"
@@ -13,16 +12,21 @@ import { OverviewPage } from "@/components/Overview/OverviewPage"
 import { MonthlyExpenses } from "@/pages/MonthlyExpenses"
 import { Administration } from "@/pages/Administration"
 import { Login } from "@/components/Auth/Login"
+import { PrivateRoute } from "@/components/Auth/PrivateRoute"
 
 const App: React.FC = () => {
   return (
     <QueryProvider>
       <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
-        <HashRouter basename="/">
-          <AuthProvider>
+        <AuthProvider>
+          <HashRouter>
             <Routes>
-              <Route path="/login" element={<Login />} />
-              <Route path="/" element={<DashboardLayout />}>
+              <Route path="login" element={<Login />} />
+              <Route path="" element={
+                <PrivateRoute>
+                  <DashboardLayout />
+                </PrivateRoute>
+              }>
                 <Route index element={<OverviewPage />} />
                 <Route path="expenses" element={<MonthlyExpenses />} />
                 <Route path="admin" element={<Administration />} />
@@ -31,8 +35,8 @@ const App: React.FC = () => {
             </Routes>
             <Toaster />
             <Sonner />
-          </AuthProvider>
-        </HashRouter>
+          </HashRouter>
+        </AuthProvider>
       </ThemeProvider>
     </QueryProvider>
   );
