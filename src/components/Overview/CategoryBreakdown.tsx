@@ -27,7 +27,7 @@ interface CategoryData {
   } | null;
 }
 
-interface RawCategoryData {
+interface SupabaseResponse {
   amount: number;
   category: {
     name: string;
@@ -48,8 +48,11 @@ export const CategoryBreakdown = () => {
       
       if (error) throw error;
       
+      // First cast to unknown, then to our expected type to handle the type mismatch safely
+      const rawData = data as unknown as SupabaseResponse[];
+      
       // Transform the data to match our CategoryData interface
-      const transformedData = (data as RawCategoryData[] || []).map(item => ({
+      const transformedData = rawData.map(item => ({
         amount: item.amount,
         category: item.category
       }));
