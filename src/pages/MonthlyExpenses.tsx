@@ -15,13 +15,16 @@ export const MonthlyExpenses = () => {
   const currentMonth = new Date().getMonth() + 1
   const [selectedYear, setSelectedYear] = useState(currentYear)
   const [selectedMonth, setSelectedMonth] = useState(currentMonth)
-  const { expenses, addExpense } = useExpenses(selectedYear, selectedMonth)
+  
+  // Get all expense data from custom hook
+  const { expenses, fixedExpenses, income, addExpense } = useExpenses(selectedYear, selectedMonth)
   const { toast } = useToast()
 
   // Generate array of recent years (current year - 2 to current year + 1)
   const years = Array.from({ length: 4 }, (_, i) => currentYear - 2 + i)
   const months = Array.from({ length: 12 }, (_, i) => i + 1)
 
+  // Calculate totals
   const totalIncome = income ? (income.lucas_income + income.camila_income + income.other_income) : 0
   const totalFixedExpenses = fixedExpenses?.reduce((sum, expense) => sum + expense.amount, 0) || 0
   const totalVariableExpenses = expenses?.reduce((sum, expense) => sum + expense.amount, 0) || 0
@@ -45,10 +48,10 @@ export const MonthlyExpenses = () => {
         </Tabs>
 
         <Tabs defaultValue={selectedMonth.toString()} onValueChange={(value) => setSelectedMonth(parseInt(value))}>
-          <TabsList className="w-full justify-start">
+          <TabsList className="w-full grid grid-cols-6 sm:grid-cols-12">
             {months.map(month => (
               <TabsTrigger key={month} value={month.toString()}>
-                {new Date(2000, month - 1).toLocaleString('default', { month: 'long' })}
+                {new Date(2000, month - 1).toLocaleString('default', { month: 'short' })}
               </TabsTrigger>
             ))}
           </TabsList>

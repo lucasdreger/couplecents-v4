@@ -2,9 +2,7 @@ import { NavLink } from "react-router-dom"
 
 const links = [
   { href: "/", label: "Overview" },
-  { href: "/expenses", label: "Expenses" },
-  { href: "/fixed-expenses", label: "Fixed Expenses" },
-  { href: "/income", label: "Income" },
+  { href: "/expenses", label: "Monthly Expenses" },
   { href: "/investments", label: "Investments" },
   { href: "/admin", label: "Administration" },
 ]
