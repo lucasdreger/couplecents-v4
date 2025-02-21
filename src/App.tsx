@@ -1,3 +1,4 @@
+
 /**
  * Main application component that sets up:
  * - React Query for data fetching
@@ -7,7 +8,7 @@
  */
 
 import React, { useEffect } from 'react';
-import { createBrowserRouter, RouterProvider } from "react-router-dom"
+import { createBrowserRouter, RouterProvider, Navigate } from "react-router-dom"
 import { DashboardLayout } from "@/layouts/DashboardLayout"
 import { Dashboard } from "@/pages/Dashboard"
 import { Expenses } from "@/pages/Expenses"
@@ -15,6 +16,7 @@ import { FixedExpenses } from "@/pages/FixedExpenses"
 import { Income } from "@/pages/Income"
 import { Investments } from "@/pages/Investments"
 import { Administration } from "@/pages/Administration"
+import { Login } from "@/components/Auth/Login"
 import { Toaster } from "@/components/ui/toaster"
 import { Toaster as Sonner } from "@/components/ui/sonner"
 import { TooltipProvider } from "@/components/ui/tooltip"
@@ -24,35 +26,42 @@ import { supabase } from './lib/supabaseClient';
 // Create React Query client for managing server state
 const queryClient = new QueryClient()
 
-const ProtectedLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const isAuthenticated = localStorage.getItem('isAuthenticated') === 'true';
-  
-  if (!isAuthenticated) {
-    return <Navigate to="/login" replace />;
-  }
-
-  return (
-    <div className="min-h-screen flex">
-      <div className="flex-1 p-8 pt-16">
-        {children}
-      </div>
-    </div>
-  );
-};
-
 const router = createBrowserRouter([
   {
+    path: "/login",
+    element: <Login />,
+  },
+  {
+    path: "/",
     element: <DashboardLayout />,
     children: [
-      { path: "/", element: <Dashboard /> },
-      { path: "/expenses", element: <Expenses /> },
-      { path: "/fixed-expenses", element: <FixedExpenses /> },
-      { path: "/income", element: <Income /> },
-      { path: "/investments", element: <Investments /> },
-      { path: "/admin", element: <Administration /> },
+      { 
+        index: true,
+        element: <Dashboard />,
+      },
+      { 
+        path: "expenses",
+        element: <Expenses />,
+      },
+      { 
+        path: "fixed-expenses",
+        element: <FixedExpenses />,
+      },
+      { 
+        path: "income",
+        element: <Income />,
+      },
+      { 
+        path: "investments",
+        element: <Investments />,
+      },
+      { 
+        path: "admin",
+        element: <Administration />,
+      },
     ],
   },
-])
+]);
 
 const App: React.FC = () => {
   useEffect(() => {
