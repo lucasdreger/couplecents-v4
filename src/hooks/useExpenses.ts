@@ -9,7 +9,7 @@
  * - Type-safe expense mutations
  * 
  * Usage:
- * const { expenses, addExpense } = useExpenses(2024, 3);
+ * const { expenses, addExpense, updateExpense, deleteExpense } = useExpenses(2024, 3);
  */
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
@@ -22,7 +22,7 @@ export const useExpenses = (year: number, month: number) => {
   const queryKey = ['expenses', year, month]
 
   // Fetch expenses for the specified month
-  const { data: expenses } = useQuery({
+  const { data: expenses, isLoading } = useQuery({
     queryKey,
     queryFn: async () => {
       const { data } = await getMonthlyExpenses(year, month)
@@ -37,9 +37,27 @@ export const useExpenses = (year: number, month: number) => {
       if (error) throw error
       return data
     },
-    // Invalidate and refetch expenses after adding new one
     onSuccess: () => queryClient.invalidateQueries({ queryKey })
   })
 
-  return { expenses, addExpense }
+  // Mutation for updating expenses
+  const { mutate: updateExpense } = useMutation({
+    mutationFn: async ({ id, ...expense }: Partial<VariableExpense> & { id: string }) => {
+      const { data, error } = await updateVariableExpense(id, expense)
+      if (error) throw error
+      return data
+    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey })
+  })
+
+  // Mutation for deleting expenses
+  const { mutate: deleteExpense } = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await deleteVariableExpense(id)
+      if (error) throw error
+    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey })
+  })
+
+  return { expenses, isLoading, addExpense, updateExpense, deleteExpense }
 }
