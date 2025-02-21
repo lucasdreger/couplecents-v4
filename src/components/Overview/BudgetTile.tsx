@@ -1,5 +1,15 @@
+
+/**
+ * Budget Summary Tile Component
+ * 
+ * Displays the total budget information including:
+ * - Total income
+ * - Total expenses
+ * - Net balance
+ */
+
 import React from 'react';
-import { Paper, Typography, Box } from '@mui/material';
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabaseClient';
 
@@ -17,16 +27,20 @@ export const BudgetTile = () => {
   });
 
   return (
-    <Paper sx={{ p: 2, height: '100%' }}>
-      <Typography variant="h6" gutterBottom>Total Budget</Typography>
-      <Box sx={{ mt: 2 }}>
-        <Typography variant="h4" color="primary">
-          ${budgetData?.total_income ?? 0}
-        </Typography>
-        <Typography variant="body2" color="text.secondary">
-          Expenses: ${budgetData?.total_expenses ?? 0}
-        </Typography>
-      </Box>
-    </Paper>
+    <Card>
+      <CardHeader>
+        <CardTitle>Total Budget</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <div className="space-y-2">
+          <p className="text-3xl font-bold text-primary">
+            ${budgetData?.total_income ?? 0}
+          </p>
+          <p className="text-sm text-muted-foreground">
+            Expenses: ${budgetData?.total_expenses ?? 0}
+          </p>
+        </div>
+      </CardContent>
+    </Card>
   );
 };

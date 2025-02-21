@@ -1,5 +1,15 @@
+
+/**
+ * Reserves Summary Tile Component
+ * 
+ * Displays current reserves including:
+ * - Emergency fund
+ * - Travel savings
+ * - Other designated reserves
+ */
+
 import React from 'react';
-import { Paper, Typography, Box, List, ListItem, ListItemText } from '@mui/material';
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabaseClient';
 
@@ -17,18 +27,20 @@ export const ReservesTile = () => {
   });
 
   return (
-    <Paper sx={{ p: 2, height: '100%' }}>
-      <Typography variant="h6" gutterBottom>Reserves</Typography>
-      <List dense>
-        {reserves?.map((reserve) => (
-          <ListItem key={reserve.id}>
-            <ListItemText
-              primary={reserve.name}
-              secondary={`$${reserve.amount}`}
-            />
-          </ListItem>
-        ))}
-      </List>
-    </Paper>
+    <Card>
+      <CardHeader>
+        <CardTitle>Reserves</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <div className="space-y-4">
+          {reserves?.map((reserve) => (
+            <div key={reserve.id} className="flex justify-between items-center">
+              <span className="font-medium">{reserve.name}</span>
+              <span className="text-primary">${reserve.amount}</span>
+            </div>
+          ))}
+        </div>
+      </CardContent>
+    </Card>
   );
 };

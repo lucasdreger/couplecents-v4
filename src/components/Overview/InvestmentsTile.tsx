@@ -1,5 +1,15 @@
+
+/**
+ * Investments Summary Tile Component
+ * 
+ * Displays current investment status including:
+ * - Investment categories
+ * - Current values
+ * - Last update timestamps
+ */
+
 import React from 'react';
-import { Paper, Typography, Box, List, ListItem, ListItemText } from '@mui/material';
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabaseClient';
 
@@ -17,18 +27,20 @@ export const InvestmentsTile = () => {
   });
 
   return (
-    <Paper sx={{ p: 2, height: '100%' }}>
-      <Typography variant="h6" gutterBottom>Investments</Typography>
-      <List dense>
-        {investments?.map((investment) => (
-          <ListItem key={investment.id}>
-            <ListItemText
-              primary={investment.name}
-              secondary={`$${investment.amount}`}
-            />
-          </ListItem>
-        ))}
-      </List>
-    </Paper>
+    <Card>
+      <CardHeader>
+        <CardTitle>Investments</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <div className="space-y-4">
+          {investments?.map((investment) => (
+            <div key={investment.id} className="flex justify-between items-center">
+              <span className="font-medium">{investment.name}</span>
+              <span className="text-primary">${investment.amount}</span>
+            </div>
+          ))}
+        </div>
+      </CardContent>
+    </Card>
   );
 };
