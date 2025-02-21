@@ -1,4 +1,3 @@
-
 /**
  * Expense Entry Form Component
  * 
@@ -55,14 +54,17 @@ interface ExpenseFormProps {
 }
 
 export const ExpenseForm = ({ onSubmit }: ExpenseFormProps) => {
-  const form = useForm<z.infer<typeof expenseFormSchema>>({
+  const form = useForm<ExpenseFormData>({
     resolver: zodResolver(expenseFormSchema),
     defaultValues: {
       description: '',
-      amount: '',
+      amount: 0,
       date: new Date().toISOString().split('T')[0],
+      category_id: '',
+      year: new Date().getFullYear(),
+      month: new Date().getMonth() + 1
     }
-  })
+  });
 
   // Load categories
   const { data: categories } = useQuery({
@@ -71,19 +73,18 @@ export const ExpenseForm = ({ onSubmit }: ExpenseFormProps) => {
       const { data } = await getCategories()
       return data
     }
-  })
+  });
 
-  const handleSubmit = async (values: z.infer<typeof expenseFormSchema>) => {
-    const date = new Date(values.date)
-    const data: ExpenseFormData = {
+  const handleSubmit = async (values: ExpenseFormData) => {
+    const date = new Date(values.date);
+    await onSubmit({
       ...values,
       year: date.getFullYear(),
       month: date.getMonth() + 1,
-      amount: parseFloat(values.amount.toString())
-    }
-    await onSubmit(data)
-    form.reset()
-  }
+      amount: Number(values.amount)
+    });
+    form.reset();
+  };
 
   return (
     <Dialog>

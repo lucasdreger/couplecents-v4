@@ -20,7 +20,7 @@ import {
   TableRow,
 } from "@/components/ui/table"
 
-interface CategoryBreakdownData {
+interface CategoryData {
   amount: number;
   category: {
     name: string;
@@ -28,7 +28,7 @@ interface CategoryBreakdownData {
 }
 
 export const CategoryBreakdown = () => {
-  const { data: categories } = useQuery<CategoryBreakdownData[]>({
+  const { data: categories } = useQuery<CategoryData[]>({
     queryKey: ['categoryBreakdown'],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -38,22 +38,25 @@ export const CategoryBreakdown = () => {
           category:categories(name)
         `)
         .order('category->name');
+      
       if (error) throw error;
-      return data;
+      return data as CategoryData[];
     },
   });
 
   // Group and calculate totals by category
   const breakdown = React.useMemo(() => {
-    const groupedData = categories?.reduce((acc, item) => {
+    if (!categories || categories.length === 0) return [];
+
+    const groupedData = categories.reduce<Record<string, number>>((acc, item) => {
       const categoryName = item.category?.name || 'Uncategorized';
       acc[categoryName] = (acc[categoryName] || 0) + item.amount;
       return acc;
-    }, {} as Record<string, number>);
+    }, {});
 
-    const total = Object.values(groupedData || {}).reduce((sum, amount) => sum + amount, 0);
+    const total = Object.values(groupedData).reduce((sum, amount) => sum + amount, 0);
 
-    return Object.entries(groupedData || {}).map(([category, amount]) => ({
+    return Object.entries(groupedData).map(([category, amount]) => ({
       category,
       total: amount,
       percentage: total > 0 ? (amount / total) * 100 : 0,
