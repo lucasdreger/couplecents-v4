@@ -18,10 +18,10 @@ const App: React.FC = () => {
     <QueryProvider>
       <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
         <AuthProvider>
-          <HashRouter>
+          <HashRouter basename="/">
             <Routes>
-              <Route path="login" element={<Login />} />
-              <Route path="" element={<DashboardLayout />}>
+              <Route path="/login" element={<Login />} />
+              <Route path="/" element={<DashboardLayout />}>
                 <Route index element={<OverviewPage />} />
                 <Route path="expenses" element={<MonthlyExpenses />} />
                 <Route path="admin" element={<Administration />} />
