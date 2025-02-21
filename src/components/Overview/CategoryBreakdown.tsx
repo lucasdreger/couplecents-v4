@@ -40,7 +40,14 @@ export const CategoryBreakdown = () => {
         .order('category->name');
       
       if (error) throw error;
-      return data as CategoryData[];
+      
+      // Transform the data to match our CategoryData interface
+      const transformedData = data?.map(item => ({
+        amount: item.amount,
+        category: item.category ? { name: item.category.name } : null
+      })) || [];
+
+      return transformedData;
     },
   });
 
