@@ -1,3 +1,4 @@
+
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react-swc";
 import path from "path";
@@ -11,7 +12,11 @@ export default defineConfig(({ mode }) => ({
     port: 8080,
   },
   plugins: [
-    react(),
+    react({
+      // Add TypeScript configuration here to avoid referencing tsconfig.node.json
+      tsDecorators: true,
+      jsxImportSource: "@emotion/react",
+    }),
     mode === 'development' &&
     componentTagger(),
   ].filter(Boolean),
@@ -20,4 +25,8 @@ export default defineConfig(({ mode }) => ({
       "@": path.resolve(__dirname, "./src"),
     },
   },
+  // Add esbuild configuration to handle TypeScript directly
+  esbuild: {
+    logOverride: { 'this-is-undefined-in-esm': 'silent' }
+  }
 }));
