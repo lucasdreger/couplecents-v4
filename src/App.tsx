@@ -1,3 +1,4 @@
+
 /**
  * Main application component that sets up:
  * - React Query for data fetching
@@ -8,16 +9,11 @@
 
 import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
-import { Box, CssBaseline } from '@mui/material';
 import { Login } from './components/Auth/Login';
-import { Navigation } from './components/Layout/Navigation';
 import { OverviewPage } from './components/Overview/OverviewPage';
-import { MonthlyDetailsPage } from './components/MonthlyDetails/MonthlyDetailsPage';
-import { CategoriesPage } from './components/Categories/CategoriesPage';
-import { FixedExpensesPage } from './components/FixedExpenses/FixedExpensesPage';
+import { Expenses } from './pages/Expenses';
 import { Toaster } from "@/components/ui/toaster"
 import { Toaster as Sonner } from "@/components/ui/sonner"
-
 import { TooltipProvider } from "@/components/ui/tooltip"
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 
@@ -32,12 +28,11 @@ const ProtectedLayout: React.FC<{ children: React.ReactNode }> = ({ children }) 
   }
 
   return (
-    <>
-      <Navigation />
-      <Box component="main" sx={{ flexGrow: 1, p: 3, mt: 8 }}>
+    <div className="min-h-screen flex">
+      <div className="flex-1 p-8 pt-16">
         {children}
-      </Box>
-    </>
+      </div>
+    </div>
   );
 };
 
@@ -46,8 +41,7 @@ const App: React.FC = () => {
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
         <BrowserRouter>
-          <Box sx={{ display: 'flex' }}>
-            <CssBaseline />
+          <div className="min-h-screen flex">
             <Routes>
               <Route path="/login" element={<Login />} />
               <Route path="/" element={<Navigate to="/overview" replace />} />
@@ -60,16 +54,15 @@ const App: React.FC = () => {
                 }
               />
               <Route
-                path="/monthly-details"
+                path="/expenses"
                 element={
                   <ProtectedLayout>
-                    <MonthlyDetailsPage />
+                    <Expenses />
                   </ProtectedLayout>
                 }
               />
-              {/* Add other protected routes similarly */}
             </Routes>
-          </Box>
+          </div>
         </BrowserRouter>
         <Toaster />
         <Sonner />

@@ -20,8 +20,15 @@ import {
   TableRow,
 } from "@/components/ui/table"
 
+interface CategoryBreakdownData {
+  amount: number;
+  category: {
+    name: string;
+  } | null;
+}
+
 export const CategoryBreakdown = () => {
-  const { data: categories } = useQuery({
+  const { data: categories } = useQuery<CategoryBreakdownData[]>({
     queryKey: ['categoryBreakdown'],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -44,10 +51,12 @@ export const CategoryBreakdown = () => {
       return acc;
     }, {} as Record<string, number>);
 
-    return Object.entries(groupedData || {}).map(([category, total]) => ({
+    const total = Object.values(groupedData || {}).reduce((sum, amount) => sum + amount, 0);
+
+    return Object.entries(groupedData || {}).map(([category, amount]) => ({
       category,
-      total,
-      percentage: 0, // Calculate percentage if needed
+      total: amount,
+      percentage: total > 0 ? (amount / total) * 100 : 0,
     }));
   }, [categories]);
 
