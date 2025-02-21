@@ -1,4 +1,3 @@
-
 import { createClient } from '@supabase/supabase-js'
 
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
@@ -87,9 +86,13 @@ export const getDefaultIncome = async () => {
 export const getMonthlyExpenses = async (year: number, month: number) => {
   return await supabase
     .from('variable_expenses')
-    .select('*, categories(*)')
+    .select(`
+      *,
+      category:categories(*)
+    `)
     .eq('year', year)
     .eq('month', month)
+    .order('date.desc')
 }
 
 export const addVariableExpense = async (expense: {
