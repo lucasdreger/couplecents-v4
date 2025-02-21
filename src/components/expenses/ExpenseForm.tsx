@@ -1,3 +1,4 @@
+
 /**
  * Expense Entry Form Component
  * 
@@ -12,11 +13,19 @@
  */
 
 import { useForm } from 'react-hook-form'
+import { Plus } from 'lucide-react'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { useQuery } from '@tanstack/react-query'
 import { getCategories } from '@/lib/supabase'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
 import type { VariableExpense } from '@/types/database.types'
 
 type ExpenseFormData = Omit<VariableExpense, 'id' | 'created_at'>
@@ -35,30 +44,65 @@ export const ExpenseForm = ({ onSubmit }: ExpenseFormProps) => {
     }
   })
 
+  const today = new Date().toISOString().split('T')[0]
+
   return (
     <Dialog>
       <DialogTrigger asChild>
-        <Button>Add Expense</Button>
+        <Button>
+          <Plus className="mr-2 h-4 w-4" />
+          Add Expense
+        </Button>
       </DialogTrigger>
-      <DialogContent>
+      <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
           <DialogTitle>Add New Expense</DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit(async (data) => {
           await onSubmit(data)
           reset()
-        })}>
-          <div className="space-y-4">
-            <Input {...register('description')} placeholder="Description" />
-            <Input {...register('amount')} type="number" step="0.01" placeholder="Amount" />
-            <Input {...register('date')} type="date" />
-            <select {...register('category_id')}>
-              {categories?.map(cat => (
-                <option key={cat.id} value={cat.id}>{cat.name}</option>
-              ))}
-            </select>
-            <Button type="submit">Save</Button>
+        })} className="space-y-4">
+          <div className="grid gap-4">
+            <div className="grid gap-2">
+              <Input 
+                {...register('description')} 
+                placeholder="Description" 
+                className="w-full"
+              />
+            </div>
+            <div className="grid gap-2">
+              <Input 
+                {...register('amount')} 
+                type="number" 
+                step="0.01" 
+                placeholder="Amount" 
+                className="w-full"
+              />
+            </div>
+            <div className="grid gap-2">
+              <Input 
+                {...register('date')} 
+                type="date" 
+                defaultValue={today}
+                className="w-full"
+              />
+            </div>
+            <div className="grid gap-2">
+              <Select {...register('category_id')}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select category" />
+                </SelectTrigger>
+                <SelectContent>
+                  {categories?.map(cat => (
+                    <SelectItem key={cat.id} value={cat.id}>
+                      {cat.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
           </div>
+          <Button type="submit" className="w-full">Save Expense</Button>
         </form>
       </DialogContent>
     </Dialog>
