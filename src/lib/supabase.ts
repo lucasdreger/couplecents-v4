@@ -82,17 +82,17 @@ export const getDefaultIncome = async () => {
     .single()
 }
 
-// Variable Expenses
+// Variable Expenses - Fix the category join syntax
 export const getMonthlyExpenses = async (year: number, month: number) => {
   return await supabase
     .from('variable_expenses')
     .select(`
       *,
-      category:categories(*)
+      categories!inner(*)
     `)
     .eq('year', year)
     .eq('month', month)
-    .order('date.desc')
+    .order('date', { ascending: false })
 }
 
 export const addVariableExpense = async (expense: {
@@ -156,4 +156,19 @@ export const getReserves = async () => {
   return await supabase
     .from('reserves')
     .select('*')
+}
+
+// Monthly Details
+export const getMonthlyDetails = async () => {
+  return await supabase
+    .from('monthly_details')
+    .select('total_income,total_expenses')
+    .single()
+}
+
+export const getMonthlyDetailsHistory = async () => {
+  return await supabase
+    .from('monthly_details')
+    .select('month,planned_amount,actual_amount')
+    .order('month')
 }
