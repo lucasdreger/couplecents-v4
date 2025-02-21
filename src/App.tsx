@@ -1,5 +1,5 @@
 import React from 'react';
-import { createBrowserRouter, RouterProvider } from "react-router-dom"
+import { HashRouter, Routes, Route } from "react-router-dom"
 import { ThemeProvider } from "@/components/theme-provider"
 import { AuthProvider } from '@/hooks/useAuth'
 import { QueryProvider } from '@/providers/QueryProvider'
@@ -13,44 +13,24 @@ import { MonthlyExpenses } from "@/pages/MonthlyExpenses"
 import { Administration } from "@/pages/Administration"
 import { Login } from "@/components/Auth/Login"
 
-// Define main router configuration
-const router = createBrowserRouter([
-  {
-    path: "/login",
-    element: <Login />,
-  },
-  {
-    path: "/",
-    element: <DashboardLayout />,
-    children: [
-      { 
-        index: true,
-        element: <OverviewPage />,
-      },
-      { 
-        path: "expenses",
-        element: <MonthlyExpenses />,
-      },
-      { 
-        path: "admin",
-        element: <Administration />,
-      },
-    ],
-  },
-  {
-    path: "*",  // Handle 404 routes
-    element: <div>Page not found</div>,
-  },
-]);
-
 const App: React.FC = () => {
   return (
     <QueryProvider>
       <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
         <AuthProvider>
-          <RouterProvider router={router} />
-          <Toaster />
-          <Sonner />
+          <HashRouter basename="/">
+            <Routes>
+              <Route path="/login" element={<Login />} />
+              <Route path="/" element={<DashboardLayout />}>
+                <Route index element={<OverviewPage />} />
+                <Route path="expenses" element={<MonthlyExpenses />} />
+                <Route path="admin" element={<Administration />} />
+              </Route>
+              <Route path="*" element={<div>Page not found</div>} />
+            </Routes>
+            <Toaster />
+            <Sonner />
+          </HashRouter>
         </AuthProvider>
       </ThemeProvider>
     </QueryProvider>
