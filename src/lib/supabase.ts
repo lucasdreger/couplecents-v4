@@ -88,7 +88,7 @@ export const getMonthlyExpenses = async (year: number, month: number) => {
     .from('variable_expenses')
     .select(`
       *,
-      categories!inner(*)
+      category:categories(*)
     `)
     .eq('year', year)
     .eq('month', month)

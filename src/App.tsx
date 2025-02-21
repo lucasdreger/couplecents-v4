@@ -1,4 +1,3 @@
-
 /**
  * Main application component that sets up:
  * - React Query for data fetching
@@ -8,10 +7,14 @@
  */
 
 import React, { useEffect } from 'react';
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
-import { Login } from './components/Auth/Login';
-import { OverviewPage } from './components/Overview/OverviewPage';
-import { Expenses } from './pages/Expenses';
+import { createBrowserRouter, RouterProvider } from "react-router-dom"
+import { DashboardLayout } from "@/layouts/DashboardLayout"
+import { Dashboard } from "@/pages/Dashboard"
+import { Expenses } from "@/pages/Expenses"
+import { FixedExpenses } from "@/pages/FixedExpenses"
+import { Income } from "@/pages/Income"
+import { Investments } from "@/pages/Investments"
+import { Administration } from "@/pages/Administration"
 import { Toaster } from "@/components/ui/toaster"
 import { Toaster as Sonner } from "@/components/ui/sonner"
 import { TooltipProvider } from "@/components/ui/tooltip"
@@ -36,6 +39,20 @@ const ProtectedLayout: React.FC<{ children: React.ReactNode }> = ({ children }) 
     </div>
   );
 };
+
+const router = createBrowserRouter([
+  {
+    element: <DashboardLayout />,
+    children: [
+      { path: "/", element: <Dashboard /> },
+      { path: "/expenses", element: <Expenses /> },
+      { path: "/fixed-expenses", element: <FixedExpenses /> },
+      { path: "/income", element: <Income /> },
+      { path: "/investments", element: <Investments /> },
+      { path: "/admin", element: <Administration /> },
+    ],
+  },
+])
 
 const App: React.FC = () => {
   useEffect(() => {
@@ -63,30 +80,7 @@ const App: React.FC = () => {
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
-        <BrowserRouter>
-          <div className="min-h-screen flex">
-            <Routes>
-              <Route path="/login" element={<Login />} />
-              <Route path="/" element={<Navigate to="/overview" replace />} />
-              <Route
-                path="/overview"
-                element={
-                  <ProtectedLayout>
-                    <OverviewPage />
-                  </ProtectedLayout>
-                }
-              />
-              <Route
-                path="/expenses"
-                element={
-                  <ProtectedLayout>
-                    <Expenses />
-                  </ProtectedLayout>
-                }
-              />
-            </Routes>
-          </div>
-        </BrowserRouter>
+        <RouterProvider router={router} />
         <Toaster />
         <Sonner />
       </TooltipProvider>
