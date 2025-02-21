@@ -27,6 +27,13 @@ interface CategoryData {
   } | null;
 }
 
+interface RawCategoryData {
+  amount: number;
+  category: {
+    name: string;
+  } | null;
+}
+
 export const CategoryBreakdown = () => {
   const { data: categories } = useQuery<CategoryData[]>({
     queryKey: ['categoryBreakdown'],
@@ -42,10 +49,10 @@ export const CategoryBreakdown = () => {
       if (error) throw error;
       
       // Transform the data to match our CategoryData interface
-      const transformedData = data?.map(item => ({
+      const transformedData = (data as RawCategoryData[] || []).map(item => ({
         amount: item.amount,
-        category: item.category ? { name: item.category.name } : null
-      })) || [];
+        category: item.category
+      }));
 
       return transformedData;
     },
