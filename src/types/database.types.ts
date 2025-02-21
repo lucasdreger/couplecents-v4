@@ -29,6 +29,14 @@ export interface Income {
   created_at: string;
 }
 
+export interface Investment {
+  id: string;
+  name: string;
+  current_value: number;
+  last_updated: string;
+  created_at: string;
+}
+
 export interface ExpenseFormData {
   description: string;
   amount: number;

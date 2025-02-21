@@ -99,3 +99,42 @@ export const updateMonthlyIncome = async (id: string, income: Partial<Income>) =
     .select()
     .single();
 };
+
+// Investments
+export const getInvestments = async () => {
+  return supabase
+    .from('investments')
+    .select('*')
+    .order('name');
+};
+
+export const updateInvestment = async (id: string, current_value: number) => {
+  return supabase
+    .from('investments')
+    .update({ 
+      current_value,
+      last_updated: new Date().toISOString()
+    })
+    .eq('id', id)
+    .select()
+    .single();
+};
+
+export const addInvestmentHistory = async (
+  investment_id: string, 
+  old_value: number, 
+  new_value: number, 
+  user_id: string
+) => {
+  return supabase
+    .from('investment_history')
+    .insert({
+      investment_id,
+      old_value,
+      new_value,
+      user_id,
+      date: new Date().toISOString()
+    })
+    .select()
+    .single();
+};

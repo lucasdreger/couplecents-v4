@@ -1,10 +1,9 @@
-
 /**
  * Overview Page Component
  * 
  * Displays high-level financial information including:
  * - Total budget
- * - Investments status
+ * - Investments status with distribution chart
  * - Reserves
  * - Monthly comparisons
  * - Category breakdowns
@@ -17,7 +16,7 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card"
+} from "@/components/ui/card";
 import { BudgetTile } from './BudgetTile';
 import { InvestmentsTile } from './InvestmentsTile';
 import { ReservesTile } from './ReservesTile';
@@ -27,11 +26,11 @@ import { CategoryBreakdown } from './CategoryBreakdown';
 export const OverviewPage: React.FC = () => {
   return (
     <div className="container mx-auto p-6 space-y-6">
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <BudgetTile />
         <ReservesTile />
       </div>
-
+      
       <InvestmentsTile />
       
       <Card>
