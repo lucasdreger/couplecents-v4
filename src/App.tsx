@@ -7,7 +7,7 @@
  * - Protected routes through MainLayout
  */
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { Login } from './components/Auth/Login';
 import { OverviewPage } from './components/Overview/OverviewPage';
@@ -16,6 +16,7 @@ import { Toaster } from "@/components/ui/toaster"
 import { Toaster as Sonner } from "@/components/ui/sonner"
 import { TooltipProvider } from "@/components/ui/tooltip"
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
+import { supabase } from './lib/supabaseClient';
 
 // Create React Query client for managing server state
 const queryClient = new QueryClient()
@@ -37,6 +38,28 @@ const ProtectedLayout: React.FC<{ children: React.ReactNode }> = ({ children }) 
 };
 
 const App: React.FC = () => {
+  useEffect(() => {
+    // Check for existing session on app load
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session) {
+        localStorage.setItem('isAuthenticated', 'true');
+      } else {
+        localStorage.setItem('isAuthenticated', 'false');
+      }
+    });
+
+    // Listen for auth changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (session) {
+        localStorage.setItem('isAuthenticated', 'true');
+      } else {
+        localStorage.setItem('isAuthenticated', 'false');
+      }
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>

@@ -24,10 +24,11 @@ export const Login: React.FC = () => {
       if (error) throw error;
 
       if (data.session) {
+        localStorage.setItem('isAuthenticated', 'true');
         navigate('/overview');
       }
-    } catch (err) {
-      setError('Invalid username or password. Please try again.');
+    } catch (err: any) {
+      setError(err.message || 'Invalid username or password. Please try again.');
     }
   };
 
@@ -46,9 +47,11 @@ export const Login: React.FC = () => {
           <form onSubmit={handleLogin} className="space-y-4">
             <div className="space-y-2">
               <Input
-                placeholder="Username"
+                type="email"
+                placeholder="Email"
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
+                required
               />
             </div>
             <div className="space-y-2">
@@ -57,6 +60,7 @@ export const Login: React.FC = () => {
                 placeholder="Password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
+                required
               />
             </div>
             <Button type="submit" className="w-full">
