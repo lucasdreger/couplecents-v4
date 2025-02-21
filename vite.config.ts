@@ -11,7 +11,12 @@ export default defineConfig(({ mode }) => ({
     port: 8080,
   },
   plugins: [
-    react(),
+    react({
+      tsDecorators: true,
+      plugins: [
+        ['@swc/plugin-emotion', {}]
+      ]
+    }),
     mode === 'development' && componentTagger(),
   ].filter(Boolean),
   resolve: {
@@ -20,12 +25,16 @@ export default defineConfig(({ mode }) => ({
     }
   },
   build: {
-    // Configure TypeScript compilation settings
     target: 'esnext',
     sourcemap: true,
     commonjsOptions: {
       transformMixedEsModules: true,
     },
+    rollupOptions: {
+      output: {
+        manualChunks: undefined
+      }
+    }
   },
   optimizeDeps: {
     esbuildOptions: {
@@ -33,6 +42,19 @@ export default defineConfig(({ mode }) => ({
       supported: {
         'top-level-await': true
       },
+      tsconfigRaw: {
+        compilerOptions: {
+          target: 'esnext',
+          module: 'esnext',
+          moduleResolution: 'bundler',
+          jsx: 'preserve',
+          allowJs: true,
+          skipLibCheck: true,
+          esModuleInterop: true,
+          strict: true,
+          composite: true,
+        }
+      }
     }
   }
 }));
