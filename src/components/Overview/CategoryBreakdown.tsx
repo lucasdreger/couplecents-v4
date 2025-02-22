@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabaseClient';
@@ -24,24 +25,32 @@ export const CategoryBreakdown = () => {
         `)
         .eq('year', new Date().getFullYear())
         .eq('month', new Date().getMonth() + 1);
+
       if (error) throw error;
 
       if (!data?.length) {
         return [];
       }
 
-      // Aggregate by category
+      // Aggregate by category with null checking
       const categoryTotals = data.reduce((acc: Record<string, number>, curr) => {
+        // Ensure we have valid category name and amount
         const categoryName = curr.category?.name || 'Uncategorized';
-        const amount = curr.amount || 0;
-        acc[categoryName] = (acc[categoryName] || 0) + amount;
+        const amount = typeof curr.amount === 'number' ? curr.amount : 0;
+        
+        // Initialize category if it doesn't exist
+        if (!acc[categoryName]) {
+          acc[categoryName] = 0;
+        }
+        
+        acc[categoryName] += amount;
         return acc;
       }, {});
 
-      // Convert to array format for recharts
+      // Convert to array format for recharts with explicit number typing
       return Object.entries(categoryTotals).map(([name, value]) => ({
         name,
-        value,
+        value: Number(value) || 0, // Ensure value is always a number
       }));
     },
   });
@@ -67,13 +76,13 @@ export const CategoryBreakdown = () => {
             cx="50%"
             cy="50%"
             outerRadius={100}
-            label
+            label={({ value }) => `$${Number(value).toFixed(2)}`}
           >
             {chartData.map((entry, index) => (
               <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
             ))}
           </Pie>
-          <Tooltip />
+          <Tooltip formatter={(value) => `$${Number(value).toFixed(2)}`} />
           <Legend />
         </PieChart>
       </ResponsiveContainer>
