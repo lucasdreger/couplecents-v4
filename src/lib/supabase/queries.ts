@@ -44,8 +44,11 @@ export const getFixedExpenses = async (year: number, month: number) => {
     .from('fixed_expenses')
     .select(`
       *,
-      category:categories(name)
+      category:categories(name),
+      status:expense_status(completed)
     `)
+    .eq('year', year)
+    .eq('month', month)
     .order('description', { ascending: true });
 };
 
@@ -62,6 +65,18 @@ export const updateFixedExpense = async (id: string, expense: Partial<FixedExpen
     .from('fixed_expenses')
     .update(expense)
     .eq('id', id)
+    .select()
+    .single();
+};
+
+export const updateFixedExpenseStatus = async (id: string, completed: boolean) => {
+  return supabase
+    .from('expense_status')
+    .upsert({
+      expense_id: id,
+      completed,
+      updated_at: new Date().toISOString()
+    })
     .select()
     .single();
 };
@@ -102,20 +117,11 @@ export const updateMonthlyIncome = async (id: string, income: Partial<Income>) =
 
 // Investments
 export const getInvestments = async () => {
-  console.log('Fetching investments...'); // Debug log
-  try {
-    const result = await supabase
-      .from('investments')
-      .select('*')
-      .order('name')
-      .throwOnError();
-      
-    console.log('Investments result:', result); // Debug log
-    return result;
-  } catch (error) {
-    console.error('Error fetching investments:', error);
-    throw error;
-  }
+  return supabase
+    .from('investments')
+    .select('*')
+    .order('name')
+    .throwOnError();
 };
 
 export const updateInvestment = async (id: string, current_value: number) => {

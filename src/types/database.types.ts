@@ -1,21 +1,34 @@
+interface Category {
+  id: string;
+  name: string;
+}
+
 export interface VariableExpense {
   id: string;
   description: string;
   amount: number;
   date: string;
   category_id: string;
+  category?: Category;
   year: number;
   month: number;
   created_at: string;
 }
 
+interface ExpenseStatus {
+  completed: boolean;
+  updated_at: string;
+}
+
 export interface FixedExpense {
   id: string;
   description: string;
-  estimated_amount: number;
+  amount: number;
   owner: string;
   category_id: string;
-  status_required: boolean;
+  category?: Category;
+  status?: ExpenseStatus;
+  due_date: string;
   created_at: string;
 }
 
