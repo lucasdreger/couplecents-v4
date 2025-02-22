@@ -32,8 +32,9 @@ export const useExpenses = (year: number, month: number) => {
   const { data: expenses } = useQuery({
     queryKey: variableExpensesKey,
     queryFn: async () => {
-      const { data } = await getMonthlyExpenses(year, month)
-      return data
+      const { data, error } = await getMonthlyExpenses(year, month)
+      if (error) throw error
+      return data || []
     }
   })
 
@@ -41,8 +42,9 @@ export const useExpenses = (year: number, month: number) => {
   const { data: fixedExpenses } = useQuery({
     queryKey: fixedExpensesKey,
     queryFn: async () => {
-      const { data } = await getFixedExpenses(year, month)
-      return data
+      const { data, error } = await getFixedExpenses(year, month)
+      if (error) throw error
+      return data || []
     }
   })
 
@@ -50,8 +52,9 @@ export const useExpenses = (year: number, month: number) => {
   const { data: income } = useQuery({
     queryKey: incomeKey,
     queryFn: async () => {
-      const { data } = await getMonthlyIncome(year, month)
-      return data
+      const { data, error } = await getMonthlyIncome(year, month)
+      if (error) throw error
+      return data || { lucas_income: 0, camila_income: 0, other_income: 0 }
     }
   })
 
@@ -90,12 +93,12 @@ export const useExpenses = (year: number, month: number) => {
     }
   })
 
-  return { 
-    expenses, 
-    fixedExpenses, 
-    income, 
-    addExpense, 
-    updateExpense, 
-    deleteExpense 
+  return {
+    expenses: expenses || [],
+    fixedExpenses: fixedExpenses || [],
+    income: income || { lucas_income: 0, camila_income: 0, other_income: 0 },
+    addExpense,
+    updateExpense,
+    deleteExpense
   }
 }
