@@ -26,10 +26,15 @@ export const CategoryBreakdown = () => {
         .eq('month', new Date().getMonth() + 1);
       if (error) throw error;
 
+      if (!data?.length) {
+        return [];
+      }
+
       // Aggregate by category
       const categoryTotals = data.reduce((acc: Record<string, number>, curr) => {
         const categoryName = curr.category?.name || 'Uncategorized';
-        acc[categoryName] = (acc[categoryName] || 0) + curr.amount;
+        const amount = curr.amount || 0;
+        acc[categoryName] = (acc[categoryName] || 0) + amount;
         return acc;
       }, {});
 
@@ -45,19 +50,18 @@ export const CategoryBreakdown = () => {
     return <div>Loading categories...</div>;
   }
 
-  // Ensure we have data
-  const data = categoryData || [];
-  
-  if (data.length === 0) {
+  if (!categoryData?.length) {
     return <div>No expense data available</div>;
   }
+
+  const chartData = categoryData;
 
   return (
     <div className="h-[300px]">
       <ResponsiveContainer width="100%" height="100%">
         <PieChart>
           <Pie
-            data={data}
+            data={chartData}
             dataKey="value"
             nameKey="name"
             cx="50%"
@@ -65,7 +69,7 @@ export const CategoryBreakdown = () => {
             outerRadius={100}
             label
           >
-            {data.map((entry, index) => (
+            {chartData.map((entry, index) => (
               <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
             ))}
           </Pie>

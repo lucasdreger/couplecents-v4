@@ -45,3 +45,12 @@ export interface ExpenseFormData {
   year: number;
   month: number;
 }
+
+export interface MonthlyDetail {
+  id: string;
+  year: number;
+  month: number;
+  planned_amount: number;
+  actual_amount: number;
+  created_at: string;
+}

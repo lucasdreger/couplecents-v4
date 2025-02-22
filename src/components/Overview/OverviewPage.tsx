@@ -45,52 +45,42 @@ export const OverviewPage: React.FC = () => {
       </div>
 
       <ErrorBoundary fallback={<ErrorFallback message="Error loading investments" />}>
-        <Suspense fallback={<LoadingFallback />}>
-          <InvestmentsTile />
-        </Suspense>
+        <InvestmentsTile />
       </ErrorBoundary>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <ErrorBoundary fallback={<ErrorFallback message="Error loading budget" />}>
-          <Suspense fallback={<LoadingFallback />}>
-            <BudgetTile />
-          </Suspense>
+          <BudgetTile />
         </ErrorBoundary>
         
         <ErrorBoundary fallback={<ErrorFallback message="Error loading reserves" />}>
-          <Suspense fallback={<LoadingFallback />}>
-            <ReservesTile />
-          </Suspense>
+          <ReservesTile />
         </ErrorBoundary>
       </div>
       
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <ErrorBoundary fallback={<ErrorFallback message="Error loading monthly data" />}>
-          <Suspense fallback={<LoadingFallback />}>
-            <Card>
-              <CardHeader>
-                <CardTitle>Monthly Budget vs Actual</CardTitle>
-                <CardDescription>Compare planned versus actual spending</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <MonthlyChart />
-              </CardContent>
-            </Card>
-          </Suspense>
+          <Card>
+            <CardHeader>
+              <CardTitle>Monthly Budget vs Actual</CardTitle>
+              <CardDescription>Compare planned versus actual spending</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <MonthlyChart />
+            </CardContent>
+          </Card>
         </ErrorBoundary>
         
         <ErrorBoundary fallback={<ErrorFallback message="Error loading categories" />}>
-          <Suspense fallback={<LoadingFallback />}>
-            <Card>
-              <CardHeader>
-                <CardTitle>Category Breakdown</CardTitle>
-                <CardDescription>Expenses by category</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <CategoryBreakdown />
-              </CardContent>
-            </Card>
-          </Suspense>
+          <Card>
+            <CardHeader>
+              <CardTitle>Category Breakdown</CardTitle>
+              <CardDescription>Expenses by category</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <CategoryBreakdown />
+            </CardContent>
+          </Card>
         </ErrorBoundary>
       </div>
     </div>
