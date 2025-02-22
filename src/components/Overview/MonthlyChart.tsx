@@ -13,7 +13,7 @@ import {
 } from 'recharts';
 
 export const MonthlyChart = () => {
-  const { data: monthlyData } = useQuery({
+  const { data: monthlyData, isLoading } = useQuery({
     queryKey: ['monthlyExpenses'],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -25,10 +25,17 @@ export const MonthlyChart = () => {
     },
   });
 
+  if (isLoading) {
+    return <div className="h-[300px] flex items-center justify-center">Loading...</div>;
+  }
+
+  // Ensure we have data or provide default empty array
+  const chartData = monthlyData || [];
+
   return (
     <div className="h-[300px]">
       <ResponsiveContainer width="100%" height="100%">
-        <BarChart data={monthlyData}>
+        <BarChart data={chartData}>
           <CartesianGrid strokeDasharray="3 3" />
           <XAxis dataKey="month" />
           <YAxis />

@@ -13,7 +13,7 @@ import {
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8'];
 
 export const CategoryBreakdown = () => {
-  const { data: categoryData } = useQuery({
+  const { data: categoryData, isLoading } = useQuery({
     queryKey: ['categoryBreakdown'],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -41,8 +41,15 @@ export const CategoryBreakdown = () => {
     },
   });
 
-  if (!categoryData?.length) {
-    return <div>No data available</div>;
+  if (isLoading) {
+    return <div>Loading categories...</div>;
+  }
+
+  // Ensure we have data
+  const data = categoryData || [];
+  
+  if (data.length === 0) {
+    return <div>No expense data available</div>;
   }
 
   return (
@@ -50,7 +57,7 @@ export const CategoryBreakdown = () => {
       <ResponsiveContainer width="100%" height="100%">
         <PieChart>
           <Pie
-            data={categoryData}
+            data={data}
             dataKey="value"
             nameKey="name"
             cx="50%"
@@ -58,7 +65,7 @@ export const CategoryBreakdown = () => {
             outerRadius={100}
             label
           >
-            {categoryData.map((entry, index) => (
+            {data.map((entry, index) => (
               <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
             ))}
           </Pie>

@@ -4,7 +4,7 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabaseClient';
 
 export const ReservesTile = () => {
-  const { data: reserves } = useQuery({
+  const { data: reserves, isLoading, isError } = useQuery({
     queryKey: ['reserves'],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -24,20 +24,29 @@ export const ReservesTile = () => {
     }
   });
 
+  const amount = reserves?.amount || 0;
+  const percentage = reserves?.percentage || 0;
+
   return (
     <Card>
       <CardHeader>
         <CardTitle>Reserves</CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="space-y-2">
-          <p className="text-3xl font-bold">
-            ${reserves?.amount.toFixed(2) ?? '0.00'}
-          </p>
-          <p className="text-sm text-muted-foreground">
-            {reserves?.percentage.toFixed(1) ?? '0'}% of income
-          </p>
-        </div>
+        {isLoading ? (
+          <div>Loading reserves...</div>
+        ) : isError ? (
+          <div>Error loading reserves</div>
+        ) : (
+          <div className="space-y-2">
+            <p className="text-3xl font-bold">
+              ${amount.toFixed(2)}
+            </p>
+            <p className="text-sm text-muted-foreground">
+              {percentage.toFixed(1)}% of income
+            </p>
+          </div>
+        )}
       </CardContent>
     </Card>
   );

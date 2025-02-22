@@ -14,7 +14,7 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabaseClient';
 
 export const BudgetTile = () => {
-  const { data: budgetData } = useQuery({
+  const { data: budgetData, isLoading, isError } = useQuery({
     queryKey: ['totalBudget'],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -26,20 +26,32 @@ export const BudgetTile = () => {
     },
   });
 
+  const totalIncome = budgetData?.total_income || 0;
+  const totalExpenses = budgetData?.total_expenses || 0;
+
   return (
     <Card>
       <CardHeader>
         <CardTitle>Total Budget</CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="space-y-2">
-          <p className="text-3xl font-bold text-primary">
-            ${budgetData?.total_income ?? 0}
-          </p>
-          <p className="text-sm text-muted-foreground">
-            Expenses: ${budgetData?.total_expenses ?? 0}
-          </p>
-        </div>
+        {isLoading ? (
+          <div>Loading budget...</div>
+        ) : isError ? (
+          <div>Error loading budget</div>
+        ) : (
+          <div className="space-y-2">
+            <p className="text-3xl font-bold text-primary">
+              ${totalIncome.toFixed(2)}
+            </p>
+            <p className="text-sm text-muted-foreground">
+              Expenses: ${totalExpenses.toFixed(2)}
+            </p>
+            <p className="text-sm text-muted-foreground">
+              Balance: ${(totalIncome - totalExpenses).toFixed(2)}
+            </p>
+          </div>
+        )}
       </CardContent>
     </Card>
   );
