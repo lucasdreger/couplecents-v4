@@ -1,6 +1,5 @@
 import React from 'react'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 
 interface QueryBoundaryState {
   hasError: boolean;
@@ -60,10 +59,7 @@ interface QueryProviderProps {
 export function QueryProvider({ children }: QueryProviderProps): React.ReactElement {
   return React.createElement(QueryBoundary, null,
     React.createElement(QueryClientProvider, { client: queryClient },
-      [
-        children,
-        import.meta.env.MODE === 'development' && React.createElement(ReactQueryDevtools)
-      ]
+      children
     )
   );
 }
