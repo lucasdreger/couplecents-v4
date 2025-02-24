@@ -1,3 +1,4 @@
+
 export interface VariableExpense {
   id: string;
   description: string;

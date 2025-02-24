@@ -233,28 +233,31 @@ export type Database = {
           actual_amount: number | null
           created_at: string
           id: string
-          month: string
+          month: number
           planned_amount: number | null
           total_expenses: number | null
           total_income: number | null
+          year: number
         }
         Insert: {
           actual_amount?: number | null
           created_at?: string
           id?: string
-          month: string
+          month: number
           planned_amount?: number | null
           total_expenses?: number | null
           total_income?: number | null
+          year?: number
         }
         Update: {
           actual_amount?: number | null
           created_at?: string
           id?: string
-          month?: string
+          month?: number
           planned_amount?: number | null
           total_expenses?: number | null
           total_income?: number | null
+          year?: number
         }
         Relationships: []
       }

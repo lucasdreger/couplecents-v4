@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabaseClient';
@@ -28,12 +29,16 @@ export const MonthlyChart = () => {
         .from('monthly_details')
         .select('*')
         .order('year, month');
-      if (error) throw error;
+      
+      if (error) {
+        console.error('Error fetching monthly details:', error);
+        throw error;
+      }
 
       // Transform and validate data
       return (data || []).map((item: MonthlyDetail): ChartData => ({
         year: item.year,
-        month: new Date(item.year, item.month - 1).toLocaleString('default', { month: 'short' }),
+        month: new Date(2000, item.month - 1).toLocaleString('default', { month: 'short' }),
         planned_amount: Number(item.planned_amount || 0),
         actual_amount: Number(item.actual_amount || 0)
       }));
