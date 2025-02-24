@@ -1,104 +1,128 @@
-
-import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { useNavigate } from 'react-router-dom'
-import { useEffect } from 'react'
-import { supabase } from '@/lib/supabaseClient'
-import React, { createContext, useContext } from 'react'
-import type { User } from '@supabase/supabase-js'
-import { useToast } from '@/components/ui/use-toast'
+import React, { createContext, useContext, useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useQueryClient } from '@tanstack/react-query';
+import { supabase } from '@/lib/supabaseClient';
+import { Session, AuthError } from '@supabase/supabase-js';
 
 interface AuthContextType {
-  user: User | null
-  isAuthenticated: boolean
-  signIn: (email: string, password: string) => Promise<void>
-  signOut: () => Promise<void>
+  userId: string | null;
+  loading: boolean;
+  signIn: (email: string, password: string) => Promise<void>;
+  signOut: () => Promise<void>;
 }
 
-const AuthContext = createContext<AuthContextType | undefined>(undefined)
+const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const navigate = useNavigate()
-  const { toast } = useToast()
-  const queryClient = useQueryClient()
+interface AuthProviderProps {
+  children: React.ReactNode;
+}
 
-  // Use React Query for session management
-  const { data: session, isError } = useQuery({
-    queryKey: ['session'],
-    queryFn: async () => {
-      const { data: { session } } = await supabase.auth.getSession()
-      return session
-    }
-  })
+export function AuthProvider({ children }: AuthProviderProps): React.ReactElement {
+  const [loading, setLoading] = useState(true);
+  const [userId, setUserId] = useState<string | null>(null);
+  const navigate = useNavigate();
+  const queryClient = useQueryClient();
 
-  // Listen for auth changes
   useEffect(() => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      queryClient.setQueryData(['session'], session)
-    })
+    // Check active sessions and set the user
+    checkUser();
+    
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((event: string, session: Session | null) => {
+      if (session?.user) {
+        setUserId(session.user.id);
+        setLoading(false);
+      } else {
+        setUserId(null);
+        setLoading(false);
+        queryClient.resetQueries();
+      }
+    });
 
-    return () => subscription.unsubscribe()
-  }, [queryClient])
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, [queryClient]);
 
-  // Auth change effect for navigation
-  useEffect(() => {
-    // Let PrivateRoute handle the navigation
-    if (session && window.location.hash === '#/login') {
-      navigate('/')
+  async function checkUser() {
+    try {
+      const { data: { session }, error } = await supabase.auth.getSession();
+      if (error) throw error;
+      
+      if (session?.user) {
+        setUserId(session.user.id);
+      }
+    } catch (error) {
+      console.error('Error checking auth state:', error);
+    } finally {
+      setLoading(false);
     }
-  }, [session, navigate])
+  }
 
-  const value = {
-    user: session?.user ?? null,
-    isAuthenticated: !!session,
-    signIn: async (email: string, password: string) => {
-      try {
-        const { error } = await supabase.auth.signInWithPassword({ email, password })
-        if (error) throw error
-        navigate('/')
-      } catch (error) {
-        toast({
-          variant: "destructive",
-          title: "Authentication Error",
-          description: error instanceof Error ? error.message : "Failed to sign in"
-        })
-        throw error
+  async function signIn(email: string, password: string) {
+    try {
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+
+      if (error) throw error;
+      if (data.user) {
+        setUserId(data.user.id);
+        navigate('/');
+      }
+    } catch (error) {
+      if (error instanceof AuthError) {
+        if (error.message.includes('Invalid login credentials')) {
+          throw new Error('Invalid email or password');
+        }
+        throw error;
+      }
+      throw new Error('An unexpected error occurred');
+    }
+  }
+
+  async function signOut() {
+    try {
+      const { error } = await supabase.auth.signOut();
+      if (error) throw error;
+      
+      // Clear all local storage data
+      Object.keys(localStorage)
+        .filter(key => key.startsWith('sb-'))
+        .forEach(key => localStorage.removeItem(key));
+      
+      queryClient.resetQueries();
+      setUserId(null);
+      navigate('/login');
+    } catch (error) {
+      console.error('Error signing out:', error);
+      throw error;
+    }
+  }
+
+  if (loading) {
+    return React.createElement(React.Fragment);
+  }
+
+  return React.createElement(AuthContext.Provider,
+    {
+      value: {
+        userId,
+        loading,
+        signIn,
+        signOut,
       }
     },
-    signOut: async () => {
-      try {
-        const { error } = await supabase.auth.signOut()
-        if (error) throw error
-        navigate('/login')
-      } catch (error) {
-        toast({
-          variant: "destructive",
-          title: "Error",
-          description: "Failed to sign out"
-        })
-        throw error
-      }
-    }
-  }
-
-  if (isError) {
-    toast({
-      variant: "destructive",
-      title: "Error",
-      description: "Failed to check authentication status"
-    })
-  }
-
-  return (
-    <AuthContext.Provider value={value}>
-      {children}
-    </AuthContext.Provider>
-  )
+    children
+  );
 }
 
-export const useAuth = () => {
-  const context = useContext(AuthContext)
+export function useAuth() {
+  const context = useContext(AuthContext);
   if (context === undefined) {
-    throw new Error('useAuth must be used within an AuthProvider')
+    throw new Error('useAuth must be used within an AuthProvider');
   }
-  return context
+  return context;
 }

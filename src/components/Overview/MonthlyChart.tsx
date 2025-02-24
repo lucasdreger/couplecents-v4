@@ -21,7 +21,11 @@ interface ChartData {
   actual_amount: number;
 }
 
-export const MonthlyChart = () => {
+const formatCurrency = (value: number): [string] => {
+  return [`$${value.toFixed(2)}`];
+};
+
+export const MonthlyChart: React.FC = () => {
   const { data: household, isLoading: isLoadingHousehold } = useHousehold();
 
   const { data: monthlyData, isLoading, isError } = useQuery({
@@ -43,38 +47,52 @@ export const MonthlyChart = () => {
   });
 
   if (isLoadingHousehold || isLoading) {
-    return <div className="h-[300px] flex items-center justify-center">Loading...</div>;
+    return React.createElement('div', 
+      { className: 'h-[300px] flex items-center justify-center' },
+      'Loading...'
+    );
   }
 
   if (isError) {
-    return <div className="h-[300px] flex items-center justify-center">Error loading chart data</div>;
+    return React.createElement('div',
+      { className: 'h-[300px] flex items-center justify-center' },
+      'Error loading chart data'
+    );
   }
 
   if (!monthlyData?.length) {
-    return <div className="h-[300px] flex items-center justify-center">No data available</div>;
+    return React.createElement('div',
+      { className: 'h-[300px] flex items-center justify-center' },
+      'No data available'
+    );
   }
 
-  return (
-    <div className="h-[300px]">
-      <ResponsiveContainer width="100%" height="100%">
-        <BarChart data={monthlyData}>
-          <CartesianGrid strokeDasharray="3 3" />
-          <XAxis dataKey="month" />
-          <YAxis />
-          <Tooltip formatter={(value: number) => `$${value.toFixed(2)}`} />
-          <Legend />
-          <Bar 
-            dataKey="planned_amount" 
-            name="Planned" 
-            fill="#8884d8" 
-          />
-          <Bar 
-            dataKey="actual_amount" 
-            name="Actual" 
-            fill="#82ca9d" 
-          />
-        </BarChart>
-      </ResponsiveContainer>
-    </div>
+  return React.createElement('div',
+    { className: 'h-[300px]' },
+    React.createElement(ResponsiveContainer,
+      { width: '100%', height: '100%' },
+      React.createElement(BarChart,
+        { data: monthlyData },
+        [
+          React.createElement(CartesianGrid, { strokeDasharray: '3 3', key: 'grid' }),
+          React.createElement(XAxis, { dataKey: 'month', key: 'x-axis' }),
+          React.createElement(YAxis, { key: 'y-axis' }),
+          React.createElement(Tooltip, { formatter: formatCurrency, key: 'tooltip' }),
+          React.createElement(Legend, { key: 'legend' }),
+          React.createElement(Bar, {
+            key: 'planned',
+            dataKey: 'planned_amount',
+            name: 'Planned',
+            fill: '#8884d8'
+          }),
+          React.createElement(Bar, {
+            key: 'actual',
+            dataKey: 'actual_amount',
+            name: 'Actual',
+            fill: '#82ca9d'
+          })
+        ]
+      )
+    )
   );
 };
