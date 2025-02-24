@@ -1,9 +1,8 @@
-
 import React from 'react';
 import { HashRouter, Routes, Route } from "react-router-dom"
 import { ThemeProvider } from "@/components/theme-provider"
-import { QueryProvider } from '@/providers/QueryProvider'
 import { AuthProvider } from '@/hooks/useAuth'
+import { QueryProvider } from '@/providers/QueryProvider'
 import { Toaster } from "@/components/ui/toaster"
 import { Toaster as Sonner } from "@/components/ui/sonner"
 
@@ -18,11 +17,11 @@ import { PrivateRoute } from "@/components/Auth/PrivateRoute"
 const App: React.FC = () => {
   return (
     <HashRouter>
-      <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
-        <QueryProvider>
+      <QueryProvider>
+        <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
           <AuthProvider>
             <Routes>
-              <Route path="/login" element={<Login />} />
+              <Route path="login" element={<Login />} />
               <Route path="" element={
                 <PrivateRoute>
                   <DashboardLayout />
@@ -37,8 +36,8 @@ const App: React.FC = () => {
             <Toaster />
             <Sonner />
           </AuthProvider>
-        </QueryProvider>
-      </ThemeProvider>
+        </ThemeProvider>
+      </QueryProvider>
     </HashRouter>
   );
 };

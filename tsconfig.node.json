@@ -1,24 +1,23 @@
 {
   "compilerOptions": {
     "composite": true,
-    "skipLibCheck": true,
+    "target": "ES2022",
+    "lib": ["ES2023"],
     "module": "ESNext",
+    "skipLibCheck": true,
+    "outDir": "dist",
+
+    /* Bundler mode */
     "moduleResolution": "bundler",
-    "allowSyntheticDefaultImports": true,
+    "allowImportingTsExtensions": true,
+    "isolatedModules": true,
+    "moduleDetection": "force",
+
+    /* Linting */
     "strict": true,
-    "types": ["node"],
-    "lib": ["ESNext"],
-    "paths": {
-      "@/*": ["./src/*"]
-    }
+    "noUnusedLocals": false,
+    "noUnusedParameters": false,
+    "noFallthroughCasesInSwitch": true
   },
-  "include": [
-    "vite.config.ts",
-    "src/types/**/*.d.ts",
-    "src/vite-env.d.ts",
-    "src/lib/supabaseClient.ts"
-  ],
-  "exclude": [
-    "node_modules"
-  ]
+  "include": ["vite.config.ts"]
 }

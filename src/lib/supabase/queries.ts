@@ -39,19 +39,14 @@ export const deleteVariableExpense = async (id: string) => {
 };
 
 // Fixed Expenses
-export const getFixedExpenses = async () => {
-  const { data: profile } = await supabase.auth.getUser();
-  if (!profile?.user) throw new Error('Not authenticated');
-
+export const getFixedExpenses = async (year: number, month: number) => {
   return supabase
     .from('fixed_expenses')
     .select(`
       *,
-      category:categories(name),
-      status:expense_status(completed)
+      category:categories(name)
     `)
-    .eq('household_id', profile.user.id) // Filter by household
-    .order('due_date', { ascending: true });
+    .order('description', { ascending: true });
 };
 
 export const addFixedExpense = async (expense: Omit<FixedExpense, 'id' | 'created_at'>) => {
@@ -67,18 +62,6 @@ export const updateFixedExpense = async (id: string, expense: Partial<FixedExpen
     .from('fixed_expenses')
     .update(expense)
     .eq('id', id)
-    .select()
-    .single();
-};
-
-export const updateFixedExpenseStatus = async (id: string, completed: boolean) => {
-  return supabase
-    .from('expense_status')
-    .upsert({
-      expense_id: id,
-      completed,
-      updated_at: new Date().toISOString()
-    })
     .select()
     .single();
 };
@@ -117,30 +100,22 @@ export const updateMonthlyIncome = async (id: string, income: Partial<Income>) =
     .single();
 };
 
-// Monthly Details
-export const getMonthlyDetails = async () => {
-  const { data: profile } = await supabase.auth.getUser();
-  if (!profile?.user) throw new Error('Not authenticated');
-
-  return supabase
-    .from('monthly_details')
-    .select('*')
-    .eq('household_id', profile.user.id)
-    .order('year', { ascending: true })
-    .order('month', { ascending: true });
-};
-
 // Investments
 export const getInvestments = async () => {
-  const { data: profile } = await supabase.auth.getUser();
-  if (!profile?.user) throw new Error('Not authenticated');
-
-  return supabase
-    .from('investments')
-    .select('*')
-    .eq('household_id', profile.user.id)
-    .order('name')
-    .throwOnError();
+  console.log('Fetching investments...'); // Debug log
+  try {
+    const result = await supabase
+      .from('investments')
+      .select('*')
+      .order('name')
+      .throwOnError();
+      
+    console.log('Investments result:', result); // Debug log
+    return result;
+  } catch (error) {
+    console.error('Error fetching investments:', error);
+    throw error;
+  }
 };
 
 export const updateInvestment = async (id: string, current_value: number) => {

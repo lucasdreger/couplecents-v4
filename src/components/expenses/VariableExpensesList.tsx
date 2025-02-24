@@ -9,15 +9,7 @@ interface Props {
   onDelete?: (expense: VariableExpense) => void
 }
 
-export const VariableExpensesList = ({ expenses = [], onEdit, onDelete }: Props) => {
-  if (!expenses?.length) {
-    return (
-      <div className="text-center text-muted-foreground py-4">
-        No expenses found for this period
-      </div>
-    );
-  }
-
+export const VariableExpensesList = ({ expenses, onEdit, onDelete }: Props) => {
   return (
     <Table>
       <TableHeader>
@@ -30,28 +22,25 @@ export const VariableExpensesList = ({ expenses = [], onEdit, onDelete }: Props)
         </TableRow>
       </TableHeader>
       <TableBody>
-        {expenses.map((expense) => {
-          const amount = Number(expense.amount || 0);
-          return (
-            <TableRow key={expense.id}>
-              <TableCell>{new Date(expense.date).toLocaleDateString()}</TableCell>
-              <TableCell>{expense.description}</TableCell>
-              <TableCell>{expense.category?.name || 'Uncategorized'}</TableCell>
-              <TableCell className="text-right">${amount.toFixed(2)}</TableCell>
-              <TableCell>
-                <div className="flex gap-2">
-                  <Button variant="ghost" size="icon" onClick={() => onEdit?.(expense)}>
-                    <Edit className="h-4 w-4" />
-                  </Button>
-                  <Button variant="ghost" size="icon" onClick={() => onDelete?.(expense)}>
-                    <Trash className="h-4 w-4" />
-                  </Button>
-                </div>
-              </TableCell>
-            </TableRow>
-          );
-        })}
+        {expenses?.map((expense) => (
+          <TableRow key={expense.id}>
+            <TableCell>{new Date(expense.date).toLocaleDateString()}</TableCell>
+            <TableCell>{expense.description}</TableCell>
+            <TableCell>{expense.category?.name}</TableCell>
+            <TableCell className="text-right">${expense.amount.toFixed(2)}</TableCell>
+            <TableCell>
+              <div className="flex gap-2">
+                <Button variant="ghost" size="icon" onClick={() => onEdit?.(expense)}>
+                  <Edit className="h-4 w-4" />
+                </Button>
+                <Button variant="ghost" size="icon" onClick={() => onDelete?.(expense)}>
+                  <Trash className="h-4 w-4" />
+                </Button>
+              </div>
+            </TableCell>
+          </TableRow>
+        ))}
       </TableBody>
     </Table>
-  );
-};
+  )
+}
