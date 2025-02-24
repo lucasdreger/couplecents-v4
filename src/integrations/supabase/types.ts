@@ -497,6 +497,12 @@ export type Database = {
           created_at: string
         }[]
       }
+      get_or_create_household: {
+        Args: {
+          p_name: string
+        }
+        Returns: string
+      }
       get_or_create_monthly_credit_card: {
         Args: {
           p_year: number
@@ -545,6 +551,12 @@ export type Database = {
         Args: {
           p_year: number
           p_month: number
+        }
+        Returns: undefined
+      }
+      join_household: {
+        Args: {
+          p_household_id: string
         }
         Returns: undefined
       }

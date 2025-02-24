@@ -1,32 +1,21 @@
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { CategoriesManagement } from "@/components/administration/CategoriesManagement"
-import { FixedExpensesManagement } from "@/components/administration/FixedExpensesManagement"
 import { DefaultIncomeManagement } from "@/components/administration/DefaultIncomeManagement"
+import { FixedExpensesManagement } from "@/components/administration/FixedExpensesManagement"
+import { HouseholdManagement } from "@/components/administration/HouseholdManagement"
 
 export const Administration = () => {
   return (
-    <div className="space-y-6">
-      <h2 className="text-3xl font-bold tracking-tight">Administration</h2>
+    <div className="container mx-auto p-6 space-y-6">
+      <h1 className="text-3xl font-bold mb-6">Administration</h1>
       
-      <Tabs defaultValue="categories">
-        <TabsList>
-          <TabsTrigger value="categories">Categories</TabsTrigger>
-          <TabsTrigger value="fixed-expenses">Fixed Expenses</TabsTrigger>
-          <TabsTrigger value="default-income">Default Income</TabsTrigger>
-        </TabsList>
-        
-        <TabsContent value="categories">
-          <CategoriesManagement />
-        </TabsContent>
-        
-        <TabsContent value="fixed-expenses">
-          <FixedExpensesManagement />
-        </TabsContent>
-        
-        <TabsContent value="default-income">
-          <DefaultIncomeManagement />
-        </TabsContent>
-      </Tabs>
+      <div className="grid gap-6">
+        <HouseholdManagement />
+        <CategoriesManagement />
+        <DefaultIncomeManagement />
+        <FixedExpensesManagement />
+      </div>
     </div>
   )
 }
