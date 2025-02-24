@@ -1,85 +1,46 @@
+
 import React from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
-import { AppBar, Toolbar, Drawer, List, ListItem, ListItemIcon, ListItemText, Typography, Box, IconButton, Menu, MenuItem } from '@mui/material';
-import { Link } from 'react-router-dom';
-import DashboardIcon from '@mui/icons-material/Dashboard';
-import MonetizationOnIcon from '@mui/icons-material/MonetizationOn';
-import CategoryIcon from '@mui/icons-material/Category';
-import AccountBalanceIcon from '@mui/icons-material/AccountBalance';
-import AccountCircleIcon from '@mui/icons-material/AccountCircle';
+import { NavLink } from 'react-router-dom';
+import { cn } from "@/lib/utils";
+import { 
+  LayoutDashboard, 
+  DollarSign, 
+  Tags, 
+  Wallet, 
+  UserCircle 
+} from 'lucide-react';
 
-const DRAWER_WIDTH = 240;
-
-export const Navigation: React.FC = () => {
-  const location = useLocation();
-  const navigate = useNavigate();
-  const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
-
-  const menuItems = [
-    { text: 'Overview', icon: <DashboardIcon />, path: '/overview' },
-    { text: 'Monthly Details', icon: <MonetizationOnIcon />, path: '/monthly-details' },
-    { text: 'Categories', icon: <CategoryIcon />, path: '/categories' },
-    { text: 'Fixed Expenses', icon: <AccountBalanceIcon />, path: '/fixed-expenses' },
+const Navigation = () => {
+  const navItems = [
+    { to: '/overview', icon: <LayoutDashboard className="w-5 h-5" />, label: 'Overview' },
+    { to: '/expenses', icon: <DollarSign className="w-5 h-5" />, label: 'Expenses' },
+    { to: '/categories', icon: <Tags className="w-5 h-5" />, label: 'Categories' },
+    { to: '/fixed-expenses', icon: <Wallet className="w-5 h-5" />, label: 'Fixed Expenses' },
+    { to: '/profile', icon: <UserCircle className="w-5 h-5" />, label: 'Profile' },
   ];
 
-  const handleLogout = () => {
-    localStorage.removeItem('isAuthenticated');
-    navigate('/login');
-  };
-
   return (
-    <>
-      <AppBar position="fixed" sx={{ zIndex: (theme) => theme.zIndex.drawer + 1 }}>
-        <Toolbar sx={{ justifyContent: 'space-between' }}>
-          <Typography variant="h6" noWrap component="div">
-            Expense Empower
-          </Typography>
-          <IconButton color="inherit" onClick={(e) => setAnchorEl(e.currentTarget)}>
-            <AccountCircleIcon />
-          </IconButton>
-        </Toolbar>
-      </AppBar>
-      <Menu
-        anchorEl={anchorEl}
-        open={Boolean(anchorEl)}
-        onClose={() => setAnchorEl(null)}
-      >
-        <MenuItem onClick={handleLogout}>Logout</MenuItem>
-      </Menu>
-      <Drawer
-        variant="permanent"
-        sx={{
-          width: DRAWER_WIDTH,
-          flexShrink: 0,
-          '& .MuiDrawer-paper': {
-            width: DRAWER_WIDTH,
-            boxSizing: 'border-box',
-          },
-        }}
-      >
-        <Toolbar />
-        <Box sx={{ overflow: 'auto' }}>
-          <List>
-            {menuItems.map((item) => (
-              <ListItem
-                button
-                key={item.text}
-                component={Link}
-                to={item.path}
-                selected={location.pathname === item.path}
-                sx={{
-                  '&.Mui-selected': {
-                    backgroundColor: 'primary.light',
-                  }
-                }}
-              >
-                <ListItemIcon>{item.icon}</ListItemIcon>
-                <ListItemText primary={item.text} />
-              </ListItem>
-            ))}
-          </List>
-        </Box>
-      </Drawer>
-    </>
+    <nav className="flex flex-col space-y-1">
+      {navItems.map((item) => (
+        <NavLink
+          key={item.to}
+          to={item.to}
+          className={({ isActive }) =>
+            cn(
+              "flex items-center px-4 py-2 text-sm font-medium rounded-lg",
+              "hover:bg-accent hover:text-accent-foreground",
+              isActive
+                ? "bg-accent text-accent-foreground"
+                : "text-muted-foreground"
+            )
+          }
+        >
+          {item.icon}
+          <span className="ml-3">{item.label}</span>
+        </NavLink>
+      ))}
+    </nav>
   );
 };
+
+export default Navigation;

@@ -12,25 +12,37 @@ export type Database = {
       categories: {
         Row: {
           created_at: string
+          household_id: string | null
           id: string
           name: string
         }
         Insert: {
           created_at?: string
+          household_id?: string | null
           id?: string
           name: string
         }
         Update: {
           created_at?: string
+          household_id?: string | null
           id?: string
           name?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "categories_household_id_fkey"
+            columns: ["household_id"]
+            isOneToOne: false
+            referencedRelation: "households"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       default_income: {
         Row: {
           camila_income: number
           created_at: string
+          household_id: string | null
           id: string
           last_updated: string
           lucas_income: number
@@ -39,6 +51,7 @@ export type Database = {
         Insert: {
           camila_income?: number
           created_at?: string
+          household_id?: string | null
           id?: string
           last_updated?: string
           lucas_income?: number
@@ -47,12 +60,21 @@ export type Database = {
         Update: {
           camila_income?: number
           created_at?: string
+          household_id?: string | null
           id?: string
           last_updated?: string
           lucas_income?: number
           other_income?: number
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "default_income_household_id_fkey"
+            columns: ["household_id"]
+            isOneToOne: false
+            referencedRelation: "households"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       fixed_expenses: {
         Row: {
@@ -60,6 +82,7 @@ export type Database = {
           created_at: string
           description: string
           estimated_amount: number
+          household_id: string | null
           id: string
           owner: string
           status_required: boolean
@@ -69,6 +92,7 @@ export type Database = {
           created_at?: string
           description: string
           estimated_amount: number
+          household_id?: string | null
           id?: string
           owner: string
           status_required?: boolean
@@ -78,6 +102,7 @@ export type Database = {
           created_at?: string
           description?: string
           estimated_amount?: number
+          household_id?: string | null
           id?: string
           owner?: string
           status_required?: boolean
@@ -90,7 +115,32 @@ export type Database = {
             referencedRelation: "categories"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "fixed_expenses_household_id_fkey"
+            columns: ["household_id"]
+            isOneToOne: false
+            referencedRelation: "households"
+            referencedColumns: ["id"]
+          },
         ]
+      }
+      households: {
+        Row: {
+          created_at: string | null
+          id: string
+          name: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          name: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          name?: string
+        }
+        Relationships: []
       }
       investment_history: {
         Row: {
@@ -178,6 +228,36 @@ export type Database = {
         }
         Relationships: []
       }
+      monthly_details: {
+        Row: {
+          actual_amount: number | null
+          created_at: string
+          id: string
+          month: string
+          planned_amount: number | null
+          total_expenses: number | null
+          total_income: number | null
+        }
+        Insert: {
+          actual_amount?: number | null
+          created_at?: string
+          id?: string
+          month: string
+          planned_amount?: number | null
+          total_expenses?: number | null
+          total_income?: number | null
+        }
+        Update: {
+          actual_amount?: number | null
+          created_at?: string
+          id?: string
+          month?: string
+          planned_amount?: number | null
+          total_expenses?: number | null
+          total_income?: number | null
+        }
+        Relationships: []
+      }
       monthly_fixed_expense_status: {
         Row: {
           completed: boolean
@@ -252,6 +332,7 @@ export type Database = {
           created_at: string
           email: string
           full_name: string | null
+          household_id: string | null
           id: string
         }
         Insert: {
@@ -259,6 +340,7 @@ export type Database = {
           created_at?: string
           email: string
           full_name?: string | null
+          household_id?: string | null
           id: string
         }
         Update: {
@@ -266,9 +348,18 @@ export type Database = {
           created_at?: string
           email?: string
           full_name?: string | null
+          household_id?: string | null
           id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "fk_household"
+            columns: ["household_id"]
+            isOneToOne: false
+            referencedRelation: "households"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       reserve_history: {
         Row: {

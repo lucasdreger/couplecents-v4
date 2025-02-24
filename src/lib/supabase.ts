@@ -1,4 +1,3 @@
-
 import { createClient } from '@supabase/supabase-js'
 
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
@@ -83,13 +82,17 @@ export const getDefaultIncome = async () => {
     .single()
 }
 
-// Variable Expenses
+// Variable Expenses - Fix the category join syntax
 export const getMonthlyExpenses = async (year: number, month: number) => {
   return await supabase
     .from('variable_expenses')
-    .select('*, categories(*)')
+    .select(`
+      *,
+      category:categories(*)
+    `)
     .eq('year', year)
     .eq('month', month)
+    .order('date', { ascending: false })
 }
 
 export const addVariableExpense = async (expense: {
@@ -132,7 +135,12 @@ export const deleteVariableExpense = async (id: string) => {
 export const getFixedExpenses = async () => {
   return await supabase
     .from('fixed_expenses')
-    .select('*')
+    .select(`
+      *,
+      category:categories(name),
+      status:monthly_fixed_expense_status(completed, completed_at)
+    `)
+    .order('description', { ascending: true })
 }
 
 export const updateFixedExpenseStatus = async (
@@ -153,4 +161,19 @@ export const getReserves = async () => {
   return await supabase
     .from('reserves')
     .select('*')
+}
+
+// Monthly Details
+export const getMonthlyDetails = async () => {
+  return await supabase
+    .from('monthly_details')
+    .select('total_income,total_expenses')
+    .single()
+}
+
+export const getMonthlyDetailsHistory = async () => {
+  return await supabase
+    .from('monthly_details')
+    .select('month,planned_amount,actual_amount')
+    .order('month')
 }
