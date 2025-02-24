@@ -1,3 +1,4 @@
+
 export type Json =
   | string
   | number
@@ -72,73 +73,43 @@ export interface MonthlyDetail {
   household_id: string;
 }
 
-export interface Profile {
-  id: string;
-  email: string;
-  household_id: string | null;
-}
-
 export interface Database {
   public: {
     Tables: {
       categories: {
-        Row: Category
-        Insert: Omit<Category, 'id'>
-        Update: Partial<Category>
-      }
+        Row: Category;
+        Insert: Omit<Category, 'id'>;
+        Update: Partial<Category>;
+      };
       variable_expenses: {
-        Row: VariableExpense
-        Insert: Omit<VariableExpense, 'id' | 'created_at'>
-        Update: Partial<VariableExpense>
-      }
+        Row: VariableExpense;
+        Insert: Omit<VariableExpense, 'id' | 'created_at'>;
+        Update: Partial<VariableExpense>;
+      };
       fixed_expenses: {
-        Row: FixedExpense
-        Insert: Omit<FixedExpense, 'id' | 'created_at'>
-        Update: Partial<FixedExpense>
-      }
-      expense_status: {
-        Row: ExpenseStatus & { id: string }
-        Insert: Omit<ExpenseStatus, 'id'>
-        Update: Partial<ExpenseStatus>
-      }
-      income: {
-        Row: Income
-        Insert: Omit<Income, 'id' | 'created_at'>
-        Update: Partial<Income>
-      }
+        Row: FixedExpense;
+        Insert: Omit<FixedExpense, 'id' | 'created_at'>;
+        Update: Partial<FixedExpense>;
+      };
       investments: {
-        Row: Investment
-        Insert: Omit<Investment, 'id' | 'created_at'>
-        Update: Partial<Investment>
-      }
+        Row: Investment;
+        Insert: Omit<Investment, 'id' | 'created_at'>;
+        Update: Partial<Investment>;
+      };
       monthly_details: {
-        Row: MonthlyDetail
-        Insert: Omit<MonthlyDetail, 'id' | 'created_at'>
-        Update: Partial<MonthlyDetail>
-      }
-      profiles: {
-        Row: Profile
-        Insert: Omit<Profile, 'id'>
-        Update: Partial<Profile>
-      }
-    }
+        Row: MonthlyDetail;
+        Insert: Omit<MonthlyDetail, 'id' | 'created_at'>;
+        Update: Partial<MonthlyDetail>;
+      };
+    };
     Views: {
-      [_ in never]: never
-    }
+      [_ in never]: never;
+    };
     Functions: {
-      [_ in never]: never
-    }
+      [_ in never]: never;
+    };
     Enums: {
-      [_ in never]: never
-    }
-  }
-}
-
-export interface ExpenseFormData {
-  description: string;
-  amount: number;
-  date: string;
-  category_id: string;
-  year: number;
-  month: number;
+      [_ in never]: never;
+    };
+  };
 }

@@ -1,6 +1,6 @@
 
-import { createClient } from '@supabase/supabase-js'
-import type { Database } from '../types/database.types'
+import { createClient, type AuthChangeEvent } from '@supabase/supabase-js'
+import type { Database } from '@/types/database.types'
 
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
 const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY
@@ -22,8 +22,6 @@ type Session = {
   access_token: string;
   refresh_token: string;
 }
-
-type AuthChangeEvent = 'SIGNED_IN' | 'SIGNED_OUT' | 'USER_DELETED' | 'USER_UPDATED' | 'PASSWORD_RECOVERY'
 
 export const supabase = createClient<Database>(supabaseUrl, supabaseKey, {
   auth: {
@@ -66,7 +64,7 @@ export const supabase = createClient<Database>(supabaseUrl, supabaseKey, {
 })
 
 // Clear all Supabase-related localStorage items on auth state change
-supabase.auth.onAuthStateChange((event: AuthChangeEvent, session: Session | null) => {
+supabase.auth.onAuthStateChange((event, session) => {
   if (event === 'SIGNED_OUT' || event === 'USER_DELETED') {
     if (typeof localStorage !== 'undefined') {
       Object.keys(localStorage)
@@ -77,7 +75,7 @@ supabase.auth.onAuthStateChange((event: AuthChangeEvent, session: Session | null
 });
 
 // Test database connection with enhanced error handling
-supabase.from('public.investments').select('count').single()
+supabase.from('investments').select('count').single()
   .then(() => {
     console.log('Successfully connected to Supabase')
   })
@@ -99,6 +97,6 @@ supabase.from('public.investments').select('count').single()
   });
 
 // Re-export for convenience
-export type { User, Session, AuthChangeEvent };
+export type { User, Session };
 export type { Database };
 export default supabase;
