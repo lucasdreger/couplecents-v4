@@ -1,26 +1,27 @@
+import React from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { getFixedExpenses, updateFixedExpenseStatus } from '@/lib/supabase/queries'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Checkbox } from "@/components/ui/checkbox"
 import { useToast } from "@/components/ui/use-toast"
+import useHousehold from '@/hooks/useHousehold'
 import type { FixedExpense } from '@/types/database.types'
 
-interface Props {
-  year: number
-  month: number
-}
-
-export const FixedExpensesList = ({ year, month }: Props) => {
+const FixedExpensesList: React.FC = () => {
   const queryClient = useQueryClient()
   const { toast } = useToast()
+  const { data: household, isLoading: isLoadingHousehold } = useHousehold();
 
-  const { data: fixedExpenses, isLoading, isError } = useQuery({
-    queryKey: ['fixed-expenses', year, month],
+  const { data: fixedExpenses, isLoading, isError, error } = useQuery({
+    queryKey: ['fixed-expenses', household?.householdId],
     queryFn: async () => {
-      const { data, error } = await getFixedExpenses(year, month)
-      if (error) throw error
-      return data || []
-    }
+      if (!household?.householdId) throw new Error('No household ID');
+      const { data, error } = await getFixedExpenses();
+      if (error) throw error;
+      return data || [];
+    },
+    enabled: !!household?.householdId,
+    retry: 1
   })
 
   const { mutate: updateStatus } = useMutation({
@@ -34,22 +35,35 @@ export const FixedExpensesList = ({ year, month }: Props) => {
     onError: () => {
       toast({ 
         variant: "destructive",
-        description: "Failed to update status" 
+        description: "Failed to update expense status" 
       })
     }
   })
 
-  if (isLoading) {
+  if (isLoadingHousehold || isLoading) {
     return <div className="text-center py-4">Loading expenses...</div>
   }
 
   if (isError) {
-    return <div className="text-center text-destructive py-4">Error loading expenses</div>
+    const errorMessage = error instanceof Error ? error.message : 'Failed to load expenses'
+    return (
+      <div className="text-center text-destructive py-4">
+        {errorMessage}
+      </div>
+    )
   }
 
   if (!fixedExpenses?.length) {
-    return <div className="text-center text-muted-foreground py-4">No fixed expenses found</div>
+    return (
+      <div className="text-center text-muted-foreground py-4">
+        No fixed expenses found for this month
+      </div>
+    )
   }
+
+  const handleStatusChange = (id: string, checked: boolean) => {
+    updateStatus({ id, completed: checked });
+  };
 
   return (
     <Table>
@@ -74,9 +88,7 @@ export const FixedExpensesList = ({ year, month }: Props) => {
               <TableCell>
                 <Checkbox
                   checked={expense.status?.completed}
-                  onCheckedChange={(checked) => 
-                    updateStatus({ id: expense.id, completed: checked as boolean })
-                  }
+                  onCheckedChange={(checked: boolean) => handleStatusChange(expense.id, checked)}
                 />
               </TableCell>
             </TableRow>
@@ -86,3 +98,5 @@ export const FixedExpensesList = ({ year, month }: Props) => {
     </Table>
   )
 }
+
+export default FixedExpensesList;

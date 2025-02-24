@@ -1,6 +1,7 @@
 import React from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { supabase } from '@/lib/supabaseClient';
+import { getMonthlyDetails } from '@/lib/supabase/queries';
+import useHousehold from '@/hooks/useHousehold';
 import type { MonthlyDetail } from '@/types/database.types';
 import {
   BarChart,
@@ -21,13 +22,13 @@ interface ChartData {
 }
 
 export const MonthlyChart = () => {
+  const { data: household, isLoading: isLoadingHousehold } = useHousehold();
+
   const { data: monthlyData, isLoading, isError } = useQuery({
-    queryKey: ['monthlyExpenses'],
+    queryKey: ['monthlyDetails', household?.householdId],
     queryFn: async (): Promise<ChartData[]> => {
-      const { data, error } = await supabase
-        .from('monthly_details')
-        .select('*')
-        .order('year, month');
+      if (!household?.householdId) throw new Error('No household ID');
+      const { data, error } = await getMonthlyDetails();
       if (error) throw error;
 
       // Transform and validate data
@@ -37,10 +38,11 @@ export const MonthlyChart = () => {
         planned_amount: Number(item.planned_amount || 0),
         actual_amount: Number(item.actual_amount || 0)
       }));
-    }
+    },
+    enabled: !!household?.householdId
   });
 
-  if (isLoading) {
+  if (isLoadingHousehold || isLoading) {
     return <div className="h-[300px] flex items-center justify-center">Loading...</div>;
   }
 

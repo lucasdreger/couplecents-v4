@@ -1,56 +1,31 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { supabase } from '@/lib/supabaseClient'
-import { useAuth } from './useAuth'
+import { useQuery } from '@tanstack/react-query';
+import { supabase } from '@/lib/supabaseClient';
 
 export const useHousehold = () => {
-  const { user } = useAuth()
-  const queryClient = useQueryClient()
-
-  const { data: household, isLoading, error } = useQuery({
-    queryKey: ['household', user?.id],
+  return useQuery({
+    queryKey: ['household'],
     queryFn: async () => {
-      const { data: profile } = await supabase
+      // Get the current user
+      const { data: { user }, error: userError } = await supabase.auth.getUser();
+      if (userError) throw userError;
+      if (!user) throw new Error('Not authenticated');
+
+      // Get the user's profile with household_id
+      const { data: profile, error: profileError } = await supabase
         .from('profiles')
-        .select('household_id')
-        .eq('id', user?.id)
-        .single()
-
-      if (!profile?.household_id) return null
-
-      const { data: household } = await supabase
-        .from('households')
         .select('*')
-        .eq('id', profile.household_id)
-        .single()
+        .eq('id', user.id)
+        .single();
+      
+      if (profileError) throw profileError;
+      if (!profile) throw new Error('Profile not found');
 
-      return household
-    },
-    enabled: !!user
-  })
-
-  const { mutate: createHousehold } = useMutation({
-    mutationFn: async (name: string) => {
-      // Create new household
-      const { data: newHousehold, error: createError } = await supabase
-        .from('households')
-        .insert({ name })
-        .select()
-        .single()
-      if (createError) throw createError
-
-      // Update user profile with new household
-      const { error: updateError } = await supabase
-        .from('profiles')
-        .update({ household_id: newHousehold.id })
-        .eq('id', user?.id)
-      if (updateError) throw updateError
-
-      return newHousehold
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['household'] })
+      return {
+        userId: user.id,
+        householdId: profile.household_id
+      };
     }
-  })
+  });
+};
 
-  return { household, isLoading, error, createHousehold }
-}
+export default useHousehold;
