@@ -1,6 +1,6 @@
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { getFixedExpenses, updateFixedExpenseStatus } from '@/lib/supabase'
+import { getFixedExpenses, updateFixedExpenseStatus } from '@/lib/supabase/queries'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Checkbox } from "@/components/ui/checkbox"
 import { useToast } from "@/components/ui/use-toast"
@@ -17,14 +17,16 @@ export const FixedExpensesList = ({ year, month }: Props) => {
   const { data: fixedExpenses } = useQuery({
     queryKey: ['fixed-expenses', year, month],
     queryFn: async () => {
-      const { data } = await getFixedExpenses()
+      const { data, error } = await getFixedExpenses(year, month)
+      if (error) throw error
       return data
     }
   })
 
   const { mutate: updateStatus } = useMutation({
     mutationFn: async ({ id, completed }: { id: string; completed: boolean }) => {
-      await updateFixedExpenseStatus(id, completed)
+      const { error } = await updateFixedExpenseStatus(id, completed)
+      if (error) throw error
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['fixed-expenses'] })

@@ -39,14 +39,32 @@ export const deleteVariableExpense = async (id: string) => {
 };
 
 // Fixed Expenses
-export const getFixedExpenses = async (year: number, month: number) => {
-  return supabase
+export const getFixedExpenses = async (year?: number, month?: number) => {
+  const query = supabase
     .from('fixed_expenses')
     .select(`
       *,
-      category:categories(name)
+      category:categories(name),
+      status:monthly_fixed_expense_status(completed)
     `)
     .order('description', { ascending: true });
+
+  if (year && month) {
+    query.eq('year', year).eq('month', month);
+  }
+
+  return query;
+};
+
+export const updateFixedExpenseStatus = async (id: string, completed: boolean) => {
+  return supabase
+    .from('monthly_fixed_expense_status')
+    .upsert({
+      fixed_expense_id: id,
+      completed,
+      completed_at: completed ? new Date().toISOString() : null
+    })
+    .select();
 };
 
 export const addFixedExpense = async (expense: Omit<FixedExpense, 'id' | 'created_at'>) => {
