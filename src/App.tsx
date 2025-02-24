@@ -1,5 +1,7 @@
+
 import React from 'react';
 import { HashRouter, Routes, Route } from "react-router-dom"
+import { Navigation } from "@/components/layout/Navigation"
 import { ThemeProvider } from "@/components/theme-provider"
 import { AuthProvider } from '@/hooks/useAuth'
 import { QueryProvider } from '@/providers/QueryProvider'
