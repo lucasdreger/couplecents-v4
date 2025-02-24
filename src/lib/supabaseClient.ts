@@ -15,7 +15,32 @@ export const supabase = createClient<Database>(supabaseUrl, supabaseKey, {
   auth: {
     autoRefreshToken: true,
     persistSession: true,
-    detectSessionInUrl: true
+    detectSessionInUrl: false,
+    flowType: 'pkce',
+    storage: {
+      getItem: (key: string): string | null => {
+        try {
+          return window.localStorage.getItem(key);
+        } catch (error: unknown) {
+          console.error('Error accessing localStorage:', error);
+          return null;
+        }
+      },
+      setItem: (key: string, value: string): void => {
+        try {
+          window.localStorage.setItem(key, value);
+        } catch (error: unknown) {
+          console.error('Error setting localStorage:', error);
+        }
+      },
+      removeItem: (key: string): void => {
+        try {
+          window.localStorage.removeItem(key);
+        } catch (error: unknown) {
+          console.error('Error removing from localStorage:', error);
+        }
+      }
+    }
   }
 })
 
@@ -24,6 +49,10 @@ supabase.from('investments').select('count').single()
   .then(() => {
     console.log('Successfully connected to Supabase')
   })
-  .catch((error) => {
-    console.error('Failed to connect to Supabase:', error)
+  .catch((error: unknown) => {
+    if (error instanceof Error) {
+      console.error('Failed to connect to Supabase:', error.message)
+    } else {
+      console.error('Failed to connect to Supabase:', String(error))
+    }
   })
