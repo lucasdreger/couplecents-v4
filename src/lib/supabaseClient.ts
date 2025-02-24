@@ -1,5 +1,6 @@
+
 import { createClient } from '@supabase/supabase-js'
-import type { Database } from '@/types/database.types'
+import type { Database } from '../types/database.types'
 
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
 const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY
@@ -33,7 +34,10 @@ export const supabase = createClient<Database>(supabaseUrl, supabaseKey, {
     storage: {
       getItem: (key: string): string | null => {
         try {
-          return window.localStorage.getItem(key);
+          if (typeof localStorage !== 'undefined') {
+            return localStorage.getItem(key);
+          }
+          return null;
         } catch (error: unknown) {
           console.error('Error accessing localStorage:', error);
           return null;
@@ -41,14 +45,18 @@ export const supabase = createClient<Database>(supabaseUrl, supabaseKey, {
       },
       setItem: (key: string, value: string): void => {
         try {
-          window.localStorage.setItem(key, value);
+          if (typeof localStorage !== 'undefined') {
+            localStorage.setItem(key, value);
+          }
         } catch (error: unknown) {
           console.error('Error setting localStorage:', error);
         }
       },
       removeItem: (key: string): void => {
         try {
-          window.localStorage.removeItem(key);
+          if (typeof localStorage !== 'undefined') {
+            localStorage.removeItem(key);
+          }
         } catch (error: unknown) {
           console.error('Error removing from localStorage:', error);
         }
@@ -60,14 +68,16 @@ export const supabase = createClient<Database>(supabaseUrl, supabaseKey, {
 // Clear all Supabase-related localStorage items on auth state change
 supabase.auth.onAuthStateChange((event: AuthChangeEvent, session: Session | null) => {
   if (event === 'SIGNED_OUT' || event === 'USER_DELETED') {
-    Object.keys(localStorage)
-      .filter(key => key.startsWith('sb-'))
-      .forEach(key => localStorage.removeItem(key));
+    if (typeof localStorage !== 'undefined') {
+      Object.keys(localStorage)
+        .filter(key => key.startsWith('sb-'))
+        .forEach(key => localStorage.removeItem(key));
+    }
   }
 });
 
 // Test database connection with enhanced error handling
-supabase.from('investments').select('count').single()
+supabase.from('public.investments').select('count').single()
   .then(() => {
     console.log('Successfully connected to Supabase')
   })
@@ -77,9 +87,11 @@ supabase.from('investments').select('count').single()
       if (error.message === 'User rejected the request.') {
         console.log('Authentication required - redirecting to login');
         // Clear any stale auth state
-        Object.keys(localStorage)
-          .filter(key => key.startsWith('sb-'))
-          .forEach(key => localStorage.removeItem(key));
+        if (typeof localStorage !== 'undefined') {
+          Object.keys(localStorage)
+            .filter(key => key.startsWith('sb-'))
+            .forEach(key => localStorage.removeItem(key));
+        }
       }
     } else {
       console.error('Failed to connect to Supabase:', String(error));
