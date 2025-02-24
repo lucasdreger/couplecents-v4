@@ -135,7 +135,12 @@ export const deleteVariableExpense = async (id: string) => {
 export const getFixedExpenses = async () => {
   return await supabase
     .from('fixed_expenses')
-    .select('*')
+    .select(`
+      *,
+      category:categories(name),
+      status:monthly_fixed_expense_status(completed, completed_at)
+    `)
+    .order('description', { ascending: true })
 }
 
 export const updateFixedExpenseStatus = async (

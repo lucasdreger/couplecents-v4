@@ -49,12 +49,12 @@ export const FixedExpensesList = ({ year, month }: Props) => {
             <TableCell>{expense.description}</TableCell>
             <TableCell>{expense.category?.name}</TableCell>
             <TableCell className="text-right">
-              ${expense.estimated_amount?.toFixed(2) || '0.00'}
+              ${(expense.estimated_amount ?? 0).toFixed(2)}
             </TableCell>
             <TableCell>{expense.due_date}</TableCell>
             <TableCell>
               <Checkbox
-                checked={expense.status?.completed}
+                checked={expense.status?.[0]?.completed}
                 onCheckedChange={(checked) => 
                   updateStatus({ id: expense.id, completed: checked as boolean })
                 }
