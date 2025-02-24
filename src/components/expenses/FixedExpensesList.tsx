@@ -1,3 +1,4 @@
+
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { getFixedExpenses, updateFixedExpenseStatus } from '@/lib/supabase'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
@@ -47,7 +48,9 @@ export const FixedExpensesList = ({ year, month }: Props) => {
           <TableRow key={expense.id}>
             <TableCell>{expense.description}</TableCell>
             <TableCell>{expense.category?.name}</TableCell>
-            <TableCell className="text-right">${expense.amount.toFixed(2)}</TableCell>
+            <TableCell className="text-right">
+              ${expense.estimated_amount?.toFixed(2) || '0.00'}
+            </TableCell>
             <TableCell>{expense.due_date}</TableCell>
             <TableCell>
               <Checkbox
