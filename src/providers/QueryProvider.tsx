@@ -1,3 +1,4 @@
+
 import React from 'react'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 
@@ -58,6 +59,9 @@ interface QueryProviderProps {
 
 export function QueryProvider({ children }: QueryProviderProps): React.ReactElement {
   return React.createElement(QueryBoundary, null,
-    React.createElement(QueryClientProvider, { client: queryClient }, children)
+    React.createElement(QueryClientProvider, 
+      { client: queryClient }, 
+      children
+    )
   );
 }
