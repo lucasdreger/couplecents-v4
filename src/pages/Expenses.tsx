@@ -14,7 +14,6 @@ import { useState } from 'react'
 import { useExpenses } from '@/hooks/useExpenses'
 import { Plus } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import {
   Card,
   CardContent,
@@ -73,50 +72,55 @@ export const Expenses = () => {
         />
       </div>
 
-      {/* Year and Month Selection Tabs */}
+      {/* Month Selection */}
       <Card>
         <CardHeader>
           <CardTitle>Select Period</CardTitle>
-          <CardDescription>Choose the year and month to view expenses</CardDescription>
+          <CardDescription>Choose the month and year to view expenses</CardDescription>
         </CardHeader>
-        <CardContent>
-          <Tabs defaultValue={selectedMonth.getFullYear().toString()} className="space-y-4">
-            <TabsList>
+        <CardContent className="flex flex-wrap gap-4">
+          <Select
+            value={selectedMonth.getMonth().toString()}
+            onValueChange={(value) => {
+              const newDate = new Date(selectedMonth)
+              newDate.setMonth(parseInt(value))
+              setSelectedMonth(newDate)
+            }}
+          >
+            <SelectTrigger className="w-[180px]">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {Array.from({ length: 12 }, (_, i) => (
+                <SelectItem key={i} value={i.toString()}>
+                  {new Date(0, i).toLocaleString('default', { month: 'long' })}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+
+          <Select
+            value={selectedMonth.getFullYear().toString()}
+            onValueChange={(value) => {
+              const newDate = new Date(selectedMonth)
+              newDate.setFullYear(parseInt(value))
+              setSelectedMonth(newDate)
+            }}
+          >
+            <SelectTrigger className="w-[120px]">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
               {Array.from({ length: 5 }, (_, i) => {
                 const year = new Date().getFullYear() - 2 + i
                 return (
-                  <TabsTrigger
-                    key={year}
-                    value={year.toString()}
-                    onClick={() => {
-                      const newDate = new Date(selectedMonth)
-                      newDate.setFullYear(year)
-                      setSelectedMonth(newDate)
-                    }}
-                  >
+                  <SelectItem key={year} value={year.toString()}>
                     {year}
-                  </TabsTrigger>
+                  </SelectItem>
                 )
               })}
-            </TabsList>
-            <Tabs defaultValue={selectedMonth.getMonth().toString()} className="pt-4">
-              <TabsList className="grid grid-cols-6 sm:grid-cols-12">
-                {Array.from({ length: 12 }, (_, i) => (
-                  <TabsTrigger
-                    key={i}
-                    value={i.toString()}
-                    onClick={() => {
-                      const newDate = new Date(selectedMonth)
-                      newDate.setMonth(i)
-                      setSelectedMonth(newDate)
-                    }}
-                  >
-                    {new Date(0, i).toLocaleString('default', { month: 'short' })}
-                  </TabsTrigger>
-                ))}
-              </TabsList>
-            </Tabs>
-          </Tabs>
+            </SelectContent>
+          </Select>
         </CardContent>
       </Card>
 
@@ -137,7 +141,7 @@ export const Expenses = () => {
       {/* Expenses Table */}
       <Card>
         <CardHeader>
-          <CardTitle>Variable Expense Details</CardTitle>
+          <CardTitle>Expense Details</CardTitle>
           <CardDescription>List of all expenses for the selected month</CardDescription>
         </CardHeader>
         <CardContent>

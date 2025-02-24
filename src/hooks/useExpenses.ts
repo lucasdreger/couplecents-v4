@@ -1,60 +1,32 @@
+
 /**
  * Expenses Management Hook
  * 
  * Provides a clean interface for:
- * - Fetching monthly expenses (variable and fixed)
- * - Fetching monthly income
- * - Adding/updating/deleting expenses
+ * - Fetching monthly expenses
+ * - Adding new expenses
  * - Automatic cache invalidation
  * - Type-safe expense mutations
+ * 
+ * Usage:
+ * const { expenses, addExpense } = useExpenses(2024, 3);
  */
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { 
-  getMonthlyExpenses, 
-  getFixedExpenses,
-  getMonthlyIncome,
-  addVariableExpense, 
-  updateVariableExpense, 
-  deleteVariableExpense 
-} from '@/lib/supabase/queries'
-import type { VariableExpense, FixedExpense, Income } from '@/types/database.types'
+import { getMonthlyExpenses, addVariableExpense, updateVariableExpense, deleteVariableExpense } from '@/lib/supabase'
+import type { VariableExpense } from '@/types/database.types'
 
 export const useExpenses = (year: number, month: number) => {
   const queryClient = useQueryClient()
+  // Create a stable query key for caching
+  const queryKey = ['expenses', year, month]
 
-  // Create stable query keys for caching
-  const variableExpensesKey = ['variable-expenses', year, month]
-  const fixedExpensesKey = ['fixed-expenses', year, month]
-  const incomeKey = ['income', year, month]
-
-  // Fetch variable expenses for the specified month
+  // Fetch expenses for the specified month
   const { data: expenses } = useQuery({
-    queryKey: variableExpensesKey,
+    queryKey,
     queryFn: async () => {
-      const { data, error } = await getMonthlyExpenses(year, month)
-      if (error) throw error
-      return data || []
-    }
-  })
-
-  // Fetch fixed expenses
-  const { data: fixedExpenses } = useQuery({
-    queryKey: fixedExpensesKey,
-    queryFn: async () => {
-      const { data, error } = await getFixedExpenses(year, month)
-      if (error) throw error
-      return data || []
-    }
-  })
-
-  // Fetch monthly income
-  const { data: income } = useQuery({
-    queryKey: incomeKey,
-    queryFn: async () => {
-      const { data, error } = await getMonthlyIncome(year, month)
-      if (error) throw error
-      return data || { lucas_income: 0, camila_income: 0, other_income: 0 }
+      const { data } = await getMonthlyExpenses(year, month)
+      return data
     }
   })
 
@@ -65,40 +37,9 @@ export const useExpenses = (year: number, month: number) => {
       if (error) throw error
       return data
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: variableExpensesKey })
-    }
+    // Invalidate and refetch expenses after adding new one
+    onSuccess: () => queryClient.invalidateQueries({ queryKey })
   })
 
-  // Mutation for updating expenses
-  const { mutate: updateExpense } = useMutation({
-    mutationFn: async ({ id, ...expense }: Partial<VariableExpense> & { id: string }) => {
-      const { data, error } = await updateVariableExpense(id, expense)
-      if (error) throw error
-      return data
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: variableExpensesKey })
-    }
-  })
-
-  // Mutation for deleting expenses
-  const { mutate: deleteExpense } = useMutation({
-    mutationFn: async (id: string) => {
-      const { error } = await deleteVariableExpense(id)
-      if (error) throw error
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: variableExpensesKey })
-    }
-  })
-
-  return {
-    expenses: expenses || [],
-    fixedExpenses: fixedExpenses || [],
-    income: income || { lucas_income: 0, camila_income: 0, other_income: 0 },
-    addExpense,
-    updateExpense,
-    deleteExpense
-  }
+  return { expenses, addExpense }
 }

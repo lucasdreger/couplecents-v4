@@ -1,52 +1,66 @@
 
-import React from 'react';
-import { useQuery } from '@tanstack/react-query';
-import { supabase } from '@/lib/supabaseClient';
-import type { FixedExpense } from '@/types/database.types';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { getFixedExpenses, updateFixedExpenseStatus } from '@/lib/supabase'
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Checkbox } from "@/components/ui/checkbox"
+import type { FixedExpense } from '@/types/database.types'
 
 export const FixedExpenses = () => {
-  const { data: fixedExpenses } = useQuery<FixedExpense[]>({
-    queryKey: ['fixedExpenses'],
+  const queryClient = useQueryClient()
+  const { data: expenses } = useQuery({
+    queryKey: ['fixed-expenses'],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from('fixed_expenses')
-        .select('*');
-      if (error) throw error;
-      return data;
+      const { data } = await getFixedExpenses()
+      return data as FixedExpense[]
+    }
+  })
+
+  const { mutate: toggleStatus } = useMutation({
+    mutationFn: async ({ id, completed }: { id: string; completed: boolean }) => {
+      const { data, error } = await updateFixedExpenseStatus(id, completed)
+      if (error) throw error
+      return data
     },
-  });
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['fixed-expenses'] })
+  })
+
+  const byCategory = expenses?.reduce((acc, expense) => {
+    const category = expense.category?.name || 'Uncategorized'
+    return {
+      ...acc,
+      [category]: [...(acc[category] || []), expense]
+    }
+  }, {} as Record<string, FixedExpense[]>)
 
   return (
-    <div className="container mx-auto p-6">
-      <h1 className="text-2xl font-bold mb-6">Fixed Expenses</h1>
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead>Description</TableHead>
-            <TableHead>Amount</TableHead>
-            <TableHead>Owner</TableHead>
-            <TableHead>Status Required</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {fixedExpenses?.map((expense) => (
-            <TableRow key={expense.id}>
-              <TableCell>{expense.description}</TableCell>
-              <TableCell>${expense.estimated_amount.toFixed(2)}</TableCell>
-              <TableCell>{expense.owner}</TableCell>
-              <TableCell>{expense.status_required ? 'Yes' : 'No'}</TableCell>
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
+    <div className="space-y-6">
+      <h2 className="text-3xl font-bold tracking-tight">Fixed Expenses</h2>
+      {Object.entries(byCategory || {}).map(([category, expenses]) => (
+        <Card key={category}>
+          <CardHeader>
+            <CardTitle>{category}</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              {expenses.map(expense => (
+                <div key={expense.id} className="flex items-center justify-between">
+                  <div className="flex items-center space-x-2">
+                    <Checkbox 
+                      id={expense.id}
+                      checked={expense.status_required}
+                      onCheckedChange={(checked) => 
+                        toggleStatus({ id: expense.id, completed: checked as boolean })
+                      }
+                    />
+                    <label htmlFor={expense.id}>{expense.description}</label>
+                  </div>
+                  <span>${expense.estimated_amount.toFixed(2)}</span>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      ))}
     </div>
-  );
-};
+  )
+}

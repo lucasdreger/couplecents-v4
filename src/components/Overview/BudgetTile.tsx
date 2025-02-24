@@ -1,20 +1,10 @@
-
-/**
- * Budget Summary Tile Component
- * 
- * Displays the total budget information including:
- * - Total income
- * - Total expenses
- * - Net balance
- */
-
 import React from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Paper, Typography, Box } from '@mui/material';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabaseClient';
 
 export const BudgetTile = () => {
-  const { data: budgetData, isLoading, isError } = useQuery({
+  const { data: budgetData } = useQuery({
     queryKey: ['totalBudget'],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -26,33 +16,17 @@ export const BudgetTile = () => {
     },
   });
 
-  const totalIncome = budgetData?.total_income || 0;
-  const totalExpenses = budgetData?.total_expenses || 0;
-
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Total Budget</CardTitle>
-      </CardHeader>
-      <CardContent>
-        {isLoading ? (
-          <div>Loading budget...</div>
-        ) : isError ? (
-          <div>Error loading budget</div>
-        ) : (
-          <div className="space-y-2">
-            <p className="text-3xl font-bold text-primary">
-              ${totalIncome.toFixed(2)}
-            </p>
-            <p className="text-sm text-muted-foreground">
-              Expenses: ${totalExpenses.toFixed(2)}
-            </p>
-            <p className="text-sm text-muted-foreground">
-              Balance: ${(totalIncome - totalExpenses).toFixed(2)}
-            </p>
-          </div>
-        )}
-      </CardContent>
-    </Card>
+    <Paper sx={{ p: 2, height: '100%' }}>
+      <Typography variant="h6" gutterBottom>Total Budget</Typography>
+      <Box sx={{ mt: 2 }}>
+        <Typography variant="h4" color="primary">
+          ${budgetData?.total_income ?? 0}
+        </Typography>
+        <Typography variant="body2" color="text.secondary">
+          Expenses: ${budgetData?.total_expenses ?? 0}
+        </Typography>
+      </Box>
+    </Paper>
   );
 };
