@@ -4,22 +4,32 @@ import { getFixedExpenses, updateFixedExpenseStatus } from '@/lib/supabase/queri
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Checkbox } from "@/components/ui/checkbox"
 import { useToast } from "@/components/ui/use-toast"
+import type { PostgrestError } from '@supabase/supabase-js'
 
 interface Props {
   year: number
   month: number
 }
 
+interface FixedExpense {
+  id: string
+  description: string
+  estimated_amount: number
+  due_date?: string
+  category?: { name: string }
+  status?: Array<{ completed: boolean }>
+}
+
 export const FixedExpensesList = ({ year, month }: Props) => {
   const queryClient = useQueryClient()
   const { toast } = useToast()
 
-  const { data: fixedExpenses } = useQuery({
+  const { data: fixedExpenses } = useQuery<FixedExpense[], PostgrestError>({
     queryKey: ['fixed-expenses', year, month],
     queryFn: async () => {
       const { data, error } = await getFixedExpenses(year, month)
       if (error) throw error
-      return data
+      return data || []
     }
   })
 

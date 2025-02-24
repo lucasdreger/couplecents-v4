@@ -1,4 +1,5 @@
 import { supabase } from '../supabaseClient';
+import type { PostgrestResponse } from '@supabase/supabase-js';
 import type { VariableExpense, FixedExpense, Income, Investment } from '@/types/database.types';
 
 // Variable Expenses
@@ -39,7 +40,7 @@ export const deleteVariableExpense = async (id: string) => {
 };
 
 // Fixed Expenses
-export const getFixedExpenses = async (year?: number, month?: number) => {
+export const getFixedExpenses = async (year?: number, month?: number): Promise<PostgrestResponse<any>> => {
   const query = supabase
     .from('fixed_expenses')
     .select(`
@@ -50,13 +51,15 @@ export const getFixedExpenses = async (year?: number, month?: number) => {
     .order('description', { ascending: true });
 
   if (year && month) {
-    query.eq('year', year).eq('month', month);
+    return query
+      .eq('status.year', year)
+      .eq('status.month', month);
   }
 
   return query;
 };
 
-export const updateFixedExpenseStatus = async (id: string, completed: boolean) => {
+export const updateFixedExpenseStatus = async (id: string, completed: boolean): Promise<PostgrestResponse<any>> => {
   return supabase
     .from('monthly_fixed_expense_status')
     .upsert({
