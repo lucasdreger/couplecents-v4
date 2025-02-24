@@ -1,6 +1,5 @@
-
 import { createClient } from '@supabase/supabase-js'
-import type { Database } from '@/types/supabase'
+import type { Database } from '@/types/database.types'
 
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
 const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY
@@ -11,12 +10,26 @@ if (!supabaseUrl || !supabaseKey) {
   )
 }
 
+// Define minimal types we need
+type User = {
+  id: string;
+  email?: string;
+}
+
+type Session = {
+  user: User;
+  access_token: string;
+  refresh_token: string;
+}
+
+type AuthChangeEvent = 'SIGNED_IN' | 'SIGNED_OUT' | 'USER_DELETED' | 'USER_UPDATED' | 'PASSWORD_RECOVERY'
+
 export const supabase = createClient<Database>(supabaseUrl, supabaseKey, {
   auth: {
     autoRefreshToken: true,
     persistSession: true,
     detectSessionInUrl: false,
-    flowType: 'implicit',
+    flowType: 'pkce',
     storage: {
       getItem: (key: string): string | null => {
         try {
@@ -40,35 +53,40 @@ export const supabase = createClient<Database>(supabaseUrl, supabaseKey, {
           console.error('Error removing from localStorage:', error);
         }
       }
-    },
-    onAuthStateChange: (event, session) => {
-      if (event === 'SIGNED_OUT' || event === 'USER_DELETED') {
-        // Delete all supabase-related items from localStorage
-        for (const key in localStorage) {
-          if (key.startsWith('sb-')) {
-            localStorage.removeItem(key);
-          }
-        }
-      }
     }
   }
 })
 
-// Test database connection with error handling
+// Clear all Supabase-related localStorage items on auth state change
+supabase.auth.onAuthStateChange((event: AuthChangeEvent, session: Session | null) => {
+  if (event === 'SIGNED_OUT' || event === 'USER_DELETED') {
+    Object.keys(localStorage)
+      .filter(key => key.startsWith('sb-'))
+      .forEach(key => localStorage.removeItem(key));
+  }
+});
+
+// Test database connection with enhanced error handling
 supabase.from('investments').select('count').single()
   .then(() => {
     console.log('Successfully connected to Supabase')
   })
   .catch((error: unknown) => {
     if (error instanceof Error) {
-      console.error('Failed to connect to Supabase:', error.message)
-      // Don't throw the error, just log it to prevent app crashes
+      console.error('Failed to connect to Supabase:', error.message);
       if (error.message === 'User rejected the request.') {
-        console.log('User cancelled the authentication process')
+        console.log('Authentication required - redirecting to login');
+        // Clear any stale auth state
+        Object.keys(localStorage)
+          .filter(key => key.startsWith('sb-'))
+          .forEach(key => localStorage.removeItem(key));
       }
     } else {
-      console.error('Failed to connect to Supabase:', String(error))
+      console.error('Failed to connect to Supabase:', String(error));
     }
-  })
+  });
 
-export default supabase
+// Re-export for convenience
+export type { User, Session, AuthChangeEvent };
+export type { Database };
+export default supabase;

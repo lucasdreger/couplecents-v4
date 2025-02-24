@@ -28,8 +28,8 @@
       "@/*": ["src/*"]
     },
 
-    /* Type Definitions */
-    "types": ["vite/client", "node"]
+  /* Type Definitions */
+  "typeRoots": ["./node_modules/@types", "./src/types"]
   },
   "include": ["src"]
 }
