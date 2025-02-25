@@ -12,6 +12,7 @@ interface AuthContextType {
   isAuthenticated: boolean
   signIn: (email: string, password: string) => Promise<void>
   signOut: () => Promise<void>
+  refreshUser: () => Promise<void>
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
@@ -74,6 +75,25 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           variant: "destructive",
           title: "Error",
           description: "Failed to sign out"
+        })
+        throw error
+      }
+    },
+    refreshUser: async () => {
+      try {
+        const { data: { session } } = await supabase.auth.getSession()
+        if (session) {
+          const { data, error } = await supabase.auth.refreshSession({
+            refresh_token: session.refresh_token,
+          })
+          if (error) throw error
+          queryClient.setQueryData(['session'], data.session)
+        }
+      } catch (error) {
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: "Failed to refresh user session"
         })
         throw error
       }
