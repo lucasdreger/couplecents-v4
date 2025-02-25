@@ -40,6 +40,15 @@ export const useHousehold = () => {
       const { data, error } = await supabase
         .rpc('get_or_create_household', { p_name: name })
       if (error) throw error
+
+      // Force refresh of the user metadata
+      const { data: sessionData } = await supabase.auth.getSession()
+      if (sessionData.session) {
+        await supabase.auth.refreshSession({
+          refresh_token: sessionData.session.refresh_token,
+        })
+      }
+      
       return data
     },
     onSuccess: () => {
@@ -64,6 +73,14 @@ export const useHousehold = () => {
       const { error } = await supabase
         .rpc('join_household', { p_household_id: householdId })
       if (error) throw error
+
+      // Force refresh of the user metadata
+      const { data: sessionData } = await supabase.auth.getSession()
+      if (sessionData.session) {
+        await supabase.auth.refreshSession({
+          refresh_token: sessionData.session.refresh_token,
+        })
+      }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['household'] })
@@ -88,6 +105,14 @@ export const useHousehold = () => {
         data: { household_id: null }
       })
       if (error) throw error
+
+      // Force refresh of the user metadata
+      const { data: sessionData } = await supabase.auth.getSession()
+      if (sessionData.session) {
+        await supabase.auth.refreshSession({
+          refresh_token: sessionData.session.refresh_token,
+        })
+      }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['household'] })
