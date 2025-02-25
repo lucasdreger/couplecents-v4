@@ -51,10 +51,10 @@ export const useHousehold = () => {
         description: "Household created successfully",
       })
     },
-    onError: (error) => {
+    onError: (error: Error) => {
       toast({
         title: "Error",
-        description: "Failed to create household",
+        description: error.message || "Failed to create household",
         variant: "destructive",
       })
       console.error('Error creating household:', error)
@@ -74,13 +74,38 @@ export const useHousehold = () => {
         description: "Successfully joined household",
       })
     },
-    onError: (error) => {
+    onError: (error: Error) => {
       toast({
         title: "Error",
-        description: "Failed to join household",
+        description: error.message || "Failed to join household",
         variant: "destructive",
       })
       console.error('Error joining household:', error)
+    }
+  })
+
+  const { mutate: leaveHousehold } = useMutation({
+    mutationFn: async () => {
+      const { error } = await supabase
+        .from('profiles')
+        .update({ household_id: null })
+        .eq('id', user?.id)
+      if (error) throw error
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['household'] })
+      toast({
+        title: "Success",
+        description: "Successfully left household",
+      })
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to leave household",
+        variant: "destructive",
+      })
+      console.error('Error leaving household:', error)
     }
   })
 
@@ -88,6 +113,7 @@ export const useHousehold = () => {
     household,
     isLoadingHousehold,
     createHousehold,
-    joinHousehold
+    joinHousehold,
+    leaveHousehold
   }
 }

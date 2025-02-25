@@ -6,11 +6,15 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Separator } from "@/components/ui/separator"
+import { Alert, AlertDescription } from "@/components/ui/alert"
+import { Copy } from 'lucide-react'
+import { useToast } from '@/components/ui/use-toast'
 
 export const HouseholdManagement = () => {
   const [householdName, setHouseholdName] = useState('')
   const [householdId, setHouseholdId] = useState('')
-  const { household, createHousehold, joinHousehold } = useHousehold()
+  const { household, createHousehold, joinHousehold, leaveHousehold } = useHousehold()
+  const { toast } = useToast()
 
   const handleCreateHousehold = (e: React.FormEvent) => {
     e.preventDefault()
@@ -26,6 +30,21 @@ export const HouseholdManagement = () => {
     setHouseholdId('')
   }
 
+  const handleLeaveHousehold = () => {
+    if (window.confirm('Are you sure you want to leave this household?')) {
+      leaveHousehold()
+    }
+  }
+
+  const copyHouseholdId = () => {
+    if (household?.id) {
+      navigator.clipboard.writeText(household.id)
+      toast({
+        description: "Household ID copied to clipboard"
+      })
+    }
+  }
+
   return (
     <Card>
       <CardHeader>
@@ -33,10 +52,28 @@ export const HouseholdManagement = () => {
       </CardHeader>
       <CardContent className="space-y-6">
         {household ? (
-          <div className="space-y-2">
-            <h3 className="font-medium">Current Household</h3>
-            <p>Name: {household.name}</p>
-            <p className="text-sm text-muted-foreground">ID: {household.id}</p>
+          <div className="space-y-4">
+            <Alert>
+              <AlertDescription className="space-y-2">
+                <p><strong>Current Household:</strong> {household.name}</p>
+                <div className="flex items-center gap-2">
+                  <p className="text-sm text-muted-foreground break-all">
+                    <strong>ID:</strong> {household.id}
+                  </p>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={copyHouseholdId}
+                    className="h-8 w-8"
+                  >
+                    <Copy className="h-4 w-4" />
+                  </Button>
+                </div>
+              </AlertDescription>
+            </Alert>
+            <Button variant="destructive" onClick={handleLeaveHousehold}>
+              Leave Household
+            </Button>
           </div>
         ) : (
           <>
