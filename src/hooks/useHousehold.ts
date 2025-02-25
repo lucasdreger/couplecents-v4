@@ -11,7 +11,7 @@ interface Household {
 }
 
 export const useHousehold = () => {
-  const { user } = useAuth()
+  const { user, refreshUser } = useAuth()
   const { toast } = useToast()
   const queryClient = useQueryClient()
 
@@ -40,15 +40,9 @@ export const useHousehold = () => {
       const { data, error } = await supabase
         .rpc('get_or_create_household', { p_name: name })
       if (error) throw error
-
-      // Force refresh of the user metadata
-      const { data: sessionData } = await supabase.auth.getSession()
-      if (sessionData.session) {
-        await supabase.auth.refreshSession({
-          refresh_token: sessionData.session.refresh_token,
-        })
-      }
       
+      // Refresh the user session to get updated metadata
+      await refreshUser()
       return data
     },
     onSuccess: () => {
@@ -74,13 +68,8 @@ export const useHousehold = () => {
         .rpc('join_household', { p_household_id: householdId })
       if (error) throw error
 
-      // Force refresh of the user metadata
-      const { data: sessionData } = await supabase.auth.getSession()
-      if (sessionData.session) {
-        await supabase.auth.refreshSession({
-          refresh_token: sessionData.session.refresh_token,
-        })
-      }
+      // Refresh the user session to get updated metadata
+      await refreshUser()
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['household'] })
@@ -101,18 +90,12 @@ export const useHousehold = () => {
 
   const { mutate: leaveHousehold } = useMutation({
     mutationFn: async () => {
-      const { error } = await supabase.auth.updateUser({
-        data: { household_id: null }
-      })
+      const { error } = await supabase
+        .rpc('leave_household')
       if (error) throw error
 
-      // Force refresh of the user metadata
-      const { data: sessionData } = await supabase.auth.getSession()
-      if (sessionData.session) {
-        await supabase.auth.refreshSession({
-          refresh_token: sessionData.session.refresh_token,
-        })
-      }
+      // Refresh the user session to get updated metadata
+      await refreshUser()
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['household'] })

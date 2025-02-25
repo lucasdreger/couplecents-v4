@@ -525,6 +525,10 @@ export type Database = {
         }
         Returns: undefined
       }
+      leave_household: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
+      }
       load_default_income: {
         Args: {
           p_year: number
