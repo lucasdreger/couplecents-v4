@@ -1,4 +1,3 @@
-
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { supabase } from '@/lib/supabaseClient'
 import { useAuth } from './useAuth'
@@ -20,7 +19,7 @@ export const useHousehold = () => {
     queryFn: async () => {
       // Get household_id from user metadata
       const householdId = user?.user_metadata?.household_id
-      
+
       if (!householdId) return null
 
       const { data: household, error } = await supabase
@@ -38,9 +37,9 @@ export const useHousehold = () => {
   const { mutate: createHousehold } = useMutation({
     mutationFn: async (name: string) => {
       const { data, error } = await supabase
-        .rpc('get_or_create_household', { p_name: name })
+        .rpc('get_or_create_household', { p_name: name, user_id: user?.id })
       if (error) throw error
-      
+
       // Refresh the user session to get updated metadata
       await refreshUser()
       return data
@@ -65,7 +64,7 @@ export const useHousehold = () => {
   const { mutate: joinHousehold } = useMutation({
     mutationFn: async (householdId: string) => {
       const { error } = await supabase
-        .rpc('join_household', { p_household_id: householdId })
+        .rpc('join_household', { p_household_id: householdId, user_id: user?.id })
       if (error) throw error
 
       // Refresh the user session to get updated metadata
@@ -91,7 +90,7 @@ export const useHousehold = () => {
   const { mutate: leaveHousehold } = useMutation({
     mutationFn: async () => {
       const { error } = await supabase
-        .rpc('leave_household')
+        .rpc('leave_household', { user_id: user?.id })
       if (error) throw error
 
       // Refresh the user session to get updated metadata
