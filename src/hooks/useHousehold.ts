@@ -18,21 +18,19 @@ export const useHousehold = () => {
   const { data: household, isLoading: isLoadingHousehold } = useQuery({
     queryKey: ['household', user?.id],
     queryFn: async () => {
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('household_id')
-        .eq('id', user?.id)
-        .single()
+      // Get household_id from user metadata
+      const householdId = user?.user_metadata?.household_id
+      
+      if (!householdId) return null
 
-      if (!profile?.household_id) return null
-
-      const { data: household } = await supabase
+      const { data: household, error } = await supabase
         .from('households')
         .select('*')
-        .eq('id', profile.household_id)
+        .eq('id', householdId)
         .single()
 
-      return household as Household | null
+      if (error) throw error
+      return household as Household
     },
     enabled: !!user
   })
@@ -86,10 +84,9 @@ export const useHousehold = () => {
 
   const { mutate: leaveHousehold } = useMutation({
     mutationFn: async () => {
-      const { error } = await supabase
-        .from('profiles')
-        .update({ household_id: null })
-        .eq('id', user?.id)
+      const { error } = await supabase.auth.updateUser({
+        data: { household_id: null }
+      })
       if (error) throw error
     },
     onSuccess: () => {
