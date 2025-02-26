@@ -1,9 +1,9 @@
-
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { CategoriesManagement } from "@/components/administration/CategoriesManagement"
 import { DefaultIncomeManagement } from "@/components/administration/DefaultIncomeManagement"
 import { FixedExpensesManagement } from "@/components/administration/FixedExpensesManagement"
 import { HouseholdManagement } from "@/components/administration/HouseholdManagement"
+import { HouseholdInfo } from '@/components/HouseholdInfo';
 
 export const Administration = () => {
   return (
@@ -16,6 +16,11 @@ export const Administration = () => {
         <DefaultIncomeManagement />
         <FixedExpensesManagement />
       </div>
+      <div className="mt-6">
+        <HouseholdInfo />
+      </div>
     </div>
   )
 }
+
+export default Administration;

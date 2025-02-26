@@ -9,11 +9,18 @@ interface Household {
   created_at: string;
 }
 
+interface HouseholdMember {
+  user_id: string;
+  email: string;
+  created_at: string;
+}
+
 export const useHousehold = () => {
-  const { user } = useAuth() // No need for refreshUser anymore
+  const { user } = useAuth()
   const { toast } = useToast()
   const queryClient = useQueryClient()
 
+  // Get user's household
   const { data: household, isLoading: isLoadingHousehold } = useQuery({
     queryKey: ['household', user?.id],
     queryFn: async () => {
@@ -21,18 +28,36 @@ export const useHousehold = () => {
       
       const { data, error } = await supabase
         .rpc('get_user_household', { user_id: user.id })
-
       if (error) {
         console.error('Error fetching household:', error)
         return null
       }
       
-      // The RPC function returns an array, so we need to check if it has any items
       return data && data.length > 0 ? data[0] as Household : null
     },
     enabled: !!user
   })
 
+  // Get household members
+  const { data: householdMembers, isLoading: isLoadingMembers } = useQuery({
+    queryKey: ['householdMembers', household?.id],
+    queryFn: async () => {
+      if (!household?.id) return []
+      
+      const { data, error } = await supabase
+        .rpc('get_household_members', { p_household_id: household.id })
+      
+      if (error) {
+        console.error('Error fetching household members:', error)
+        return []
+      }
+      
+      return data as HouseholdMember[]
+    },
+    enabled: !!household?.id
+  })
+
+  // Create household
   const { mutate: createHousehold } = useMutation({
     mutationFn: async (name: string) => {
       const { data, error } = await supabase
@@ -57,6 +82,7 @@ export const useHousehold = () => {
     }
   })
 
+  // Join household
   const { mutate: joinHousehold } = useMutation({
     mutationFn: async (householdId: string) => {
       const { error } = await supabase
@@ -80,6 +106,7 @@ export const useHousehold = () => {
     }
   })
 
+  // Leave household
   const { mutate: leaveHousehold } = useMutation({
     mutationFn: async () => {
       const { error } = await supabase
@@ -106,6 +133,8 @@ export const useHousehold = () => {
   return {
     household,
     isLoadingHousehold,
+    householdMembers,
+    isLoadingMembers,
     createHousehold,
     joinHousehold,
     leaveHousehold
