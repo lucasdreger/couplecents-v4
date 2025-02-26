@@ -1,4 +1,3 @@
-
 import { useState } from 'react'
 import { useHousehold } from '@/hooks/useHousehold'
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -13,21 +12,54 @@ import { useToast } from '@/components/ui/use-toast'
 export const HouseholdManagement = () => {
   const [householdName, setHouseholdName] = useState('')
   const [householdId, setHouseholdId] = useState('')
-  const { household, createHousehold, joinHousehold, leaveHousehold } = useHousehold()
+  const { household, createHousehold, joinHousehold, leaveHousehold, isLoadingHousehold } = useHousehold()
   const { toast } = useToast()
 
-  const handleCreateHousehold = (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!householdName.trim()) return
-    createHousehold(householdName)
-    setHouseholdName('')
+  if (isLoadingHousehold) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle>Household Management</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="flex justify-center py-4">
+            <p className="text-muted-foreground">Loading household data...</p>
+          </div>
+        </CardContent>
+      </Card>
+    )
   }
 
-  const handleJoinHousehold = (e: React.FormEvent) => {
+  const handleCreateHousehold = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!householdName.trim()) return
+    try {
+      await createHousehold(householdName)
+      setHouseholdName('')
+    } catch (error) {
+      console.error('Error creating household:', error)
+      toast({
+        title: "Error",
+        description: "Failed to create household. Please try again.",
+        variant: "destructive"
+      })
+    }
+  }
+
+  const handleJoinHousehold = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!householdId.trim()) return
-    joinHousehold(householdId)
-    setHouseholdId('')
+    try {
+      await joinHousehold(householdId)
+      setHouseholdId('')
+    } catch (error) {
+      console.error('Error joining household:', error)
+      toast({
+        title: "Error",
+        description: "Failed to join household. Please check the ID and try again.",
+        variant: "destructive"
+      })
+    }
   }
 
   const handleLeaveHousehold = () => {

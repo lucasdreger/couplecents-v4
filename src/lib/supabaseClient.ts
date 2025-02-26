@@ -1,4 +1,3 @@
-
 import { createClient } from '@supabase/supabase-js'
 import type { Database } from '@/types/supabase'
 
@@ -19,11 +18,20 @@ export const supabase = createClient<Database>(supabaseUrl, supabaseKey, {
   }
 })
 
-// Test database connection
-supabase.from('investments').select('count').single()
-  .then(() => {
-    console.log('Successfully connected to Supabase')
+// Test database connection and RPC functions
+Promise.all([
+  supabase.from('investments').select('count').single(),
+  supabase.rpc('get_user_household', { user_id: 'test' }).catch(err => {
+    // This will fail with auth error which is expected, we just want to verify the function exists
+    if (err.message.includes('auth')) {
+      return null;
+    }
+    throw err;
   })
-  .catch((error) => {
-    console.error('Failed to connect to Supabase:', error)
-  })
+])
+.then(() => {
+  console.log('Successfully connected to Supabase and verified RPC functions')
+})
+.catch((error) => {
+  console.error('Failed to connect to Supabase or RPC functions not found:', error)
+})
