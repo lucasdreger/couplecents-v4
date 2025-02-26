@@ -1,22 +1,28 @@
 import { useState } from 'react'
+import React from 'react'  // Import React to access Suspense
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
-import { Pencil, Trash2, Plus } from 'lucide-react'
+import { Plus, Trash2 } from 'lucide-react'
 import { supabase } from '@/lib/supabaseClient'
 import { useToast } from "@/components/ui/use-toast"
 import { useHousehold } from '@/hooks/useHousehold'
+import { queryKeys } from '@/lib/queries'
 
-export const CategoriesManagement = () => {
-  const [newCategory, setNewCategory] = useState('')
-  const { toast } = useToast()
-  const queryClient = useQueryClient()
-  const { household, isLoading: isHouseholdLoading } = useHousehold()
+interface Category {
+  id: string
+  name: string
+  household_id: string
+}
 
-  // Move useQuery to top level, before any conditional returns
-  const { data: categories, isLoading: isCategoriesLoading } = useQuery({
-    queryKey: ['categories', household?.id],
+// Separate the categories list into its own component for suspense
+function CategoriesList({ household, onDelete }: { 
+  household: { id: string } | null, 
+  onDelete: (id: string) => void 
+}) {
+  const { data: categories } = useQuery<Category[]>({
+    queryKey: queryKeys.categories(household?.id),
     queryFn: async () => {
       const { data, error } = await supabase
         .from('categories')
@@ -26,8 +32,40 @@ export const CategoriesManagement = () => {
       if (error) throw error
       return data
     },
-    enabled: !!household // This will prevent the query from running if there's no household
+    enabled: !!household,
   })
+
+  if (!categories?.length) {
+    return (
+      <div className="text-center py-4 text-muted-foreground">
+        No categories found
+      </div>
+    )
+  }
+
+  return (
+    <div className="space-y-2">
+      {categories.map((category: Category) => (
+        <div key={category.id} className="flex justify-between items-center p-2 rounded border">
+          <span>{category.name}</span>
+          <Button 
+            variant="destructive" 
+            size="sm" 
+            onClick={() => onDelete(category.id)}
+          >
+            <Trash2 className="w-4 h-4" />
+          </Button>
+        </div>
+      ))}
+    </div>
+  )
+}
+
+export const CategoriesManagement = () => {
+  const [newCategory, setNewCategory] = useState('')
+  const { toast } = useToast()
+  const queryClient = useQueryClient()
+  const { household } = useHousehold()
 
   const { mutate: addCategory } = useMutation({
     mutationFn: async (name: string) => {
@@ -40,9 +78,15 @@ export const CategoriesManagement = () => {
       if (error) throw error
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['categories'] })
+      queryClient.invalidateQueries({ queryKey: queryKeys.categories(household?.id) })
       setNewCategory('')
       toast({ description: "Category added successfully" })
+    },
+    onError: (error: Error) => {
+      toast({ 
+        description: "Failed to add category: " + error.message,
+        variant: "destructive"
+      })
     }
   })
 
@@ -55,28 +99,17 @@ export const CategoriesManagement = () => {
       if (error) throw error
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['categories'] })
+      queryClient.invalidateQueries({ queryKey: queryKeys.categories(household?.id) })
       toast({ description: "Category deleted successfully" })
+    },
+    onError: (error: Error) => {
+      toast({ 
+        description: "Failed to delete category: " + error.message,
+        variant: "destructive"
+      })
     }
   })
 
-  // Handle loading states
-  if (isHouseholdLoading || isCategoriesLoading) {
-    return (
-      <Card>
-        <CardHeader>
-          <CardTitle>Categories Management</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="flex items-center justify-center py-4">
-            <p className="text-muted-foreground">Loading...</p>
-          </div>
-        </CardContent>
-      </Card>
-    )
-  }
-
-  // Handle no household case
   if (!household) {
     return (
       <Card>
@@ -102,7 +135,7 @@ export const CategoriesManagement = () => {
           <Input 
             placeholder="New category name"
             value={newCategory}
-            onChange={(e) => setNewCategory(e.target.value)}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) => setNewCategory(e.target.value)}
           />
           <Button 
             onClick={() => addCategory(newCategory)}
@@ -112,22 +145,17 @@ export const CategoriesManagement = () => {
             Add
           </Button>
         </div>
-        <div className="space-y-2">
-          {categories?.map((category) => (
-            <div key={category.id} className="flex justify-between items-center p-2 rounded border">
-              <span>{category.name}</span>
-              <div className="space-x-2">
-                <Button 
-                  variant="destructive" 
-                  size="sm" 
-                  onClick={() => deleteCategory(category.id)}
-                >
-                  <Trash2 className="w-4 h-4" />
-                </Button>
-              </div>
-            </div>
-          ))}
-        </div>
+        
+        <React.Suspense fallback={
+          <div className="flex items-center justify-center py-4">
+            <p className="text-muted-foreground">Loading categories...</p>
+          </div>
+        }>
+          <CategoriesList 
+            household={household} 
+            onDelete={deleteCategory}
+          />
+        </React.Suspense>
       </CardContent>
     </Card>
   )
