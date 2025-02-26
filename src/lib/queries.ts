@@ -1,4 +1,3 @@
-
 import { QueryClient } from '@tanstack/react-query'
 
 export const queryClient = new QueryClient({
@@ -16,8 +15,11 @@ export const queryClient = new QueryClient({
 // Query keys as constants to avoid typos
 export const queryKeys = {
   session: ['session'] as const,
+  household: (userId?: string) => ['household', userId] as const,
   investments: ['investments'] as const,
   expenses: (year: number, month: number) => ['expenses', year, month] as const,
   income: (year: number, month: number) => ['income', year, month] as const,
-  categories: ['categories'] as const,
+  categories: (householdId?: string) => ['categories', householdId] as const,
+  fixedExpenses: (householdId?: string) => ['fixed-expenses', householdId] as const,
+  defaultIncome: (householdId?: string) => ['default-income', householdId] as const,
 }

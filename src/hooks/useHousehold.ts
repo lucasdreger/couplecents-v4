@@ -10,26 +10,25 @@ interface Household {
 }
 
 export const useHousehold = () => {
-  const { user, refreshUser } = useAuth()
+  const { user } = useAuth() // No need for refreshUser anymore
   const { toast } = useToast()
   const queryClient = useQueryClient()
 
   const { data: household, isLoading: isLoadingHousehold } = useQuery({
     queryKey: ['household', user?.id],
     queryFn: async () => {
-      // Get household_id from user metadata
-      const householdId = user?.user_metadata?.household_id
+      if (!user?.id) return null
+      
+      const { data, error } = await supabase
+        .rpc('get_user_household', { user_id: user.id })
 
-      if (!householdId) return null
-
-      const { data: household, error } = await supabase
-        .from('households')
-        .select('*')
-        .eq('id', householdId)
-        .single()
-
-      if (error) throw error
-      return household as Household
+      if (error) {
+        console.error('Error fetching household:', error)
+        return null
+      }
+      
+      // The RPC function returns an array, so we need to check if it has any items
+      return data && data.length > 0 ? data[0] as Household : null
     },
     enabled: !!user
   })
@@ -39,13 +38,10 @@ export const useHousehold = () => {
       const { data, error } = await supabase
         .rpc('get_or_create_household', { p_name: name, user_id: user?.id })
       if (error) throw error
-
-      // Refresh the user session to get updated metadata
-      await refreshUser()
       return data
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['household'] })
+      queryClient.invalidateQueries({ queryKey: ['household', user?.id] })
       toast({
         title: "Success",
         description: "Household created successfully",
@@ -66,12 +62,9 @@ export const useHousehold = () => {
       const { error } = await supabase
         .rpc('join_household', { p_household_id: householdId, user_id: user?.id })
       if (error) throw error
-
-      // Refresh the user session to get updated metadata
-      await refreshUser()
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['household'] })
+      queryClient.invalidateQueries({ queryKey: ['household', user?.id] })
       toast({
         title: "Success",
         description: "Successfully joined household",
@@ -92,12 +85,9 @@ export const useHousehold = () => {
       const { error } = await supabase
         .rpc('leave_household', { user_id: user?.id })
       if (error) throw error
-
-      // Refresh the user session to get updated metadata
-      await refreshUser()
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['household'] })
+      queryClient.invalidateQueries({ queryKey: ['household', user?.id] })
       toast({
         title: "Success",
         description: "Successfully left household",
@@ -106,7 +96,7 @@ export const useHousehold = () => {
     onError: (error: Error) => {
       toast({
         title: "Error",
-        description: error.message || "Failed to leave household",
+        description: error.message || "Failed to join household",
         variant: "destructive",
       })
       console.error('Error leaving household:', error)
