@@ -14,15 +14,8 @@ export const CategoriesManagement = () => {
   const queryClient = useQueryClient()
   const { household, isLoading: isHouseholdLoading } = useHousehold()
 
-  if (isHouseholdLoading) {
-    return <div>Loading household data...</div>
-  }
-
-  if (!household) {
-    return <div>No household found. Please create or join a household first.</div>
-  }
-
-  const { data: categories } = useQuery({
+  // Move useQuery to top level, before any conditional returns
+  const { data: categories, isLoading: isCategoriesLoading } = useQuery({
     queryKey: ['categories', household?.id],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -33,7 +26,7 @@ export const CategoriesManagement = () => {
       if (error) throw error
       return data
     },
-    enabled: !!household
+    enabled: !!household // This will prevent the query from running if there's no household
   })
 
   const { mutate: addCategory } = useMutation({
@@ -67,6 +60,38 @@ export const CategoriesManagement = () => {
     }
   })
 
+  // Handle loading states
+  if (isHouseholdLoading || isCategoriesLoading) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle>Categories Management</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="flex items-center justify-center py-4">
+            <p className="text-muted-foreground">Loading...</p>
+          </div>
+        </CardContent>
+      </Card>
+    )
+  }
+
+  // Handle no household case
+  if (!household) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle>Categories Management</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="flex items-center justify-center py-4">
+            <p className="text-muted-foreground">Please create or join a household first.</p>
+          </div>
+        </CardContent>
+      </Card>
+    )
+  }
+
   return (
     <Card>
       <CardHeader>
@@ -79,18 +104,24 @@ export const CategoriesManagement = () => {
             value={newCategory}
             onChange={(e) => setNewCategory(e.target.value)}
           />
-          <Button onClick={() => addCategory(newCategory)}>
+          <Button 
+            onClick={() => addCategory(newCategory)}
+            disabled={!newCategory.trim()}
+          >
             <Plus className="w-4 h-4 mr-2" />
             Add
           </Button>
         </div>
-
         <div className="space-y-2">
           {categories?.map((category) => (
             <div key={category.id} className="flex justify-between items-center p-2 rounded border">
               <span>{category.name}</span>
               <div className="space-x-2">
-                <Button variant="destructive" size="sm" onClick={() => deleteCategory(category.id)}>
+                <Button 
+                  variant="destructive" 
+                  size="sm" 
+                  onClick={() => deleteCategory(category.id)}
+                >
                   <Trash2 className="w-4 h-4" />
                 </Button>
               </div>
