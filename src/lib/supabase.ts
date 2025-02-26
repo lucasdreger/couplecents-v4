@@ -1,13 +1,33 @@
-import { createClient } from '@supabase/supabase-js'
+import { createClient } from '@supabase/supabase-js';
+import { Database } from '@/types/database.types';
 
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
 if (!supabaseUrl || !supabaseAnonKey) {
-  console.error('Missing Supabase environment variables')
+  console.error('Missing Supabase environment variables');
 }
 
-export const supabase = createClient(supabaseUrl, supabaseAnonKey)
+export const supabase = createClient<Database>(
+  supabaseUrl || '',
+  supabaseAnonKey || ''
+);
+
+/**
+ * Get the current authenticated user
+ */
+export async function getCurrentUser() {
+  const { data: { user } } = await supabase.auth.getUser();
+  return user;
+}
+
+/**
+ * Get the current authenticated session
+ */
+export async function getCurrentSession() {
+  const { data: { session } } = await supabase.auth.getSession();
+  return session;
+}
 
 // Categories
 export const getCategories = async () => {

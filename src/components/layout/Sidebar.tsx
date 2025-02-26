@@ -1,48 +1,84 @@
-import * as React from "react"
-import { NavLink } from "react-router-dom"
-import { LayoutDashboard, LogOut, Receipt, Wallet } from "lucide-react"
-import { cn } from "@/lib/utils"
-import { useAuth } from "@/hooks/useAuth"
+import { NavLink } from "react-router-dom";
+import {
+  BarChart4, 
+  CreditCard, 
+  DollarSign, 
+  LayoutDashboard, 
+  LogOut, 
+  Receipt, 
+  Settings, 
+  PiggyBank,
+  Wallet
+} from "lucide-react";
+import { cn } from "@/lib/utils";
+import { useAuth } from "@/context/AuthContext";
+import { useHousehold } from "@/context/HouseholdContext";
 
-type IconType = typeof LayoutDashboard
+type IconType = typeof LayoutDashboard;
 
 const navigation = [
-  { name: 'Dashboard', href: '/', icon: LayoutDashboard },
+  { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
   { name: 'Expenses', href: '/expenses', icon: Receipt },
-  { name: 'Investments', href: '/investments', icon: Wallet },
-]
+  { name: 'Fixed Expenses', href: '/fixed-expenses', icon: CreditCard },
+  { name: 'Income', href: '/income', icon: DollarSign },
+  { name: 'Investments', href: '/investments', icon: BarChart4 },
+  { name: 'Reserves', href: '/reserves', icon: PiggyBank },
+  { name: 'Administration', href: '/administration', icon: Settings },
+];
 
-export const Sidebar = () => {
-  const { signOut } = useAuth()
-
+export default function Sidebar() {
+  const { signOut } = useAuth();
+  const { currentHousehold } = useHousehold();
+  
   return (
-    <div className="w-64 border-r bg-muted/10 flex flex-col">
-      <nav className="flex flex-col gap-2 p-4 flex-1">
+    <div className="hidden w-64 flex-shrink-0 flex-col border-r bg-sidebar text-sidebar-foreground md:flex">
+      {/* Logo and household name */}
+      <div className="flex h-16 items-center justify-between border-b border-sidebar-border px-4">
+        <div className="flex items-center space-x-2">
+          <Wallet className="h-6 w-6 text-sidebar-primary" />
+          <span className="font-bold">Expense Empower</span>
+        </div>
+      </div>
+      
+      {/* Household info */}
+      {currentHousehold && (
+        <div className="border-b border-sidebar-border px-4 py-3">
+          <p className="font-medium">{currentHousehold.name}</p>
+          <p className="text-xs opacity-70">Household</p>
+        </div>
+      )}
+      
+      {/* Navigation links */}
+      <nav className="flex flex-1 flex-col gap-1 overflow-y-auto p-4">
         {navigation.map((item) => (
           <NavLink
             key={item.name}
             to={item.href}
-            className={({ isActive }: { isActive: boolean }) =>
+            className={({ isActive }) =>
               cn(
-                'flex items-center gap-2 px-3 py-2 rounded-md hover:bg-muted/50',
-                isActive && 'bg-muted'
+                "flex items-center gap-3 rounded-md px-3 py-2 transition-colors",
+                isActive 
+                  ? "bg-sidebar-accent text-sidebar-accent-foreground" 
+                  : "hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground"
               )
             }
           >
             <item.icon className="h-5 w-5" />
-            {item.name}
+            <span>{item.name}</span>
           </NavLink>
         ))}
       </nav>
-      <div className="p-4 border-t">
+      
+      {/* Sign out button */}
+      <div className="border-t border-sidebar-border p-4">
         <button
           onClick={() => signOut()}
-          className="flex w-full items-center gap-2 px-3 py-2 rounded-md hover:bg-muted/50 text-red-600 hover:text-red-700"
+          className="flex w-full items-center gap-3 rounded-md px-3 py-2 text-red-400 transition-colors hover:bg-red-500/20"
         >
           <LogOut className="h-5 w-5" />
-          Sign Out
+          <span>Sign Out</span>
         </button>
       </div>
     </div>
-  )
+  );
 }
