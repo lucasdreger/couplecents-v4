@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabaseClient';
@@ -10,8 +9,24 @@ import {
   Tooltip,
   Legend,
 } from 'recharts';
+import { Category } from '@/types';
 
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8'];
+
+const data: { name: string }[] = []; // Replace with actual data structure
+
+interface ChartEntry {
+  name: string;
+  value: number;
+}
+
+const renderChart = (value: ChartEntry[], index: number) => {
+  // ...existing code...
+};
+
+const handleValueChange = (value: number) => {
+  // ...existing code...
+};
 
 export const CategoryBreakdown = () => {
   const { data: categoryData, isLoading } = useQuery({

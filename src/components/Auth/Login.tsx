@@ -1,10 +1,10 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { useAuth } from '@/hooks/useAuth';
+import { ChangeEvent, FormEvent } from '@/types';
 
 export const Login: React.FC = () => {
   const [username, setUsername] = useState('');
@@ -12,13 +12,17 @@ export const Login: React.FC = () => {
   const [error, setError] = useState('');
   const { signIn } = useAuth();
 
-  const handleLogin = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     try {
       await signIn(username, password);
     } catch (err: any) {
       setError(err.message || 'Invalid username or password. Please try again.');
     }
+  };
+
+  const handleChange = (e: ChangeEvent) => {
+    // ...existing code...
   };
 
   return (
@@ -33,7 +37,7 @@ export const Login: React.FC = () => {
               <AlertDescription>{error}</AlertDescription>
             </Alert>
           )}
-          <form onSubmit={handleLogin} className="space-y-4">
+          <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
               <Input
                 type="email"

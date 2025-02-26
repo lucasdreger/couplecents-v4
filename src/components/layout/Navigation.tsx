@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { NavLink } from 'react-router-dom';
 import { cn } from "@/lib/utils";
@@ -10,7 +9,7 @@ import {
   UserCircle 
 } from 'lucide-react';
 
-const Navigation = () => {
+const Navigation = ({ isActive }: { isActive?: any }) => {
   const navItems = [
     { to: '/overview', icon: <LayoutDashboard className="w-5 h-5" />, label: 'Overview' },
     { to: '/expenses', icon: <DollarSign className="w-5 h-5" />, label: 'Expenses' },

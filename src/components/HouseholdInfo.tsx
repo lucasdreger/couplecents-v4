@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input'
 import { useAuth } from '@/hooks/useAuth'
 import { Skeleton } from '@/components/ui/skeleton'
 import { useState } from 'react'
+import { ChangeEvent, FormEvent, HouseholdMember } from '@/types'
 
 export const HouseholdInfo: React.FC = () => {
   const { user } = useAuth()
@@ -21,6 +22,15 @@ export const HouseholdInfo: React.FC = () => {
   
   const [householdName, setHouseholdName] = useState('')
   const [householdId, setHouseholdId] = useState('')
+
+  const handleSubmit = (e: FormEvent) => {
+    e.preventDefault();
+    // ...existing code...
+  };
+
+  const handleChange = (e: ChangeEvent) => {
+    // ...existing code...
+  };
 
   if (isLoadingHousehold) {
     return <Skeleton className="h-48 w-full" />
@@ -71,6 +81,10 @@ export const HouseholdInfo: React.FC = () => {
       </Card>
     )
   }
+
+  const renderMember = (member: HouseholdMember) => {
+    // ...existing code...
+  };
 
   return (
     <Card>
