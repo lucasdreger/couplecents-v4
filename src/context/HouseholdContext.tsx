@@ -29,16 +29,32 @@ export function HouseholdProvider({ children }: { children: ReactNode }) {
   const [households, setHouseholds] = useState<Household[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [retryCount, setRetryCount] = useState(0);
+  const MAX_RETRIES = 3;
 
-  // Load households when user changes
+  // Load households when user changes or on retry
   useEffect(() => {
     if (user) {
-      refreshHouseholds();
+      refreshHouseholds().catch((err) => {
+        if (retryCount < MAX_RETRIES) {
+          // Exponential backoff retry
+          const timeout = Math.pow(2, retryCount) * 1000;
+          setTimeout(() => {
+            setRetryCount(prev => prev + 1);
+          }, timeout);
+        }
+      });
     } else {
       setHouseholds([]);
       setCurrentHousehold(null);
       setLoading(false);
+      setError(null);
     }
+  }, [user, retryCount]);
+
+  // Reset retry count when user changes
+  useEffect(() => {
+    setRetryCount(0);
   }, [user]);
 
   // Fetch user's households
@@ -47,7 +63,7 @@ export function HouseholdProvider({ children }: { children: ReactNode }) {
     
     setLoading(true);
     setError(null);
-
+    
     try {
       // Get households the user belongs to
       const { data: userHouseholds, error: userHouseholdsError } = await supabase
@@ -55,7 +71,9 @@ export function HouseholdProvider({ children }: { children: ReactNode }) {
         .select('household_id')
         .eq('user_id', user.id);
 
-      if (userHouseholdsError) throw userHouseholdsError;
+      if (userHouseholdsError) {
+        throw new Error(`Failed to fetch user households: ${userHouseholdsError.message}`);
+      }
       
       if (userHouseholds.length === 0) {
         setHouseholds([]);
@@ -72,7 +90,9 @@ export function HouseholdProvider({ children }: { children: ReactNode }) {
         .select('*')
         .in('id', householdIds);
 
-      if (householdsError) throw householdsError;
+      if (householdsError) {
+        throw new Error(`Failed to fetch household details: ${householdsError.message}`);
+      }
 
       setHouseholds(householdData || []);
       
@@ -87,6 +107,7 @@ export function HouseholdProvider({ children }: { children: ReactNode }) {
     } catch (err: any) {
       console.error('Error fetching households:', err);
       setError(err.message || 'Failed to load households');
+      throw err; // Re-throw for retry mechanism
     } finally {
       setLoading(false);
     }
