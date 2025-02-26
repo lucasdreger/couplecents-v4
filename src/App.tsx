@@ -31,7 +31,7 @@ const App: React.FC = () => {
               }>
                 <Route index element={<OverviewPage />} />
                 <Route path="expenses" element={<MonthlyExpenses />} />
-                <Route path="admin" element={<Administration />} />
+                <Route path="administration" element={<Administration />} />
               </Route>
               <Route path="*" element={<div>Page not found</div>} />
             </Routes>
