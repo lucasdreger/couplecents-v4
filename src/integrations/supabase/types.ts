@@ -394,35 +394,6 @@ export type Database = {
         }
         Relationships: []
       }
-      users_households: {
-        Row: {
-          created_at: string | null
-          household_id: string
-          id: string
-          user_id: string
-        }
-        Insert: {
-          created_at?: string | null
-          household_id: string
-          id?: string
-          user_id: string
-        }
-        Update: {
-          created_at?: string | null
-          household_id?: string
-          id?: string
-          user_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "users_households_household_id_fkey"
-            columns: ["household_id"]
-            isOneToOne: false
-            referencedRelation: "households"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       variable_expenses: {
         Row: {
           amount: number
@@ -480,16 +451,6 @@ export type Database = {
           created_at: string
         }[]
       }
-      get_household_members: {
-        Args: {
-          p_household_id: string
-        }
-        Returns: {
-          user_id: string
-          email: string
-          created_at: string
-        }[]
-      }
       get_or_create_default_income: {
         Args: Record<PropertyKey, never>
         Returns: {
@@ -501,24 +462,12 @@ export type Database = {
           created_at: string
         }[]
       }
-      get_or_create_household:
-        | {
-            Args: {
-              p_name: string
-            }
-            Returns: string
-          }
-        | {
-            Args: {
-              p_name: string
-              user_id: string
-            }
-            Returns: {
-              created_at: string | null
-              id: string
-              name: string
-            }
-          }
+      get_or_create_household: {
+        Args: {
+          p_name: string
+        }
+        Returns: string
+      }
       get_or_create_monthly_credit_card: {
         Args: {
           p_year: number
@@ -563,16 +512,6 @@ export type Database = {
           created_at: string
         }[]
       }
-      get_user_household: {
-        Args: {
-          user_id: string
-        }
-        Returns: {
-          created_at: string | null
-          id: string
-          name: string
-        }[]
-      }
       initialize_monthly_fixed_expenses: {
         Args: {
           p_year: number
@@ -580,31 +519,16 @@ export type Database = {
         }
         Returns: undefined
       }
-      join_household:
-        | {
-            Args: {
-              p_household_id: string
-            }
-            Returns: undefined
-          }
-        | {
-            Args: {
-              p_household_id: string
-              user_id: string
-            }
-            Returns: undefined
-          }
-      leave_household:
-        | {
-            Args: Record<PropertyKey, never>
-            Returns: undefined
-          }
-        | {
-            Args: {
-              user_id: string
-            }
-            Returns: undefined
-          }
+      join_household: {
+        Args: {
+          p_household_id: string
+        }
+        Returns: undefined
+      }
+      leave_household: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
+      }
       load_default_income: {
         Args: {
           p_year: number

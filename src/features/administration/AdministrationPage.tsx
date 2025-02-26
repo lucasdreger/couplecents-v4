@@ -1,22 +1,54 @@
-
 import React from 'react';
-import { Container, Typography, Grid } from '@mui/material';
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { CategoriesManagement } from "@/components/administration/CategoriesManagement";
-import { DefaultIncomeManagement } from "@/components/administration/DefaultIncomeManagement";
-import { FixedExpensesManagement } from "@/components/administration/FixedExpensesManagement";
+import { Container, Typography, Grid, Paper } from '@mui/material';
+import { styled } from '@mui/material/styles';
+
+const StyledPaper = styled(Paper)(({ theme }) => ({
+  padding: theme.spacing(3),
+  height: '100%',
+}));
 
 const AdministrationPage: React.FC = () => {
   return (
-    <div className="container mx-auto p-6 space-y-6">
-      <h1 className="text-3xl font-bold mb-6">Administration</h1>
+    <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
+      <Typography variant="h4" gutterBottom component="h1">
+        Administration
+      </Typography>
       
-      <div className="grid gap-6">
-        <CategoriesManagement />
-        <DefaultIncomeManagement />
-        <FixedExpensesManagement />
-      </div>
-    </div>
+      <Grid container spacing={3}>
+        <Grid item xs={12} md={6} lg={4}>
+          <StyledPaper>
+            <Typography variant="h6" gutterBottom>
+              User Management
+            </Typography>
+            <Typography variant="body1">
+              Manage users, permissions and roles
+            </Typography>
+          </StyledPaper>
+        </Grid>
+        
+        <Grid item xs={12} md={6} lg={4}>
+          <StyledPaper>
+            <Typography variant="h6" gutterBottom>
+              Settings
+            </Typography>
+            <Typography variant="body1">
+              Configure application settings and defaults
+            </Typography>
+          </StyledPaper>
+        </Grid>
+        
+        <Grid item xs={12} md={6} lg={4}>
+          <StyledPaper>
+            <Typography variant="h6" gutterBottom>
+              System Status
+            </Typography>
+            <Typography variant="body1">
+              Monitor system performance and status
+            </Typography>
+          </StyledPaper>
+        </Grid>
+      </Grid>
+    </Container>
   );
 };
 
