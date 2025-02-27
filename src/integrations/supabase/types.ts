@@ -394,35 +394,6 @@ export type Database = {
         }
         Relationships: []
       }
-      users_households: {
-        Row: {
-          created_at: string | null
-          household_id: string
-          id: string
-          user_id: string
-        }
-        Insert: {
-          created_at?: string | null
-          household_id: string
-          id?: string
-          user_id: string
-        }
-        Update: {
-          created_at?: string | null
-          household_id?: string
-          id?: string
-          user_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "users_households_household_id_fkey"
-            columns: ["household_id"]
-            isOneToOne: false
-            referencedRelation: "households"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       variable_expenses: {
         Row: {
           amount: number
@@ -480,6 +451,23 @@ export type Database = {
           created_at: string
         }[]
       }
+      get_expenses: {
+        Args: {
+          p_year: number
+          p_month: number
+        }
+        Returns: {
+          id: string
+          description: string
+          amount: number
+          date: string
+          category_id: string
+          month: number
+          year: number
+          created_at: string
+          category_name: string
+        }[]
+      }
       get_household_members: {
         Args: {
           p_household_id: string
@@ -488,6 +476,16 @@ export type Database = {
           user_id: string
           email: string
           created_at: string
+        }[]
+      }
+      get_investments: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          id: string
+          name: string
+          current_value: number
+          created_at: string
+          last_updated: string
         }[]
       }
       get_or_create_default_income: {
