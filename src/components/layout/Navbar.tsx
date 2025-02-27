@@ -1,9 +1,10 @@
-import { Button } from "@/components/ui/button"
-import { useAuth } from "@/lib/hooks/useAuth"
-import { supabase } from "@/lib/supabase"
+
+import React from "react";
+import { Button } from "@/components/ui/button";
+import { useAuth } from "@/context/AuthContext";
 
 export function Navbar() {
-  const { user } = useAuth()
+  const { user, signOut } = useAuth();
 
   return (
     <nav className="border-b">
@@ -11,7 +12,7 @@ export function Navbar() {
         <h1 className="text-xl font-bold">ExpenseEmpower</h1>
         <div className="flex items-center gap-4">
           {user?.email}
-          <Button variant="ghost" onClick={() => supabase.auth.signOut()}>
+          <Button variant="ghost" onClick={() => signOut()}>
             Sign out
           </Button>
         </div>

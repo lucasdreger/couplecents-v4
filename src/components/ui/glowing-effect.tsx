@@ -1,7 +1,7 @@
 
 "use client";
 
-import { memo, useCallback, useEffect, useRef } from "react";
+import React, { useCallback, useEffect, useRef } from "react";
 import { cn } from "@/lib/utils";
 import { animate } from "@motionone/dom";
 
@@ -17,7 +17,7 @@ interface GlowingEffectProps {
   movementDuration?: number;
   borderWidth?: number;
 }
-const GlowingEffect = memo(
+const GlowingEffect = React.memo(
   ({
     blur = 0,
     inactiveZone = 0.7,
@@ -86,7 +86,9 @@ const GlowingEffect = memo(
           const angleDiff = ((targetAngle - currentAngle + 180) % 360) - 180;
           const newAngle = currentAngle + angleDiff;
 
-          animate(currentAngle, newAngle, {
+          animate({
+            from: currentAngle,
+            to: newAngle,
             duration: movementDuration,
             easing: [0.16, 1, 0.3, 1],
             onUpdate: (value) => {
