@@ -1,5 +1,4 @@
-
-import React, { Suspense, useEffect } from 'react';
+import React from 'react';
 import {
   Card,
   CardContent,
@@ -30,11 +29,11 @@ const ErrorFallback = ({ message }: { message: string }) => (
 
 export const OverviewPage: React.FC = () => {
   const { user } = useAuth();
-
+  
   if (!user) {
     return <ErrorFallback message="Please log in to view this page" />;
   }
-
+  
   return (
     <div className="container mx-auto p-6 space-y-6">
       <div className="flex justify-between items-center mb-6">
@@ -43,11 +42,11 @@ export const OverviewPage: React.FC = () => {
           Welcome back, {user.email}
         </p>
       </div>
-
+      
       <ErrorBoundary fallback={<ErrorFallback message="Error loading investments" />}>
         <InvestmentsTile />
       </ErrorBoundary>
-
+      
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <ErrorBoundary fallback={<ErrorFallback message="Error loading budget" />}>
           <BudgetTile />
@@ -96,16 +95,16 @@ class ErrorBoundary extends React.Component<
     super(props);
     this.state = { hasError: false };
   }
-
+  
   static getDerivedStateFromError() {
     return { hasError: true };
   }
-
+  
   componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
     console.error('Error caught by boundary:', error);
     console.error('Component stack:', errorInfo.componentStack);
   }
-
+  
   render() {
     if (this.state.hasError) {
       return this.props.fallback;

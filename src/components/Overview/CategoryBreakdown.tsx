@@ -1,5 +1,3 @@
-
-import React from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabaseClient';
 import {
@@ -13,6 +11,16 @@ import {
 
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8'];
 
+type CategoryData = {
+  name: string;
+  value: number;
+};
+
+type VariableExpenseRow = {
+  category: { name: string } | null;
+  amount: number;
+};
+
 export const CategoryBreakdown = () => {
   const { data: categoryData, isLoading } = useQuery({
     queryKey: ['categoryBreakdown'],
@@ -25,15 +33,15 @@ export const CategoryBreakdown = () => {
         `)
         .eq('year', new Date().getFullYear())
         .eq('month', new Date().getMonth() + 1);
-
+      
       if (error) throw error;
-
+      
       if (!data?.length) {
         return [];
       }
-
+      
       // Aggregate by category with null checking
-      const categoryTotals = data.reduce((acc: Record<string, number>, curr) => {
+      const categoryTotals = (data as VariableExpenseRow[]).reduce((acc: Record<string, number>, curr) => {
         // Ensure we have valid category name and amount
         const categoryName = curr.category?.name || 'Uncategorized';
         const amount = typeof curr.amount === 'number' ? curr.amount : 0;
@@ -46,7 +54,7 @@ export const CategoryBreakdown = () => {
         acc[categoryName] += amount;
         return acc;
       }, {});
-
+      
       // Convert to array format for recharts with explicit number typing
       return Object.entries(categoryTotals).map(([name, value]) => ({
         name,
@@ -63,8 +71,8 @@ export const CategoryBreakdown = () => {
     return <div>No expense data available</div>;
   }
 
-  const chartData = categoryData;
-
+  const chartData = categoryData as CategoryData[];
+  
   return (
     <div className="h-[300px]">
       <ResponsiveContainer width="100%" height="100%">
@@ -76,13 +84,13 @@ export const CategoryBreakdown = () => {
             cx="50%"
             cy="50%"
             outerRadius={100}
-            label={({ value }) => `$${Number(value).toFixed(2)}`}
+            label={({ value }: { value: number }) => `$${Number(value).toFixed(2)}`}
           >
             {chartData.map((entry, index) => (
               <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
             ))}
           </Pie>
-          <Tooltip formatter={(value) => `$${Number(value).toFixed(2)}`} />
+          <Tooltip formatter={(value: number) => `$${Number(value).toFixed(2)}`} />
           <Legend />
         </PieChart>
       </ResponsiveContainer>

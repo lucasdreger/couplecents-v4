@@ -1,4 +1,3 @@
-
 /**
  * Budget Summary Tile Component
  * 
@@ -7,11 +6,14 @@
  * - Total expenses
  * - Net balance
  */
-
-import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabaseClient';
+
+interface BudgetData {
+  total_income: number;
+  total_expenses: number;
+}
 
 export const BudgetTile = () => {
   const { data: budgetData, isLoading, isError } = useQuery({
@@ -21,8 +23,9 @@ export const BudgetTile = () => {
         .from('monthly_details')
         .select('total_income, total_expenses')
         .single();
+      
       if (error) throw error;
-      return data;
+      return data as BudgetData;
     },
   });
 

@@ -1,5 +1,3 @@
-
-import React from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabaseClient';
 import type { MonthlyDetail } from '@/types/database.types';

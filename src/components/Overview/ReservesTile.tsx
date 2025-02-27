@@ -1,7 +1,16 @@
-import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabaseClient';
+
+interface MonthlyDetails {
+  total_income: number;
+  total_expenses: number;
+}
+
+interface ReservesData {
+  amount: number;
+  percentage: number;
+}
 
 export const ReservesTile = () => {
   const { data: reserves, isLoading, isError } = useQuery({
@@ -11,22 +20,23 @@ export const ReservesTile = () => {
         .from('monthly_details')
         .select('total_income, total_expenses')
         .single();
+        
       if (error) throw error;
-
-      const totalIncome = data?.total_income || 0;
-      const totalExpenses = data?.total_expenses || 0;
+      
+      const totalIncome = (data as MonthlyDetails)?.total_income || 0;
+      const totalExpenses = (data as MonthlyDetails)?.total_expenses || 0;
       const reserves = totalIncome - totalExpenses;
-
+      
       return {
         amount: reserves,
         percentage: totalIncome ? (reserves / totalIncome) * 100 : 0
-      };
+      } as ReservesData;
     }
   });
-
+  
   const amount = reserves?.amount || 0;
   const percentage = reserves?.percentage || 0;
-
+  
   return (
     <Card>
       <CardHeader>
