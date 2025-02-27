@@ -1,8 +1,9 @@
+
 "use client";
 
 import { memo, useCallback, useEffect, useRef } from "react";
 import { cn } from "@/lib/utils";
-import { animate } from "motion/react";
+import { animate } from "@motionone/dom";
 
 interface GlowingEffectProps {
   blur?: number;
@@ -87,7 +88,7 @@ const GlowingEffect = memo(
 
           animate(currentAngle, newAngle, {
             duration: movementDuration,
-            ease: [0.16, 1, 0.3, 1],
+            easing: [0.16, 1, 0.3, 1],
             onUpdate: (value) => {
               element.style.setProperty("--start", String(value));
             },
