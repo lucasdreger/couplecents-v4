@@ -7,16 +7,19 @@ export interface VariableExpense {
   year: number;
   month: number;
   created_at: string;
+  created_by: string;
+  updated_at: string | null;
 }
 
 export interface FixedExpense {
   id: string;
   description: string;
-  estimated_amount: number;
-  owner: string;
+  amount: number;
   category_id: string;
   status_required: boolean;
+  owner: string;
   created_at: string;
+  updated_at: string | null;
 }
 
 export interface Income {
@@ -27,14 +30,18 @@ export interface Income {
   camila_income: number;
   other_income: number;
   created_at: string;
+  updated_at: string | null;
 }
 
 export interface Investment {
   id: string;
   name: string;
   current_value: number;
-  last_updated: string;
+  initial_value: number;
+  category: string;
   created_at: string;
+  last_updated: string | null;
+  notes: string | null;
 }
 
 export interface ExpenseFormData {
@@ -73,7 +80,6 @@ export interface Database {
           created_at: string
           updated_at: string | null
           user_id: string | null
-          household_id: string
         }
         Insert: {
           id?: string
@@ -81,7 +87,6 @@ export interface Database {
           created_at?: string
           updated_at?: string | null
           user_id?: string | null
-          household_id: string
         }
         Update: {
           id?: string
@@ -89,7 +94,6 @@ export interface Database {
           created_at?: string
           updated_at?: string | null
           user_id?: string | null
-          household_id?: string
         }
       }
       default_income: {
@@ -98,7 +102,6 @@ export interface Database {
           lucas_income: number
           camila_income: number
           other_income: number
-          household_id: string
           updated_at: string | null
         }
         Insert: {
@@ -106,7 +109,6 @@ export interface Database {
           lucas_income: number
           camila_income: number
           other_income: number
-          household_id: string
           updated_at?: string | null
         }
         Update: {
@@ -114,7 +116,6 @@ export interface Database {
           lucas_income?: number
           camila_income?: number
           other_income?: number
-          household_id?: string
           updated_at?: string | null
         }
       }
@@ -125,7 +126,6 @@ export interface Database {
           target_amount: number
           current_amount: number
           target_date: string | null
-          household_id: string
           created_at: string
           updated_at: string | null
           category_id: string | null
@@ -141,7 +141,6 @@ export interface Database {
           target_amount: number
           current_amount?: number
           target_date?: string | null
-          household_id: string
           created_at?: string
           updated_at?: string | null
           category_id?: string | null
@@ -157,7 +156,6 @@ export interface Database {
           target_amount?: number
           current_amount?: number
           target_date?: string | null
-          household_id?: string
           created_at?: string
           updated_at?: string | null
           category_id?: string | null
@@ -176,7 +174,6 @@ export interface Database {
           category_id: string
           status_required: boolean
           owner: string
-          household_id: string
           created_at: string
           updated_at: string | null
         }
@@ -187,7 +184,6 @@ export interface Database {
           category_id: string
           status_required?: boolean
           owner: string
-          household_id: string
           created_at?: string
           updated_at?: string | null
         }
@@ -198,7 +194,6 @@ export interface Database {
           category_id?: string
           status_required?: boolean
           owner?: string
-          household_id?: string
           created_at?: string
           updated_at?: string | null
         }
@@ -261,7 +256,6 @@ export interface Database {
           category: string
           created_at: string
           last_updated: string | null
-          household_id: string
           notes: string | null
         }
         Insert: {
@@ -272,7 +266,6 @@ export interface Database {
           category: string
           created_at?: string
           last_updated?: string | null
-          household_id: string
           notes?: string | null
         }
         Update: {
@@ -283,7 +276,6 @@ export interface Database {
           category?: string
           created_at?: string
           last_updated?: string | null
-          household_id?: string
           notes?: string | null
         }
       }
@@ -293,7 +285,6 @@ export interface Database {
           amount: number
           month: number
           year: number
-          household_id: string
           created_at: string
           updated_at: string | null
           transfer_completed: boolean
@@ -305,7 +296,6 @@ export interface Database {
           amount: number
           month: number
           year: number
-          household_id: string
           created_at?: string
           updated_at?: string | null
           transfer_completed?: boolean
@@ -317,7 +307,6 @@ export interface Database {
           amount?: number
           month?: number
           year?: number
-          household_id?: string
           created_at?: string
           updated_at?: string | null
           transfer_completed?: boolean
@@ -333,7 +322,6 @@ export interface Database {
           year: number
           completed: boolean
           completed_at: string | null
-          household_id: string
           created_at: string
           updated_at: string | null
         }
@@ -344,7 +332,6 @@ export interface Database {
           year: number
           completed?: boolean
           completed_at?: string | null
-          household_id: string
           created_at?: string
           updated_at?: string | null
         }
@@ -355,7 +342,6 @@ export interface Database {
           year?: number
           completed?: boolean
           completed_at?: string | null
-          household_id?: string
           created_at?: string
           updated_at?: string | null
         }
@@ -368,7 +354,6 @@ export interface Database {
           other_income: number
           month: number
           year: number
-          household_id: string
           created_at: string
           updated_at: string | null
         }
@@ -379,7 +364,6 @@ export interface Database {
           other_income: number
           month: number
           year: number
-          household_id: string
           created_at?: string
           updated_at?: string | null
         }
@@ -390,7 +374,6 @@ export interface Database {
           other_income?: number
           month?: number
           year?: number
-          household_id?: string
           created_at?: string
           updated_at?: string | null
         }
@@ -401,7 +384,6 @@ export interface Database {
           name: string
           current_amount: number
           target_amount: number | null
-          household_id: string
           created_at: string
           updated_at: string | null
           notes: string | null
@@ -411,7 +393,6 @@ export interface Database {
           name: string
           current_amount: number
           target_amount?: number | null
-          household_id: string
           created_at?: string
           updated_at?: string | null
           notes?: string | null
@@ -421,7 +402,6 @@ export interface Database {
           name?: string
           current_amount?: number
           target_amount?: number | null
-          household_id?: string
           created_at?: string
           updated_at?: string | null
           notes?: string | null
@@ -460,7 +440,6 @@ export interface Database {
         Row: {
           id: string
           user_id: string
-          household_id: string
           role: string
           joined_at: string
           invited_by: string | null
@@ -468,7 +447,6 @@ export interface Database {
         Insert: {
           id?: string
           user_id: string
-          household_id: string
           role?: string
           joined_at?: string
           invited_by?: string | null
@@ -476,7 +454,6 @@ export interface Database {
         Update: {
           id?: string
           user_id?: string
-          household_id?: string
           role?: string
           joined_at?: string
           invited_by?: string | null
@@ -491,7 +468,6 @@ export interface Database {
           category_id: string
           month: number
           year: number
-          household_id: string
           created_at: string
           created_by: string
           updated_at: string | null
@@ -504,7 +480,6 @@ export interface Database {
           category_id: string
           month: number
           year: number
-          household_id: string
           created_at?: string
           created_by: string
           updated_at?: string | null
@@ -517,7 +492,6 @@ export interface Database {
           category_id?: string
           month?: number
           year?: number
-          household_id?: string
           created_at?: string
           created_by?: string
           updated_at?: string | null

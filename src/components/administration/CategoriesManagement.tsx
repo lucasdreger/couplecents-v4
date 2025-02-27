@@ -2,9 +2,9 @@ import { useState } from 'react'
 import React from 'react'  // Import React to access Suspense
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
-import { Plus, Trash2 } from 'lucide-react'
+import { Input } from "@/components/ui/input"
+import { Trash2 } from 'lucide-react'
 import { supabase } from '@/lib/supabaseClient'
 import { useToast } from "@/components/ui/use-toast"
 import { queryKeys } from '@/lib/queries'
@@ -18,7 +18,7 @@ interface Category {
 function CategoriesList({ onDelete }: { 
   onDelete: (id: string) => void 
 }) {
-  const { data: categories } = useQuery<Category[]>({
+  const { data: categories } = useQuery({
     queryKey: queryKeys.categories(),
     queryFn: async () => {
       const { data, error } = await supabase
@@ -30,22 +30,14 @@ function CategoriesList({ onDelete }: {
     }
   })
 
-  if (!categories?.length) {
-    return (
-      <div className="text-center py-4 text-muted-foreground">
-        No categories found
-      </div>
-    )
-  }
-
   return (
-    <div className="space-y-2">
-      {categories.map((category: Category) => (
-        <div key={category.id} className="flex justify-between items-center p-2 rounded border">
+    <div className="grid gap-2">
+      {categories?.map((category) => (
+        <div key={category.id} className="flex justify-between items-center p-3 rounded border">
           <span>{category.name}</span>
           <Button 
-            variant="destructive" 
-            size="sm" 
+            variant="ghost" 
+            size="icon"
             onClick={() => onDelete(category.id)}
           >
             <Trash2 className="w-4 h-4" />
@@ -65,9 +57,7 @@ export const CategoriesManagement = () => {
     mutationFn: async (name: string) => {
       const { error } = await supabase
         .from('categories')
-        .insert({ 
-          name
-        })
+        .insert({ name })
       if (error) throw error
     },
     onSuccess: () => {
@@ -103,35 +93,33 @@ export const CategoriesManagement = () => {
     }
   })
 
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!newCategory.trim()) return
+    addCategory(newCategory)
+  }
+
   return (
     <Card>
       <CardHeader>
         <CardTitle>Categories Management</CardTitle>
       </CardHeader>
-      <CardContent className="space-y-4">
-        <div className="flex gap-2">
-          <Input 
-            placeholder="New category name"
+      <CardContent className="space-y-6">
+        <form onSubmit={handleSubmit} className="flex gap-2">
+          <Input
+            placeholder="Category name"
             value={newCategory}
-            onChange={(e: React.ChangeEvent<HTMLInputElement>) => setNewCategory(e.target.value)}
+            onChange={(e) => setNewCategory(e.target.value)}
           />
-          <Button 
-            onClick={() => addCategory(newCategory)}
-            disabled={!newCategory.trim()}
-          >
-            <Plus className="w-4 h-4 mr-2" />
-            Add
-          </Button>
-        </div>
-        
+          <Button type="submit" disabled={!newCategory.trim()}>Add</Button>
+        </form>
+
         <React.Suspense fallback={
           <div className="flex items-center justify-center py-4">
             <p className="text-muted-foreground">Loading categories...</p>
           </div>
         }>
-          <CategoriesList 
-            onDelete={deleteCategory}
-          />
+          <CategoriesList onDelete={deleteCategory} />
         </React.Suspense>
       </CardContent>
     </Card>

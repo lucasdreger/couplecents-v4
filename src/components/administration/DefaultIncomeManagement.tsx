@@ -61,7 +61,7 @@ export const DefaultIncomeManagement = () => {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Default Income Management</CardTitle>
+        <CardTitle>Default Income Settings</CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="grid gap-4">

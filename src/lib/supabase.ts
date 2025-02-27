@@ -29,6 +29,20 @@ export async function getCurrentSession() {
   return session;
 }
 
+export const signInWithPassword = async (email: string, password: string) => {
+  return await supabase.auth.signInWithPassword({ email, password });
+};
+
+export const signOut = async () => {
+  return await supabase.auth.signOut();
+};
+
+export const resetPasswordForEmail = async (email: string) => {
+  return await supabase.auth.resetPasswordForEmail(email, {
+    redirectTo: `${window.location.origin}/reset-password`,
+  });
+};
+
 // Categories
 export const getCategories = async () => {
   return await supabase

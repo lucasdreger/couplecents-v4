@@ -13,7 +13,7 @@ import { queryKeys } from '@/lib/queries'
 export const FixedExpensesManagement = () => {
   const [expense, setExpense] = useState({
     description: '',
-    estimated_amount: '',
+    amount: '',
     category_id: '',
     owner: 'Lucas',
     status_required: false
@@ -51,8 +51,11 @@ export const FixedExpensesManagement = () => {
       const { error } = await supabase
         .from('fixed_expenses')
         .insert({
-          ...data,
-          estimated_amount: parseFloat(data.estimated_amount)
+          description: data.description,
+          amount: parseFloat(data.amount),
+          category_id: data.category_id,
+          owner: data.owner,
+          status_required: data.status_required
         })
       if (error) throw error
     },
@@ -60,7 +63,7 @@ export const FixedExpensesManagement = () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.fixedExpenses() })
       setExpense({
         description: '',
-        estimated_amount: '',
+        amount: '',
         category_id: '',
         owner: 'Lucas',
         status_required: false
@@ -90,9 +93,9 @@ export const FixedExpensesManagement = () => {
           
           <Input 
             type="number"
-            placeholder="Estimated Amount"
-            value={expense.estimated_amount}
-            onChange={(e) => setExpense(prev => ({ ...prev, estimated_amount: e.target.value }))}
+            placeholder="Amount"
+            value={expense.amount}
+            onChange={(e) => setExpense(prev => ({ ...prev, amount: e.target.value }))}
           />
           
           <Select 
@@ -110,6 +113,7 @@ export const FixedExpensesManagement = () => {
               ))}
             </SelectContent>
           </Select>
+          
           <Select
             value={expense.owner}
             onValueChange={(value) => setExpense(prev => ({ ...prev, owner: value }))}
@@ -122,8 +126,9 @@ export const FixedExpensesManagement = () => {
               <SelectItem value="Camila">Camila</SelectItem>
             </SelectContent>
           </Select>
+          
           <div className="flex items-center space-x-2">
-            <Switch 
+            <Switch
               id="status-required"
               checked={expense.status_required}
               onCheckedChange={(checked) => 
@@ -132,20 +137,22 @@ export const FixedExpensesManagement = () => {
             />
             <Label htmlFor="status-required">Status Required</Label>
           </div>
+          
           <Button 
             onClick={() => addExpense(expense)}
-            disabled={!expense.description || !expense.estimated_amount || !expense.category_id}
+            disabled={!expense.description || !expense.amount || !expense.category_id}
           >
             Add Fixed Expense
           </Button>
         </div>
+
         <div className="space-y-2">
           {fixedExpenses?.map((expense) => (
             <div key={expense.id} className="flex justify-between items-center p-3 rounded border">
               <div>
                 <p className="font-medium">{expense.description}</p>
                 <p className="text-sm text-muted-foreground">
-                  ${expense.estimated_amount} • {expense.categories?.name} • {expense.owner}
+                  ${expense.amount} • {expense.categories?.name} • {expense.owner}
                 </p>
               </div>
               {expense.status_required && (

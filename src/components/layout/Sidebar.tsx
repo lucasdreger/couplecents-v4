@@ -38,10 +38,10 @@ export default function Sidebar() {
         </div>
       </div>
       
-      {/* Application title with no household references */}
+      {/* Application title */}
       <div className="border-b border-sidebar-border px-4 py-3">
         <p className="font-medium">Financial Dashboard</p>
-        <p className="text-xs opacity-70">Collaborative Workspace</p>
+        <p className="text-xs opacity-70">Personal Finance</p>
       </div>
       
       {/* Navigation links */}

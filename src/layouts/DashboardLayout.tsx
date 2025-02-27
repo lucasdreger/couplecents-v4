@@ -6,7 +6,6 @@ import Navbar from '@/components/layout/Navbar';
 export default function DashboardLayout() {
   const { user, loading: authLoading } = useAuth();
   
-  // Show loading state only for auth loading
   if (authLoading) {
     return (
       <div className="flex h-screen w-full items-center justify-center bg-background">

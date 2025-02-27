@@ -15,13 +15,18 @@ export const getMonthlyExpenses = async (year: number, month: number) => {
     .order('date', { ascending: false });
 };
 
-export const addVariableExpense = async (expense: Omit<VariableExpense, 'id' | 'created_at'>) => {
+export const addVariableExpense = async (expense: {
+  description: string;
+  amount: number;
+  date: string;
+  category_id: string;
+  year: number;
+  month: number;
+  created_by: string;
+}) => {
   return supabase
     .from('variable_expenses')
-    .insert({
-      ...expense,
-      household_id: '00000000-0000-0000-0000-000000000000' // Default shared household
-    })
+    .insert(expense)
     .select()
     .single();
 };
@@ -69,7 +74,6 @@ export const updateFixedExpenseStatus = async (id: string, completed: boolean): 
       fixed_expense_id: id,
       completed,
       completed_at: completed ? new Date().toISOString() : null,
-      household_id: '00000000-0000-0000-0000-000000000000' // Default shared household
     })
     .select();
 };
@@ -77,10 +81,7 @@ export const updateFixedExpenseStatus = async (id: string, completed: boolean): 
 export const addFixedExpense = async (expense: Omit<FixedExpense, 'id' | 'created_at'>) => {
   return supabase
     .from('fixed_expenses')
-    .insert({
-      ...expense,
-      household_id: '00000000-0000-0000-0000-000000000000' // Default shared household
-    })
+    .insert(expense)
     .select()
     .single();
 };
@@ -120,17 +121,18 @@ export const addMonthlyIncome = async (income: {
 }) => {
   return supabase
     .from('monthly_income')
-    .insert({
-      ...income,
-      household_id: '00000000-0000-0000-0000-000000000000' // Default shared household
-    })
+    .insert(income)
     .select()
     .single();
 };
 
-export const updateMonthlyIncome = async (id: string, income: Partial<Income>) => {
+export const updateMonthlyIncome = async (id: string, income: {
+  lucas_income?: number;
+  camila_income?: number;
+  other_income?: number;
+}) => {
   return supabase
-    .from('income')
+    .from('monthly_income')
     .update(income)
     .eq('id', id)
     .select()
@@ -167,10 +169,9 @@ export const addInvestmentHistory = async (
     .from('investment_history')
     .insert({
       investment_id,
-      old_value,
+      previous_value: old_value,
       new_value,
       updated_by: user_id,
-      date: new Date().toISOString()
     })
     .select()
     .single();

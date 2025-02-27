@@ -1,4 +1,3 @@
-
 export type Json =
   | string
   | number
@@ -22,7 +21,6 @@ export interface Database {
         Insert: Omit<Database['public']['Tables']['investments']['Row'], 'id' | 'created_at' | 'last_updated'>
         Update: Partial<Database['public']['Tables']['investments']['Insert']>
       }
-      // Add other tables as needed
     }
   }
 }
