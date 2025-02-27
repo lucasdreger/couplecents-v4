@@ -1,13 +1,18 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { getInvestments, updateInvestment, addInvestmentHistory } from '@/lib/supabase/queries'
-import type { Investment } from '@/types/database.types'
+import { useAuth } from '@/context/AuthContext'
+import { 
+  getInvestments, 
+  updateInvestment, 
+  addInvestmentHistory 
+} from '@/lib/supabase/queries'
+import { queryKeys } from '@/lib/queries'
 
 export const useInvestments = () => {
   const queryClient = useQueryClient()
-  const queryKey = ['investments']
+  const { user } = useAuth()
 
-  const { data: investments, isLoading } = useQuery<Investment[]>({
-    queryKey,
+  const { data: investments, isLoading } = useQuery({
+    queryKey: queryKeys.investments(),
     queryFn: async () => {
       const { data, error } = await getInvestments()
       if (error) throw error
@@ -16,20 +21,25 @@ export const useInvestments = () => {
   })
 
   const { mutate: updateValue } = useMutation({
-    mutationFn: async ({ id, value, userId }: { id: string; value: number; userId: string }) => {
-      const investment = investments?.find(i => i.id === id)
-      if (investment) {
-        await addInvestmentHistory(id, investment.current_value, value, userId)
-        await updateInvestment(id, value)
+    mutationFn: async ({ id, value, oldValue }: { id: string; value: number; oldValue: number }) => {
+      // Update the investment value
+      const { error: updateError } = await updateInvestment(id, value)
+      if (updateError) throw updateError
+
+      // Record the change in history if there's a user
+      if (user?.id) {
+        const { error: historyError } = await addInvestmentHistory(id, oldValue, value, user.id)
+        if (historyError) throw historyError
       }
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey })
-    },
-    onError: (error) => {
-      console.error('Failed to update investment:', error)
+      queryClient.invalidateQueries({ queryKey: queryKeys.investments() })
     }
   })
 
-  return { investments: investments || [], isLoading, updateValue }
+  return {
+    investments,
+    isLoading,
+    updateValue
+  }
 }

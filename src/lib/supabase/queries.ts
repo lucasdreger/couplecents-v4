@@ -18,7 +18,10 @@ export const getMonthlyExpenses = async (year: number, month: number) => {
 export const addVariableExpense = async (expense: Omit<VariableExpense, 'id' | 'created_at'>) => {
   return supabase
     .from('variable_expenses')
-    .insert(expense)
+    .insert({
+      ...expense,
+      household_id: '00000000-0000-0000-0000-000000000000' // Default shared household
+    })
     .select()
     .single();
 };
@@ -65,7 +68,8 @@ export const updateFixedExpenseStatus = async (id: string, completed: boolean): 
     .upsert({
       fixed_expense_id: id,
       completed,
-      completed_at: completed ? new Date().toISOString() : null
+      completed_at: completed ? new Date().toISOString() : null,
+      household_id: '00000000-0000-0000-0000-000000000000' // Default shared household
     })
     .select();
 };
@@ -73,7 +77,10 @@ export const updateFixedExpenseStatus = async (id: string, completed: boolean): 
 export const addFixedExpense = async (expense: Omit<FixedExpense, 'id' | 'created_at'>) => {
   return supabase
     .from('fixed_expenses')
-    .insert(expense)
+    .insert({
+      ...expense,
+      household_id: '00000000-0000-0000-0000-000000000000' // Default shared household
+    })
     .select()
     .single();
 };
@@ -97,17 +104,26 @@ export const deleteFixedExpense = async (id: string) => {
 // Income
 export const getMonthlyIncome = async (year: number, month: number) => {
   return supabase
-    .from('income')
+    .from('monthly_income')
     .select('*')
     .eq('year', year)
     .eq('month', month)
     .single();
 };
 
-export const addMonthlyIncome = async (income: Omit<Income, 'id' | 'created_at'>) => {
+export const addMonthlyIncome = async (income: {
+  lucas_income: number;
+  camila_income: number;
+  other_income: number;
+  month: number;
+  year: number;
+}) => {
   return supabase
-    .from('income')
-    .insert(income)
+    .from('monthly_income')
+    .insert({
+      ...income,
+      household_id: '00000000-0000-0000-0000-000000000000' // Default shared household
+    })
     .select()
     .single();
 };
@@ -123,20 +139,10 @@ export const updateMonthlyIncome = async (id: string, income: Partial<Income>) =
 
 // Investments
 export const getInvestments = async () => {
-  console.log('Fetching investments...'); // Debug log
-  try {
-    const result = await supabase
-      .from('investments')
-      .select('*')
-      .order('name')
-      .throwOnError();
-      
-    console.log('Investments result:', result); // Debug log
-    return result;
-  } catch (error) {
-    console.error('Error fetching investments:', error);
-    throw error;
-  }
+  return supabase
+    .from('investments')
+    .select('*')
+    .order('name');
 };
 
 export const updateInvestment = async (id: string, current_value: number) => {
@@ -163,7 +169,7 @@ export const addInvestmentHistory = async (
       investment_id,
       old_value,
       new_value,
-      user_id,
+      updated_by: user_id,
       date: new Date().toISOString()
     })
     .select()

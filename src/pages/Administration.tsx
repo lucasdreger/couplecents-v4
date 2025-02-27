@@ -1,38 +1,34 @@
 import React from 'react';
-import { Card } from "@/components/ui/card";
+import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { CategoriesManagement } from "@/components/administration/CategoriesManagement";
 import { DefaultIncomeManagement } from "@/components/administration/DefaultIncomeManagement";
 import { FixedExpensesManagement } from "@/components/administration/FixedExpensesManagement";
-import { HouseholdManagement } from "@/components/administration/HouseholdManagement";
-import { HouseholdInfo } from '@/components/HouseholdInfo';
-import { useHousehold } from '@/hooks/useHousehold';
 
 export const Administration: React.FC = () => {
-  const { isLoadingHousehold } = useHousehold();
-
-  if (isLoadingHousehold) {
-    return (
-      <div className="container mx-auto p-6">
-        <div className="flex items-center justify-center min-h-[200px]">
-          <p className="text-muted-foreground">Loading administration panel...</p>
-        </div>
-      </div>
-    );
-  }
-
   return (
-    <div className="container mx-auto p-6 space-y-6">
+    <div className="container mx-auto py-6">
       <h1 className="text-3xl font-bold mb-6">Administration</h1>
       
-      <div className="grid gap-6">
-        <HouseholdManagement />
-        <CategoriesManagement />
-        <DefaultIncomeManagement />
-        <FixedExpensesManagement />
-      </div>
-      <div className="mt-6">
-        <HouseholdInfo />
-      </div>
+      <Tabs defaultValue="categories" className="space-y-4">
+        <TabsList>
+          <TabsTrigger value="categories">Categories</TabsTrigger>
+          <TabsTrigger value="fixed-expenses">Fixed Expenses</TabsTrigger>
+          <TabsTrigger value="default-income">Default Income</TabsTrigger>
+        </TabsList>
+        
+        <TabsContent value="categories">
+          <CategoriesManagement />
+        </TabsContent>
+        
+        <TabsContent value="fixed-expenses">
+          <FixedExpensesManagement />
+        </TabsContent>
+        
+        <TabsContent value="default-income">
+          <DefaultIncomeManagement />
+        </TabsContent>
+      </Tabs>
     </div>
   );
 };

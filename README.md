@@ -67,3 +67,50 @@ Simply open [Lovable](https://lovable.dev/projects/d22b273d-bf78-4296-9da9-11d42
 ## I want to use a custom domain - is that possible?
 
 We don't support custom domains (yet). If you want to deploy your project under your own domain then we recommend using Netlify. Visit our docs for more details: [Custom domains](https://docs.lovable.dev/tips-tricks/custom-domain/)
+
+# Expense Empower
+
+A financial management platform designed for couples to manage shared finances.
+
+## Architecture Overview
+
+Expense Empower is built as a single shared workspace where all users see the same financial data in real-time. When any user updates an expense, income entry, or investment value, all other logged-in users will see these changes immediately.
+
+### Key Features
+
+- **Shared Financial Dashboard**: A single source of truth for all financial data
+- **Real-time Collaboration**: Multiple users can work simultaneously
+- **Four Financial Pillars**:
+  - Income Tracking - Detailed recording of all income sources
+  - Expense Management - Categorized tracking of both fixed and variable spending
+  - Investment Monitoring - Long-term financial growth tracking
+  - Reserve Building - Dedicated savings toward specific goals
+
+### Technical Implementation
+
+The application uses a shared data model where all records are visible to all authenticated users. This is implemented through:
+
+1. A unified database schema where records are not segregated by household
+2. Real-time data synchronization using Supabase Realtime features
+3. Collaborative UI components that update in real-time
+
+### Setup Instructions
+
+1. Clone the repository
+2. Install dependencies: `npm install`
+3. Create a `.env` file based on `.env.example` with your Supabase credentials
+4. Run the development server: `npm run dev`
+5. Apply database migrations: Run the SQL files in the `src/db` directory in your Supabase SQL editor
+
+### Database Schema
+
+The database uses a shared model where all data is available to all authenticated users.
+
+## Development
+
+The application is built with:
+
+- React / TypeScript
+- Supabase for backend and authentication
+- React Query for data fetching
+- Shadcn UI for components

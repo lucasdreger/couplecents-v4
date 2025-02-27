@@ -1,28 +1,23 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
-import { Button } from "@/components/ui/button"
 import { supabase } from '@/lib/supabaseClient'
 import { useToast } from "@/components/ui/use-toast"
-import { useHousehold } from '@/hooks/useHousehold'
 
 export const DefaultIncomeManagement = () => {
   const { toast } = useToast()
   const queryClient = useQueryClient()
-  const { household } = useHousehold()
-
+  
   const { data: defaultIncome } = useQuery({
-    queryKey: ['default-income', household?.id],
+    queryKey: ['default-income'],
     queryFn: async () => {
       const { data, error } = await supabase
         .from('default_income')
         .select('*')
-        .eq('household_id', household?.id)
         .single()
       if (error) throw error
       return data
-    },
-    enabled: !!household
+    }
   })
 
   const { mutate: updateIncome } = useMutation({
@@ -31,18 +26,35 @@ export const DefaultIncomeManagement = () => {
       camila_income?: number;
       other_income?: number;
     }) => {
-      const { error } = await supabase
-        .from('default_income')
-        .update({
-          ...values,
-          household_id: household?.id
-        })
-        .eq('id', defaultIncome?.id)
-      if (error) throw error
+      // If no default income exists, create it
+      if (!defaultIncome?.id) {
+        const { error } = await supabase
+          .from('default_income')
+          .insert({
+            ...values,
+            lucas_income: values.lucas_income || 0,
+            camila_income: values.camila_income || 0,
+            other_income: values.other_income || 0
+          })
+        if (error) throw error
+      } else {
+        // Otherwise, update existing record
+        const { error } = await supabase
+          .from('default_income')
+          .update(values)
+          .eq('id', defaultIncome.id)
+        if (error) throw error
+      }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['default-income'] })
       toast({ description: "Default income updated successfully" })
+    },
+    onError: (error: Error) => {
+      toast({ 
+        description: "Failed to update default income: " + error.message,
+        variant: "destructive"
+      })
     }
   })
 

@@ -8,10 +8,9 @@ import { Switch } from "@/components/ui/switch"
 import { Label } from "@/components/ui/label"
 import { supabase } from '@/lib/supabaseClient'
 import { useToast } from "@/components/ui/use-toast"
-import { useHousehold } from '@/hooks/useHousehold'
+import { queryKeys } from '@/lib/queries'
 
 export const FixedExpensesManagement = () => {
-  const { household } = useHousehold()
   const [expense, setExpense] = useState({
     description: '',
     estimated_amount: '',
@@ -24,31 +23,27 @@ export const FixedExpensesManagement = () => {
   const queryClient = useQueryClient()
 
   const { data: categories } = useQuery({
-    queryKey: ['categories', household?.id],
+    queryKey: queryKeys.categories(),
     queryFn: async () => {
       const { data, error } = await supabase
         .from('categories')
         .select('*')
-        .eq('household_id', household?.id)
         .order('name')
       if (error) throw error
       return data
-    },
-    enabled: !!household
+    }
   })
 
   const { data: fixedExpenses } = useQuery({
-    queryKey: ['fixed-expenses', household?.id],
+    queryKey: queryKeys.fixedExpenses(),
     queryFn: async () => {
       const { data, error } = await supabase
         .from('fixed_expenses')
         .select('*, categories(*)')
-        .eq('household_id', household?.id)
         .order('description')
       if (error) throw error
       return data
-    },
-    enabled: !!household
+    }
   })
 
   const { mutate: addExpense } = useMutation({
@@ -57,13 +52,12 @@ export const FixedExpensesManagement = () => {
         .from('fixed_expenses')
         .insert({
           ...data,
-          household_id: household?.id,
           estimated_amount: parseFloat(data.estimated_amount)
         })
       if (error) throw error
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['fixed-expenses'] })
+      queryClient.invalidateQueries({ queryKey: queryKeys.fixedExpenses() })
       setExpense({
         description: '',
         estimated_amount: '',
@@ -72,6 +66,12 @@ export const FixedExpensesManagement = () => {
         status_required: false
       })
       toast({ description: "Fixed expense added successfully" })
+    },
+    onError: (error: Error) => {
+      toast({ 
+        description: "Failed to add fixed expense: " + error.message,
+        variant: "destructive"
+      })
     }
   })
 
@@ -110,7 +110,6 @@ export const FixedExpensesManagement = () => {
               ))}
             </SelectContent>
           </Select>
-
           <Select
             value={expense.owner}
             onValueChange={(value) => setExpense(prev => ({ ...prev, owner: value }))}
@@ -123,7 +122,6 @@ export const FixedExpensesManagement = () => {
               <SelectItem value="Camila">Camila</SelectItem>
             </SelectContent>
           </Select>
-
           <div className="flex items-center space-x-2">
             <Switch 
               id="status-required"
@@ -134,10 +132,13 @@ export const FixedExpensesManagement = () => {
             />
             <Label htmlFor="status-required">Status Required</Label>
           </div>
-
-          <Button onClick={() => addExpense(expense)}>Add Fixed Expense</Button>
+          <Button 
+            onClick={() => addExpense(expense)}
+            disabled={!expense.description || !expense.estimated_amount || !expense.category_id}
+          >
+            Add Fixed Expense
+          </Button>
         </div>
-
         <div className="space-y-2">
           {fixedExpenses?.map((expense) => (
             <div key={expense.id} className="flex justify-between items-center p-3 rounded border">

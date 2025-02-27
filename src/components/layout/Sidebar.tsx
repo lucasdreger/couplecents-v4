@@ -12,7 +12,6 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/context/AuthContext";
-import { useHousehold } from "@/context/HouseholdContext";
 
 type IconType = typeof LayoutDashboard;
 
@@ -28,11 +27,10 @@ const navigation = [
 
 export default function Sidebar() {
   const { signOut } = useAuth();
-  const { currentHousehold } = useHousehold();
   
   return (
     <div className="hidden w-64 flex-shrink-0 flex-col border-r bg-sidebar text-sidebar-foreground md:flex">
-      {/* Logo and household name */}
+      {/* Logo */}
       <div className="flex h-16 items-center justify-between border-b border-sidebar-border px-4">
         <div className="flex items-center space-x-2">
           <Wallet className="h-6 w-6 text-sidebar-primary" />
@@ -40,13 +38,11 @@ export default function Sidebar() {
         </div>
       </div>
       
-      {/* Household info */}
-      {currentHousehold && (
-        <div className="border-b border-sidebar-border px-4 py-3">
-          <p className="font-medium">{currentHousehold.name}</p>
-          <p className="text-xs opacity-70">Household</p>
-        </div>
-      )}
+      {/* Application title with no household references */}
+      <div className="border-b border-sidebar-border px-4 py-3">
+        <p className="font-medium">Financial Dashboard</p>
+        <p className="text-xs opacity-70">Collaborative Workspace</p>
+      </div>
       
       {/* Navigation links */}
       <nav className="flex flex-1 flex-col gap-1 overflow-y-auto p-4">

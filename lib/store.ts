@@ -1,31 +1,25 @@
+import { configureStore } from '@reduxjs/toolkit';
+import userReducer from './features/user/userSlice';
 
+export const store = configureStore({
+  reducer: {
+    user: userReducer,
+  },
+});
 
+export type RootState = ReturnType<typeof store.getState>;
+export type AppDispatch = typeof store.dispatch;
 
+export const selectUserId = (state: RootState) => state.user.id;
 
+export interface UserState {
+  email: string | null;
+  id: string | null;
+}
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-// Remove selectHouseholdId if it existsexport const selectUserId = (state: RootState) => state.user.id;// Modify any household-related selectors}  // Remove household_id property  email: string | null;  id: string | null;export interface UserState {// Remove household from user state>;  Action<string>  unknown,  RootState,  ReturnType,export type AppThunk<ReturnType = void> = ThunkAction<export type AppDispatch = typeof store.dispatch;export type RootState = ReturnType<typeof store.getState>;});  },    expense: expenseReducer,    user: userReducer,  reducer: {export const store = configureStore({import expenseReducer from './features/expense/expenseSlice';import userReducer from './features/user/userSlice';import { configureStore, ThunkAction, Action } from '@reduxjs/toolkit';
+export type AppThunk<ReturnType = void> = ThunkAction<
+  unknown,
+  RootState,
+  Action<string>,
+  ReturnType
+>;

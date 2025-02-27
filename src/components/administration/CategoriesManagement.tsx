@@ -7,32 +7,27 @@ import { Button } from "@/components/ui/button"
 import { Plus, Trash2 } from 'lucide-react'
 import { supabase } from '@/lib/supabaseClient'
 import { useToast } from "@/components/ui/use-toast"
-import { useHousehold } from '@/hooks/useHousehold'
 import { queryKeys } from '@/lib/queries'
 
 interface Category {
   id: string
   name: string
-  household_id: string
 }
 
 // Separate the categories list into its own component for suspense
-function CategoriesList({ household, onDelete }: { 
-  household: { id: string } | null, 
+function CategoriesList({ onDelete }: { 
   onDelete: (id: string) => void 
 }) {
   const { data: categories } = useQuery<Category[]>({
-    queryKey: queryKeys.categories(household?.id),
+    queryKey: queryKeys.categories(),
     queryFn: async () => {
       const { data, error } = await supabase
         .from('categories')
         .select('*')
-        .eq('household_id', household?.id)
         .order('name')
       if (error) throw error
       return data
-    },
-    enabled: !!household,
+    }
   })
 
   if (!categories?.length) {
@@ -65,20 +60,18 @@ export const CategoriesManagement = () => {
   const [newCategory, setNewCategory] = useState('')
   const { toast } = useToast()
   const queryClient = useQueryClient()
-  const { household } = useHousehold()
 
   const { mutate: addCategory } = useMutation({
     mutationFn: async (name: string) => {
       const { error } = await supabase
         .from('categories')
         .insert({ 
-          name,
-          household_id: household?.id
+          name
         })
       if (error) throw error
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.categories(household?.id) })
+      queryClient.invalidateQueries({ queryKey: queryKeys.categories() })
       setNewCategory('')
       toast({ description: "Category added successfully" })
     },
@@ -99,7 +92,7 @@ export const CategoriesManagement = () => {
       if (error) throw error
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.categories(household?.id) })
+      queryClient.invalidateQueries({ queryKey: queryKeys.categories() })
       toast({ description: "Category deleted successfully" })
     },
     onError: (error: Error) => {
@@ -109,21 +102,6 @@ export const CategoriesManagement = () => {
       })
     }
   })
-
-  if (!household) {
-    return (
-      <Card>
-        <CardHeader>
-          <CardTitle>Categories Management</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="flex items-center justify-center py-4">
-            <p className="text-muted-foreground">Please create or join a household first.</p>
-          </div>
-        </CardContent>
-      </Card>
-    )
-  }
 
   return (
     <Card>
@@ -152,7 +130,6 @@ export const CategoriesManagement = () => {
           </div>
         }>
           <CategoriesList 
-            household={household} 
             onDelete={deleteCategory}
           />
         </React.Suspense>

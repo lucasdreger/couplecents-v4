@@ -1,21 +1,39 @@
 import { supabase } from './supabaseClient';
 
-// ...existing code...
+export const getCurrentUser = async () => {
+  const { data: { user } } = await supabase.auth.getUser();
+  return user;
+};
 
-// In any function that handles user data after authentication:
-// Remove any code that sets or gets household_id
+export const getCurrentSession = async () => {
+  const { data: { session } } = await supabase.auth.getSession();
+  return session;
+};
 
-// For example, if there's a function like:
 export const getUserData = async (userId: string) => {
-  // Replace any query that filters by household with one that just gets user data
   const { data, error } = await supabase
     .from('users')
     .select('*')
     .eq('id', userId)
     .single();
-    
-  // Remove any household processing logic
-  return data;
+  
+  return { data, error };
 };
 
-// ...existing code...
+export const signIn = async (email: string, password: string) => {
+  const { data, error } = await supabase.auth.signInWithPassword({
+    email,
+    password,
+  });
+  return { data, error };
+};
+
+export const signOut = async () => {
+  return await supabase.auth.signOut();
+};
+
+export const resetPasswordForEmail = async (email: string) => {
+  return await supabase.auth.resetPasswordForEmail(email, {
+    redirectTo: `${window.location.origin}/reset-password`,
+  });
+};

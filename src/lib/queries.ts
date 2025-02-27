@@ -12,14 +12,16 @@ export const queryClient = new QueryClient({
   },
 })
 
-// Query keys as constants to avoid typos
+// Query key factory functions for React Query
 export const queryKeys = {
-  session: ['session'] as const,
-  household: (userId?: string) => ['household', userId] as const,
-  investments: ['investments'] as const,
-  expenses: (year: number, month: number) => ['expenses', year, month] as const,
-  income: (year: number, month: number) => ['income', year, month] as const,
-  categories: (householdId?: string) => ['categories', householdId] as const,
-  fixedExpenses: (householdId?: string) => ['fixed-expenses', householdId] as const,
-  defaultIncome: (householdId?: string) => ['default-income', householdId] as const,
-}
+  expenses: (year: number, month: number) => ['expenses', year, month],
+  fixedExpenses: () => ['fixed-expenses'],
+  income: (year: number, month: number) => ['income', year, month],
+  investments: () => ['investments'],
+  investmentHistory: (id: string) => ['investment-history', id],
+  categories: () => ['categories'],
+  defaultIncome: () => ['default-income'],
+  reserves: () => ['reserves'],
+  reserveHistory: (id: string) => ['reserve-history', id],
+  monthlyDetails: () => ['monthly-details'],
+} as const;

@@ -16,21 +16,18 @@ import {
   getMonthlyIncome,
   addVariableExpense, 
   updateVariableExpense, 
-  deleteVariableExpense 
+  deleteVariableExpense,
+  updateFixedExpenseStatus
 } from '@/lib/supabase/queries'
 import type { VariableExpense, FixedExpense, Income } from '@/types/database.types'
+import { queryKeys } from '@/lib/queries'
 
 export const useExpenses = (year: number, month: number) => {
   const queryClient = useQueryClient()
 
-  // Create stable query keys for caching
-  const variableExpensesKey = ['variable-expenses', year, month]
-  const fixedExpensesKey = ['fixed-expenses', year, month]
-  const incomeKey = ['income', year, month]
-
   // Fetch variable expenses for the specified month
-  const { data: expenses } = useQuery({
-    queryKey: variableExpensesKey,
+  const { data: expenses, isLoading: loadingExpenses } = useQuery({
+    queryKey: queryKeys.expenses(year, month),
     queryFn: async () => {
       const { data, error } = await getMonthlyExpenses(year, month)
       if (error) throw error
@@ -39,8 +36,8 @@ export const useExpenses = (year: number, month: number) => {
   })
 
   // Fetch fixed expenses
-  const { data: fixedExpenses } = useQuery({
-    queryKey: fixedExpensesKey,
+  const { data: fixedExpenses, isLoading: loadingFixed } = useQuery({
+    queryKey: queryKeys.fixedExpenses(),
     queryFn: async () => {
       const { data, error } = await getFixedExpenses(year, month)
       if (error) throw error
@@ -49,8 +46,8 @@ export const useExpenses = (year: number, month: number) => {
   })
 
   // Fetch monthly income
-  const { data: income } = useQuery({
-    queryKey: incomeKey,
+  const { data: income, isLoading: loadingIncome } = useQuery({
+    queryKey: queryKeys.income(year, month),
     queryFn: async () => {
       const { data, error } = await getMonthlyIncome(year, month)
       if (error) throw error
@@ -60,45 +57,46 @@ export const useExpenses = (year: number, month: number) => {
 
   // Mutation for adding new expenses
   const { mutate: addExpense } = useMutation({
-    mutationFn: async (expense: Omit<VariableExpense, 'id' | 'created_at'>) => {
-      const { data, error } = await addVariableExpense(expense)
-      if (error) throw error
-      return data
-    },
+    mutationFn: addVariableExpense,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: variableExpensesKey })
+      queryClient.invalidateQueries({ queryKey: queryKeys.expenses(year, month) })
     }
   })
 
   // Mutation for updating expenses
   const { mutate: updateExpense } = useMutation({
-    mutationFn: async ({ id, ...expense }: Partial<VariableExpense> & { id: string }) => {
-      const { data, error } = await updateVariableExpense(id, expense)
-      if (error) throw error
-      return data
-    },
+    mutationFn: ({ id, expense }: { id: string; expense: Partial<VariableExpense> }) => 
+      updateVariableExpense(id, expense),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: variableExpensesKey })
+      queryClient.invalidateQueries({ queryKey: queryKeys.expenses(year, month) })
     }
   })
 
   // Mutation for deleting expenses
-  const { mutate: deleteExpense } = useMutation({
-    mutationFn: async (id: string) => {
-      const { error } = await deleteVariableExpense(id)
-      if (error) throw error
-    },
+  const { mutate: removeExpense } = useMutation({
+    mutationFn: deleteVariableExpense,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: variableExpensesKey })
+      queryClient.invalidateQueries({ queryKey: queryKeys.expenses(year, month) })
+    }
+  })
+
+  // Mutation for updating fixed expense status
+  const { mutate: updateFixedStatus } = useMutation({
+    mutationFn: ({ id, completed }: { id: string; completed: boolean }) =>
+      updateFixedExpenseStatus(id, completed),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.fixedExpenses() })
     }
   })
 
   return {
-    expenses: expenses || [],
-    fixedExpenses: fixedExpenses || [],
-    income: income || { lucas_income: 0, camila_income: 0, other_income: 0 },
+    expenses,
+    fixedExpenses,
+    income,
+    isLoading: loadingExpenses || loadingFixed || loadingIncome,
     addExpense,
     updateExpense,
-    deleteExpense
+    removeExpense,
+    updateFixedStatus
   }
 }

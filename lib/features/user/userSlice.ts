@@ -1,6 +1,5 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 
-// Update the UserState interface to remove household_id
 export interface UserState {
   id: string | null;
   email: string | null;
@@ -15,9 +14,9 @@ export const userSlice = createSlice({
   name: 'user',
   initialState,
   reducers: {
-    setUser: (state, action: PayloadAction<Partial<UserState>>) => {
-      state.id = action.payload.id || state.id;
-      state.email = action.payload.email || state.email;
+    setUser: (state, action: PayloadAction<{ id: string; email: string }>) => {
+      state.id = action.payload.id;
+      state.email = action.payload.email;
     },
     clearUser: (state) => {
       state.id = null;
@@ -25,3 +24,11 @@ export const userSlice = createSlice({
     },
   },
 });
+
+export const { setUser, clearUser } = userSlice.actions;
+
+export const selectUser = (state: { user: UserState }) => state.user;
+export const selectUserId = (state: { user: UserState }) => state.user.id;
+export const selectUserEmail = (state: { user: UserState }) => state.user.email;
+
+export default userSlice.reducer;

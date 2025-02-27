@@ -4,7 +4,6 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Toaster } from 'sonner';
 
 import { AuthProvider } from '@/context/AuthContext';
-import { HouseholdProvider } from '@/context/HouseholdContext';
 import { ThemeProvider } from '@/context/ThemeContext';
 
 import PrivateRoute from '@/components/Auth/PrivateRoute';
@@ -35,38 +34,36 @@ function App() {
     <QueryClientProvider client={queryClient}>
       <ThemeProvider defaultTheme="system" storageKey="expense-empower-theme">
         <AuthProvider>
-          <HouseholdProvider>
-            <Router>
-              <Routes>
-                <Route path="/login" element={<Login />} />
-                
-                <Route element={<PrivateRoute />}>
-                  <Route element={<DashboardLayout />}>
-                    <Route path="/" element={<Navigate to="/dashboard" replace />} />
-                    <Route path="/dashboard" element={<Dashboard />} />
-                    <Route path="/expenses" element={<Expenses />} />
-                    <Route path="/fixed-expenses" element={<FixedExpenses />} />
-                    <Route path="/income" element={<Income />} />
-                    <Route path="/investments" element={<Investments />} />
-                    <Route path="/reserves" element={<Reserves />} />
-                    <Route path="/administration" element={<Administration />} />
-                  </Route>
+          <Router>
+            <Routes>
+              <Route path="/login" element={<Login />} />
+              
+              <Route element={<PrivateRoute />}>
+                <Route element={<DashboardLayout />}>
+                  <Route path="/" element={<Navigate to="/dashboard" replace />} />
+                  <Route path="/dashboard" element={<Dashboard />} />
+                  <Route path="/expenses" element={<Expenses />} />
+                  <Route path="/fixed-expenses" element={<FixedExpenses />} />
+                  <Route path="/income" element={<Income />} />
+                  <Route path="/investments" element={<Investments />} />
+                  <Route path="/reserves" element={<Reserves />} />
+                  <Route path="/administration" element={<Administration />} />
                 </Route>
-                
-                <Route path="*" element={<NotFound />} />
-              </Routes>
-            </Router>
-            
-            <Toaster 
-              position="top-right" 
-              richColors 
-              closeButton
-              toastOptions={{
-                style: { background: 'var(--background)', color: 'var(--foreground)' },
-                className: 'border border-border shadow-lg',
-              }}
-            />
-          </HouseholdProvider>
+              </Route>
+              
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </Router>
+          
+          <Toaster 
+            position="top-right" 
+            richColors 
+            closeButton
+            toastOptions={{
+              style: { background: 'var(--background)', color: 'var(--foreground)' },
+              className: 'border border-border shadow-lg',
+            }}
+          />
         </AuthProvider>
       </ThemeProvider>
     </QueryClientProvider>
