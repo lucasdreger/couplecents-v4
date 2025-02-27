@@ -5,15 +5,15 @@ import { Toaster } from 'sonner';
 import { AuthProvider } from '@/context/AuthContext';
 import { ThemeProvider } from '@/context/ThemeContext';
 import PrivateRoute from '@/components/Auth/PrivateRoute';
-import { Login } from '@/pages/Login';
+import Login from '@/pages/Login';
 import { Dashboard } from '@/pages/Dashboard';
 import { Expenses } from '@/pages/Expenses';
 import { FixedExpenses } from '@/pages/FixedExpenses';
 import { Income } from '@/pages/Income';
 import { Investments } from '@/pages/Investments';
 import { Reserves } from '@/pages/Reserves';
-import { Administration } from '@/pages/Administration';
-import { NotFound } from '@/pages/NotFound';
+import Administration from '@/pages/Administration';
+import NotFound from '@/pages/NotFound';
 import DashboardLayout from '@/layouts/DashboardLayout';
 
 // Create a client

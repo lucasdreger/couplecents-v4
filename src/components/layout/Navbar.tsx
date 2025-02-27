@@ -1,5 +1,4 @@
 
-import React from "react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/context/AuthContext";
 
@@ -18,5 +17,5 @@ export function Navbar() {
         </div>
       </div>
     </nav>
-  )
+  );
 }

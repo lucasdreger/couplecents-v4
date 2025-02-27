@@ -1,4 +1,4 @@
-import React from 'react';
+
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { CategoriesManagement } from "@/components/administration/CategoriesManagement";
 import { DefaultIncomeManagement } from "@/components/administration/DefaultIncomeManagement";
