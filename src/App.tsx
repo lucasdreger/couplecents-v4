@@ -1,3 +1,4 @@
+
 import { RouterProvider, createBrowserRouter } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Toaster } from 'sonner';
@@ -6,7 +7,6 @@ import { ThemeProvider } from '@/context/ThemeContext';
 import PrivateRoute from '@/components/Auth/PrivateRoute';
 import Login from '@/pages/Login';
 import { Dashboard } from '@/pages/Dashboard';
-import { Expenses } from '@/pages/Expenses';
 import { Investments } from '@/pages/Investments';
 import { Reserves } from '@/pages/Reserves';
 import { MonthlyExpenses } from '@/pages/MonthlyExpenses';
@@ -46,8 +46,8 @@ const router = createBrowserRouter([
             element: <Dashboard />
           },
           {
-            path: "/expenses",
-            element: <Expenses />
+            path: "/monthly-expenses",
+            element: <MonthlyExpenses />
           },
           {
             path: "/investments",
@@ -60,11 +60,7 @@ const router = createBrowserRouter([
           {
             path: "/administration",
             element: <Administration />
-          },
-          {
-            path: "/monthly-expenses",
-            element: <MonthlyExpenses />
-          },
+          }
         ]
       }
     ]

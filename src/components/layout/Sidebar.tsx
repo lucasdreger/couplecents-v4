@@ -1,9 +1,9 @@
+
 import { NavLink } from "react-router-dom";
 import {
   BarChart4,
   LayoutDashboard, 
   LogOut, 
-  Receipt, 
   Settings, 
   PiggyBank,
   Wallet,
@@ -12,15 +12,12 @@ import {
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/context/AuthContext";
 
-type IconType = typeof LayoutDashboard;
-
 const navigation = [
   { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
-  { name: 'Expenses', href: '/expenses', icon: Receipt },
+  { name: 'Months', href: '/monthly-expenses', icon: Calendar },
   { name: 'Investments', href: '/investments', icon: BarChart4 },
   { name: 'Reserves', href: '/reserves', icon: PiggyBank },
   { name: 'Administration', href: '/administration', icon: Settings },
-  { name: 'Months', href: '/monthly-expenses', icon: Calendar },
 ];
 
 export default function Sidebar() {

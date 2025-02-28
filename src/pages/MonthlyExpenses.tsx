@@ -1,138 +1,132 @@
-import { useState } from 'react'
-import { useExpenses } from '@/hooks/useExpenses'
-import { Plus } from 'lucide-react'
-import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { useToast } from '@/components/ui/use-toast'
-import { ExpenseForm } from '@/components/expenses/ExpenseForm'
-import { MonthlyIncome } from '@/components/expenses/MonthlyIncome'
-import { FixedExpensesList } from '@/components/expenses/FixedExpensesList'
-import { VariableExpensesList } from '@/components/expenses/VariableExpensesList'
 
-export const MonthlyExpenses = () => {
-  const currentYear = new Date().getFullYear()
-  const currentMonth = new Date().getMonth() + 1
-  const [selectedYear, setSelectedYear] = useState(currentYear)
-  const [selectedMonth, setSelectedMonth] = useState(currentMonth)
+import { useState } from 'react';
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { FixedExpensesList } from "@/components/expenses/FixedExpensesList";
+import { VariableExpensesList } from "@/components/expenses/VariableExpensesList";
+import { MonthlyIncome } from "@/components/expenses/MonthlyIncome";
+import { useQuery } from '@tanstack/react-query';
+import { queryKeys } from '@/lib/queries';
+import { getMonthlyExpenses } from '@/lib/supabase';
+
+export function MonthlyExpenses() {
+  const currentYear = new Date().getFullYear();
+  const currentMonth = new Date().getMonth() + 1;
   
-  // Get all expense data from custom hook
-  const { expenses, fixedExpenses, income, addExpense } = useExpenses(selectedYear, selectedMonth)
-  const { toast } = useToast()
-
-  // Generate array of years (current year to current year + 2)
-  const years = Array.from({ length: 3 }, (_, i) => currentYear + i)
-  const months = Array.from({ length: 12 }, (_, i) => i + 1)
-
+  const [selectedYear, setSelectedYear] = useState(currentYear);
+  const [selectedMonth, setSelectedMonth] = useState(currentMonth);
+  
+  // Get monthly expenses data
+  const { data: expenses } = useQuery({
+    queryKey: queryKeys.expenses(selectedYear, selectedMonth),
+    queryFn: () => getMonthlyExpenses(selectedYear, selectedMonth)
+  });
+  
   // Calculate totals
-  const totalIncome = income ? (income.lucas_income + income.camila_income + income.other_income) : 0
-  const totalFixedExpenses = fixedExpenses?.reduce((sum, expense) => sum + expense.amount, 0) || 0
-  const totalVariableExpenses = expenses?.reduce((sum, expense) => sum + expense.amount, 0) || 0
-
+  const totalVariableExpenses = expenses?.data?.reduce((sum, expense) => sum + Number(expense.amount), 0) || 0;
+  const totalExpenses = totalVariableExpenses; // Add fixed expenses if needed
+  
+  // Generate years for dropdown (from 2023 to current year + 1)
+  const years = Array.from({ length: (currentYear + 1) - 2023 + 1 }, (_, i) => 2023 + i);
+  
+  // Month names for display
+  const monthNames = [
+    'January', 'February', 'March', 'April', 'May', 'June',
+    'July', 'August', 'September', 'October', 'November', 'December'
+  ];
+  
+  const handleYearChange = (value: string) => {
+    setSelectedYear(parseInt(value));
+  };
+  
+  const handleMonthChange = (value: string) => {
+    setSelectedMonth(parseInt(value));
+  };
+  
   return (
-    <div className="container mx-auto px-4 py-6 space-y-6">
-      <div className="flex flex-col space-y-2">
-        <h2 className="text-3xl font-bold tracking-tight">Monthly Expenses</h2>
-        <p className="text-muted-foreground">
-          Manage income and expenses for {new Date(selectedYear, selectedMonth - 1).toLocaleString('default', { month: 'long', year: 'numeric' })}
-        </p>
-      </div>
-
-      <div className="flex flex-col space-y-4">
-        <Tabs defaultValue={selectedYear.toString()} onValueChange={(value) => setSelectedYear(parseInt(value))}>
-          <TabsList className="w-full justify-start">
+    <div className="container mx-auto p-6">
+      <div className="flex flex-col md:flex-row items-start md:items-center justify-between mb-6">
+        <h1 className="text-3xl font-bold tracking-tight mb-2 md:mb-0">Monthly Expenses</h1>
+        
+        <div className="flex gap-2 flex-wrap">
+          <select 
+            className="border border-border rounded px-2 py-1 bg-background text-foreground"
+            value={selectedYear} 
+            onChange={(e) => handleYearChange(e.target.value)}
+          >
             {years.map(year => (
-              <TabsTrigger key={year} value={year.toString()}>{year}</TabsTrigger>
+              <option key={year} value={year}>{year}</option>
             ))}
-          </TabsList>
-        </Tabs>
-
-        <Tabs defaultValue={selectedMonth.toString()} onValueChange={(value) => setSelectedMonth(parseInt(value))}>
-          <TabsList className="w-full grid grid-cols-6 sm:grid-cols-12">
-            {months.map(month => (
-              <TabsTrigger key={month} value={month.toString()}>
-                {new Date(2000, month - 1).toLocaleString('default', { month: 'short' })}
-              </TabsTrigger>
-            ))}
-          </TabsList>
-        </Tabs>
+          </select>
+          
+          <Tabs defaultValue={selectedMonth.toString()} onValueChange={handleMonthChange}>
+            <TabsList className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-12">
+              {monthNames.map((month, index) => (
+                <TabsTrigger 
+                  key={month} 
+                  value={(index + 1).toString()}
+                  className="text-xs sm:text-sm"
+                >
+                  {month.substring(0, 3)}
+                </TabsTrigger>
+              ))}
+            </TabsList>
+          </Tabs>
+        </div>
       </div>
-
-      <div className="grid gap-6 md:grid-cols-3">
-        <Card>
-          <CardHeader>
-            <CardTitle>Total Income</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">${totalIncome.toFixed(2)}</div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>Total Expenses</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">${(totalFixedExpenses + totalVariableExpenses).toFixed(2)}</div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>Balance</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">${(totalIncome - totalFixedExpenses - totalVariableExpenses).toFixed(2)}</div>
-          </CardContent>
-        </Card>
-      </div>
-
-      <MonthlyIncome year={selectedYear} month={selectedMonth} />
       
-      <Card>
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <div>
-              <CardTitle>Fixed Expenses</CardTitle>
-              <CardDescription>Total: ${totalFixedExpenses.toFixed(2)}</CardDescription>
-            </div>
-          </div>
-        </CardHeader>
-        <CardContent>
-          <FixedExpensesList year={selectedYear} month={selectedMonth} />
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <div>
-              <CardTitle>Variable Expenses</CardTitle>
-              <CardDescription>Total: ${totalVariableExpenses.toFixed(2)}</CardDescription>
-            </div>
-            <ExpenseForm
-              onSubmit={async (data) => {
-                try {
-                  await addExpense({
-                    ...data,
-                    year: selectedYear,
-                    month: selectedMonth
-                  })
-                  toast({ description: "Expense added successfully" })
-                } catch (error) {
-                  toast({ 
-                    description: "Failed to add expense", 
-                    variant: "destructive" 
-                  })
-                }
-              }}
+      <div className="grid gap-6 mb-6">
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle>Monthly Income</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <MonthlyIncome
+              year={selectedYear}
+              month={selectedMonth}
             />
-          </div>
-        </CardHeader>
-        <CardContent>
-          <VariableExpensesList expenses={expenses} />
-        </CardContent>
-      </Card>
+          </CardContent>
+        </Card>
+      </div>
+      
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle>Fixed Expenses</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <FixedExpensesList 
+              year={selectedYear}
+              month={selectedMonth}
+            />
+          </CardContent>
+        </Card>
+        
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle>Variable Expenses</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <VariableExpensesList
+              year={selectedYear}
+              month={selectedMonth}
+            />
+          </CardContent>
+        </Card>
+      </div>
+      
+      <div className="mt-6">
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle>Monthly Summary</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-lg">
+              Total Expenses: <span className="font-bold">${totalExpenses.toFixed(2)}</span>
+            </p>
+          </CardContent>
+        </Card>
+      </div>
     </div>
-  )
+  );
 }
