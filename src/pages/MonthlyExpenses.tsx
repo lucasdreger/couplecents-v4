@@ -8,6 +8,23 @@ import { MonthlyIncome } from "@/components/expenses/MonthlyIncome";
 import { useQuery } from '@tanstack/react-query';
 import { queryKeys } from '@/lib/queries';
 import { getMonthlyExpenses } from '@/lib/supabase';
+import { ErrorBoundary } from 'react-error-boundary';
+
+// Error fallback component
+const ErrorFallback = ({ error, resetErrorBoundary }) => {
+  return (
+    <div className="p-6 bg-red-50 border border-red-200 rounded-md">
+      <h2 className="text-lg font-semibold text-red-800 mb-2">Something went wrong:</h2>
+      <p className="text-red-700 mb-4">{error.message}</p>
+      <button
+        onClick={resetErrorBoundary}
+        className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
+      >
+        Try again
+      </button>
+    </div>
+  );
+};
 
 export function MonthlyExpenses() {
   const currentYear = new Date().getFullYear();
@@ -76,43 +93,49 @@ export function MonthlyExpenses() {
       </div>
       
       <div className="grid gap-6 mb-6">
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle>Monthly Income</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <MonthlyIncome
-              year={selectedYear}
-              month={selectedMonth}
-            />
-          </CardContent>
-        </Card>
+        <ErrorBoundary FallbackComponent={ErrorFallback}>
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle>Monthly Income</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <MonthlyIncome
+                year={selectedYear}
+                month={selectedMonth}
+              />
+            </CardContent>
+          </Card>
+        </ErrorBoundary>
       </div>
       
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle>Fixed Expenses</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <FixedExpensesList 
-              year={selectedYear}
-              month={selectedMonth}
-            />
-          </CardContent>
-        </Card>
+        <ErrorBoundary FallbackComponent={ErrorFallback}>
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle>Fixed Expenses</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <FixedExpensesList 
+                year={selectedYear}
+                month={selectedMonth}
+              />
+            </CardContent>
+          </Card>
+        </ErrorBoundary>
         
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle>Variable Expenses</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <VariableExpensesList
-              year={selectedYear}
-              month={selectedMonth}
-            />
-          </CardContent>
-        </Card>
+        <ErrorBoundary FallbackComponent={ErrorFallback}>
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle>Variable Expenses</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <VariableExpensesList
+                year={selectedYear}
+                month={selectedMonth}
+              />
+            </CardContent>
+          </Card>
+        </ErrorBoundary>
       </div>
       
       <div className="mt-6">
