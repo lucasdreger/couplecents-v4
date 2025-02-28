@@ -17,9 +17,16 @@ type IconType = typeof LayoutDashboard;
 
 const navigation = [
   { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
-  { name: 'Expenses', href: '/expenses', icon: Receipt },
-  { name: 'Fixed Expenses', href: '/fixed-expenses', icon: CreditCard },
-  { name: 'Income', href: '/income', icon: DollarSign },
+  { 
+    name: 'Expenses', 
+    href: '/expenses', 
+    icon: Receipt,
+    subItems: [
+      { name: 'Monthly Overview', href: '/expenses' },
+      { name: 'Fixed Expenses', href: '/expenses/fixed' },
+      { name: 'Income', href: '/expenses/income' },
+    ]
+  },
   { name: 'Investments', href: '/investments', icon: BarChart4 },
   { name: 'Reserves', href: '/reserves', icon: PiggyBank },
   { name: 'Administration', href: '/administration', icon: Settings },
@@ -47,21 +54,44 @@ export default function Sidebar() {
       {/* Navigation links */}
       <nav className="flex flex-1 flex-col gap-1 overflow-y-auto p-4">
         {navigation.map((item) => (
-          <NavLink
-            key={item.name}
-            to={item.href}
-            className={({ isActive }) =>
-              cn(
-                "flex items-center gap-3 rounded-md px-3 py-2 transition-colors",
-                isActive 
-                  ? "bg-sidebar-accent text-sidebar-accent-foreground" 
-                  : "hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground"
-              )
-            }
-          >
-            <item.icon className="h-5 w-5" />
-            <span>{item.name}</span>
-          </NavLink>
+          <div key={item.name} className="flex flex-col gap-1">
+            <NavLink
+              to={item.href}
+              end={!!item.subItems}
+              className={({ isActive }) =>
+                cn(
+                  "flex items-center gap-3 rounded-md px-3 py-2 transition-colors",
+                  isActive 
+                    ? "bg-sidebar-accent text-sidebar-accent-foreground" 
+                    : "hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground"
+                )
+              }
+            >
+              <item.icon className="h-5 w-5" />
+              <span>{item.name}</span>
+            </NavLink>
+            
+            {item.subItems && (
+              <div className="ml-8 flex flex-col gap-1">
+                {item.subItems.map((subItem) => (
+                  <NavLink
+                    key={subItem.name}
+                    to={subItem.href}
+                    className={({ isActive }) =>
+                      cn(
+                        "flex items-center text-sm gap-2 rounded-md px-3 py-1.5 transition-colors",
+                        isActive 
+                          ? "bg-sidebar-accent text-sidebar-accent-foreground" 
+                          : "hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground"
+                      )
+                    }
+                  >
+                    <span>{subItem.name}</span>
+                  </NavLink>
+                ))}
+              </div>
+            )}
+          </div>
         ))}
       </nav>
       

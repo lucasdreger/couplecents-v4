@@ -52,13 +52,14 @@ npm run dev
 
 ## What technologies are used for this project?
 
-This project is built with .
+This project is built with:
 
 - Vite
 - TypeScript
 - React
 - shadcn-ui
 - Tailwind CSS
+- Supabase
 
 ## How can I deploy this project?
 
@@ -80,6 +81,7 @@ Expense Empower is built as a single shared workspace where all users see the sa
 
 - **Shared Financial Dashboard**: A single source of truth for all financial data
 - **Real-time Collaboration**: Multiple users can work simultaneously
+- **Theme Support**: Toggle between light and dark modes for comfortable viewing
 - **Four Financial Pillars**:
   - Income Tracking - Detailed recording of all income sources
   - Expense Management - Categorized tracking of both fixed and variable spending
@@ -114,3 +116,34 @@ The application is built with:
 - Supabase for backend and authentication
 - React Query for data fetching
 - Shadcn UI for components
+
+## Navigation Structure
+
+- **Dashboard** - Overview of financial data
+- **Expenses** - Consolidated expense management
+  - Monthly Overview - Variable expenses tracking
+  - Fixed Expenses - Recurring expenses management
+  - Income - Income tracking and management
+- **Investments** - Individual investment tracking and management
+- **Reserves** - Savings reserves for specific goals
+- **Administration** - System configuration and preferences
+
+## Business description of the app
+Expense Empower: Comprehensive Financial Management System
+1. System Concept & Purpose
+The Expense Empower system is designed as a collaborative financial management platform specifically optimized for couples to manage shared finances. Unlike general budgeting apps, this system acknowledges the reality that couples often maintain both individual and shared financial responsibilities, requiring special tracking mechanisms.
+
+The fundamental architecture follows a "single source of truth" model where all users see the same financial data in real-time. When any user updates an expense, income entry, or investment value, all other logged-in users will see this change immediately without needing to refresh the page.
+
+Core Financial Philosophy
+The system is built around four key financial pillars:
+
+Income Tracking - Detailed recording of all household income sources with attribution
+Expense Management - Categorized tracking of both fixed recurring expenses and variable day-to-day spending
+Investment Monitoring - Long-term financial growth tracking with historical performance
+Reserve Building - Dedicated savings toward specific goals or emergency needs
+User Collaboration Model
+Shared Visibility - All users see identical financial information
+Transparent Attribution - System tracks which user created or modified each entry
+Real-time Updates - Changes propagate instantly to all active sessions
+Activity History - Maintains a detailed log of all financial activities with timestamps and user details

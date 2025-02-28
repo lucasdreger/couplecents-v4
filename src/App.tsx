@@ -1,4 +1,3 @@
-
 import { RouterProvider, createBrowserRouter } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Toaster } from 'sonner';
@@ -52,11 +51,11 @@ const router = createBrowserRouter([
             element: <Expenses />
           },
           {
-            path: "/fixed-expenses",
+            path: "/expenses/fixed",
             element: <FixedExpenses />
           },
           {
-            path: "/income",
+            path: "/expenses/income",
             element: <Income />
           },
           {
