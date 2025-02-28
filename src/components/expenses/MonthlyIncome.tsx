@@ -3,6 +3,7 @@ import { getMonthlyIncome, updateMonthlyIncome } from '@/lib/supabase'
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { useToast } from "@/components/ui/use-toast"
+import { FormLabel } from "@/components/ui/form"
 
 interface Props {
   year: number
@@ -42,24 +43,33 @@ export const MonthlyIncome = ({ year, month }: Props) => {
       </CardHeader>
       <CardContent>
         <div className="grid gap-4 md:grid-cols-3">
-          <Input
-            type="number"
-            placeholder="Lucas Income"
-            value={income?.lucas_income || ''}
-            onChange={e => updateIncome({ lucas_income: +e.target.value })}
-          />
-          <Input
-            type="number"
-            placeholder="Camila Income"
-            value={income?.camila_income || ''}
-            onChange={e => updateIncome({ camila_income: +e.target.value })}
-          />
-          <Input
-            type="number"
-            placeholder="Other Income"
-            value={income?.other_income || ''}
-            onChange={e => updateIncome({ other_income: +e.target.value })}
-          />
+          <div className="space-y-2">
+            <FormLabel>Lucas</FormLabel>
+            <Input
+              type="number"
+              placeholder="Lucas Income"
+              value={income?.lucas_income || ''}
+              onChange={e => updateIncome({ lucas_income: +e.target.value })}
+            />
+          </div>
+          <div className="space-y-2">
+            <FormLabel>Camila</FormLabel>
+            <Input
+              type="number"
+              placeholder="Camila Income"
+              value={income?.camila_income || ''}
+              onChange={e => updateIncome({ camila_income: +e.target.value })}
+            />
+          </div>
+          <div className="space-y-2">
+            <FormLabel>Others</FormLabel>
+            <Input
+              type="number"
+              placeholder="Other Income"
+              value={income?.other_income || ''}
+              onChange={e => updateIncome({ other_income: +e.target.value })}
+            />
+          </div>
         </div>
       </CardContent>
     </Card>

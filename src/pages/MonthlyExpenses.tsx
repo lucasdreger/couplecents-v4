@@ -20,8 +20,8 @@ export const MonthlyExpenses = () => {
   const { expenses, fixedExpenses, income, addExpense } = useExpenses(selectedYear, selectedMonth)
   const { toast } = useToast()
 
-  // Generate array of recent years (current year - 2 to current year + 1)
-  const years = Array.from({ length: 4 }, (_, i) => currentYear - 2 + i)
+  // Generate array of years (current year to current year + 2)
+  const years = Array.from({ length: 3 }, (_, i) => currentYear + i)
   const months = Array.from({ length: 12 }, (_, i) => i + 1)
 
   // Calculate totals

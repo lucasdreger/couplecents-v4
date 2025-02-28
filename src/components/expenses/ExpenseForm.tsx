@@ -9,7 +9,7 @@
  * - Type-safe form data handling
  * - Real-time category loading
  */
-
+import { useState, useRef } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Plus } from 'lucide-react'
@@ -54,6 +54,9 @@ interface ExpenseFormProps {
 }
 
 export const ExpenseForm = ({ onSubmit }: ExpenseFormProps) => {
+  const [open, setOpen] = useState(false)
+  const descriptionInputRef = useRef<HTMLInputElement>(null)
+  
   const form = useForm<ExpenseFormData>({
     resolver: zodResolver(expenseFormSchema),
     defaultValues: {
@@ -75,7 +78,7 @@ export const ExpenseForm = ({ onSubmit }: ExpenseFormProps) => {
     }
   });
 
-  const handleSubmit = async (values: ExpenseFormData) => {
+  const handleSubmit = async (values: ExpenseFormData, keepOpen: boolean) => {
     const date = new Date(values.date);
     await onSubmit({
       ...values,
@@ -83,13 +86,25 @@ export const ExpenseForm = ({ onSubmit }: ExpenseFormProps) => {
       month: date.getMonth() + 1,
       amount: Number(values.amount)
     });
+    
     form.reset();
+    
+    if (keepOpen) {
+      // Focus on the description field after form reset
+      setTimeout(() => {
+        if (descriptionInputRef.current) {
+          descriptionInputRef.current.focus();
+        }
+      }, 0);
+    } else {
+      setOpen(false);
+    }
   };
 
   return (
-    <Dialog>
+    <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button>
+        <Button onClick={() => setOpen(true)}>
           <Plus className="mr-2 h-4 w-4" />
           Add Expense
         </Button>
@@ -99,7 +114,7 @@ export const ExpenseForm = ({ onSubmit }: ExpenseFormProps) => {
           <DialogTitle>Add New Expense</DialogTitle>
         </DialogHeader>
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
+          <form className="space-y-4">
             <FormField
               control={form.control}
               name="description"
@@ -107,13 +122,16 @@ export const ExpenseForm = ({ onSubmit }: ExpenseFormProps) => {
                 <FormItem>
                   <FormLabel>Description</FormLabel>
                   <FormControl>
-                    <Input placeholder="Expense description" {...field} />
+                    <Input 
+                      placeholder="Expense description" 
+                      {...field} 
+                      ref={descriptionInputRef}
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
             />
-
             <FormField
               control={form.control}
               name="amount"
@@ -132,21 +150,6 @@ export const ExpenseForm = ({ onSubmit }: ExpenseFormProps) => {
                 </FormItem>
               )}
             />
-
-            <FormField
-              control={form.control}
-              name="date"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Date</FormLabel>
-                  <FormControl>
-                    <Input type="date" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
             <FormField
               control={form.control}
               name="category_id"
@@ -171,8 +174,35 @@ export const ExpenseForm = ({ onSubmit }: ExpenseFormProps) => {
                 </FormItem>
               )}
             />
-
-            <Button type="submit" className="w-full">Save Expense</Button>
+            <FormField
+              control={form.control}
+              name="date"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Date</FormLabel>
+                  <FormControl>
+                    <Input type="date" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <div className="flex space-x-2 pt-2">
+              <Button 
+                type="button" 
+                onClick={form.handleSubmit((values) => handleSubmit(values, true))}
+                className="flex-1"
+              >
+                Save and another
+              </Button>
+              <Button 
+                type="button" 
+                onClick={form.handleSubmit((values) => handleSubmit(values, false))}
+                className="flex-1"
+              >
+                Save and close
+              </Button>
+            </div>
           </form>
         </Form>
       </DialogContent>
