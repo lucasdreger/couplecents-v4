@@ -9,6 +9,7 @@ import { Dashboard } from '@/pages/Dashboard';
 import { Expenses } from '@/pages/Expenses';
 import { Investments } from '@/pages/Investments';
 import { Reserves } from '@/pages/Reserves';
+import { MonthlyExpenses } from '@/pages/MonthlyExpenses';
 import Administration from '@/pages/Administration';
 import NotFound from '@/pages/NotFound';
 import DashboardLayout from '@/layouts/DashboardLayout';
@@ -59,6 +60,10 @@ const router = createBrowserRouter([
           {
             path: "/administration",
             element: <Administration />
+          },
+          {
+            path: "/monthly-expenses",
+            element: <MonthlyExpenses />
           },
         ]
       }

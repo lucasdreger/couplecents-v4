@@ -6,7 +6,8 @@ import {
   Receipt, 
   Settings, 
   PiggyBank,
-  Wallet
+  Wallet,
+  Calendar
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/context/AuthContext";
@@ -19,7 +20,7 @@ const navigation = [
   { name: 'Investments', href: '/investments', icon: BarChart4 },
   { name: 'Reserves', href: '/reserves', icon: PiggyBank },
   { name: 'Administration', href: '/administration', icon: Settings },
-  { name: 'Months', href: '/MonthlyExpenses', icon: Settings },
+  { name: 'Months', href: '/monthly-expenses', icon: Calendar },
 ];
 
 export default function Sidebar() {
