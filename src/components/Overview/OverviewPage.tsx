@@ -1,3 +1,4 @@
+
 import React from 'react';
 import {
   Card,
@@ -11,7 +12,7 @@ import { InvestmentsTile } from './InvestmentsTile';
 import { ReservesTile } from './ReservesTile';
 import { MonthlyChart } from './MonthlyChart';
 import { CategoryBreakdown } from './CategoryBreakdown';
-import { useAuth } from '@/hooks/useAuth';
+import { useAuth } from '@/context/AuthContext';
 
 // Create a reusable loading component
 const LoadingFallback = () => (

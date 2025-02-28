@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { z } from 'zod';
@@ -51,6 +52,7 @@ export default function Login() {
     setLoginError(null);
     
     try {
+      console.log("Login: submitting form", data.email);
       const { error } = await signIn(data.email, data.password);
       
       if (error) {
@@ -59,6 +61,7 @@ export default function Login() {
         return;
       }
       
+      console.log("Login: successful, redirecting");
       // Redirect the user to the page they tried to visit or dashboard
       const from = location.state?.from?.pathname || '/';
       navigate(from, { replace: true });

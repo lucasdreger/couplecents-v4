@@ -5,9 +5,9 @@ import Sidebar from '@/components/layout/Sidebar';
 import { Navbar } from '@/components/layout/Navbar';
 
 export default function DashboardLayout() {
-  const { user, loading: authLoading } = useAuth();
+  const { user, loading } = useAuth();
   
-  if (authLoading) {
+  if (loading) {
     return (
       <div className="flex h-screen w-full items-center justify-center bg-background">
         <div className="flex flex-col items-center gap-4">

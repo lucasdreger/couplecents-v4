@@ -18,7 +18,7 @@ interface GlowingEffectProps {
   borderWidth?: number;
 }
 
-const GlowingEffect = memo(({ 
+export const GlowingEffect = memo(function GlowingEffect({ 
   blur = 0,
   inactiveZone = 0.7,
   proximity = 0,
@@ -29,7 +29,7 @@ const GlowingEffect = memo(({
   movementDuration = 2,
   borderWidth = 1,
   disabled = true
-}: GlowingEffectProps) => {
+}: GlowingEffectProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const lastPosition = useRef({ x: 0, y: 0 });
   const animationFrameRef = useRef<number>(0);
@@ -86,15 +86,17 @@ const GlowingEffect = memo(({
         const angleDiff = ((targetAngle - currentAngle + 180) % 360) - 180;
         const newAngle = currentAngle + angleDiff;
 
-        animate({
-          from: currentAngle,
-          to: newAngle,
-          duration: movementDuration,
-          easing: [0.16, 1, 0.3, 1],
-          onUpdate: (value: number) => {
-            element.style.setProperty("--start", String(value));
+        animate(
+          currentAngle,
+          newAngle,
+          {
+            duration: movementDuration,
+            easing: [0.16, 1, 0.3, 1],
+            onUpdate: (value: number) => {
+              element.style.setProperty("--start", String(value));
+            },
           }
-        });
+        );
       });
     },
     [inactiveZone, proximity, movementDuration]
@@ -186,7 +188,3 @@ const GlowingEffect = memo(({
     </>
   );
 });
-
-GlowingEffect.displayName = "GlowingEffect";
-
-export { GlowingEffect };

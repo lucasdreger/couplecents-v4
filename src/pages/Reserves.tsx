@@ -1,22 +1,22 @@
 
-import { useAuth } from '@/hooks/useAuth'
-import { useReserves } from '@/hooks/useReserves'
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
-import { Progress } from "@/components/ui/progress"
+import { useAuth } from '@/context/AuthContext';
+import { useReserves } from '@/hooks/useReserves';
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Progress } from "@/components/ui/progress";
 
 export const Reserves = () => {
-  console.log("Rendering Reserves page") // Debug log
-  const { user } = useAuth()
-  const { reserves, updateValue } = useReserves()
+  console.log("Rendering Reserves page"); // Debug log
+  const { user } = useAuth();
+  const { reserves, updateValue } = useReserves();
   
-  console.log("Reserves data:", reserves) // Debug log
+  console.log("Reserves data:", reserves); // Debug log
   
-  const totalReserves = reserves?.reduce((sum, res) => sum + res.current_value, 0) || 0
+  const totalReserves = reserves?.reduce((sum, res) => sum + res.current_value, 0) || 0;
 
   // Add a loading state check
   if (!reserves) {
-    return <div>Loading reserves...</div>
+    return <div>Loading reserves...</div>;
   }
 
   return (
@@ -44,9 +44,9 @@ export const Reserves = () => {
                     type="number"
                     defaultValue={reserve.current_value}
                     onChange={e => {
-                      const value = parseFloat(e.target.value)
+                      const value = parseFloat(e.target.value);
                       if (!isNaN(value)) {
-                        updateValue({ id: reserve.id, value, userId: user?.id || '' })
+                        updateValue({ id: reserve.id, value, userId: user?.id || '' });
                       }
                     }}
                   />
@@ -66,5 +66,5 @@ export const Reserves = () => {
         ))}
       </div>
     </div>
-  )
-}
+  );
+};
