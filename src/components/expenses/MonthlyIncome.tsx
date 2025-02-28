@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input"
 import { useToast } from "@/components/ui/use-toast"
 import { FormLabel } from "@/components/ui/form"
 import { formatCurrency } from '@/lib/utils'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 
 interface Props {
   year: number
@@ -22,19 +22,22 @@ export const MonthlyIncome = ({ year, month }: Props) => {
   const [camilaInput, setCamilaInput] = useState<string>('')
   const [otherInput, setOtherInput] = useState<string>('')
   
-  const { data: income } = useQuery({
+  const { data: income, isLoading } = useQuery({
     queryKey: ['income', year, month],
     queryFn: async () => {
       const { data } = await getMonthlyIncome(year, month)
       return data
-    },
-    onSuccess: (data) => {
-      // Initialize input fields with formatted values when data loads
-      setLucasInput(data?.lucas_income ? formatCurrency(Number(data.lucas_income), 'USD').replace('$', '') : '')
-      setCamilaInput(data?.camila_income ? formatCurrency(Number(data.camila_income), 'USD').replace('$', '') : '')
-      setOtherInput(data?.other_income ? formatCurrency(Number(data.other_income), 'USD').replace('$', '') : '')
     }
   })
+
+  // Update local state when data changes or on initial load
+  useEffect(() => {
+    if (income) {
+      setLucasInput(income.lucas_income ? formatCurrency(Number(income.lucas_income), 'USD').replace('$', '') : '')
+      setCamilaInput(income.camila_income ? formatCurrency(Number(income.camila_income), 'USD').replace('$', '') : '')
+      setOtherInput(income.other_income ? formatCurrency(Number(income.other_income), 'USD').replace('$', '') : '')
+    }
+  }, [income])
 
   const { mutate: updateIncome } = useMutation({
     mutationFn: async (values: { 
@@ -47,6 +50,13 @@ export const MonthlyIncome = ({ year, month }: Props) => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['income'] })
       toast({ description: "Income updated successfully" })
+    },
+    onError: (error) => {
+      console.error("Error updating income:", error)
+      toast({ 
+        description: "Failed to update income", 
+        variant: "destructive" 
+      })
     }
   })
 
@@ -80,54 +90,66 @@ export const MonthlyIncome = ({ year, month }: Props) => {
     }
   }
 
-  return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Monthly Income</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <div className="grid gap-4 md:grid-cols-3">
-          <div className="space-y-2">
-            <FormLabel>Lucas</FormLabel>
-            <Input
-              type="text"
-              placeholder="Lucas Income"
-              value={lucasInput}
-              onChange={e => setLucasInput(e.target.value)}
-              onBlur={e => handleSaveValue('lucas_income', e.target.value)}
-              onKeyDown={e => handleKeyDown(e, 'lucas_income', lucasInput)}
-              className="text-right"
-              prefix="$"
-            />
-          </div>
-          <div className="space-y-2">
-            <FormLabel>Camila</FormLabel>
-            <Input
-              type="text"
-              placeholder="Camila Income"
-              value={camilaInput}
-              onChange={e => setCamilaInput(e.target.value)}
-              onBlur={e => handleSaveValue('camila_income', e.target.value)}
-              onKeyDown={e => handleKeyDown(e, 'camila_income', camilaInput)}
-              className="text-right"
-              prefix="$"
-            />
-          </div>
-          <div className="space-y-2">
-            <FormLabel>Others</FormLabel>
-            <Input
-              type="text"
-              placeholder="Other Income"
-              value={otherInput}
-              onChange={e => setOtherInput(e.target.value)}
-              onBlur={e => handleSaveValue('other_income', e.target.value)}
-              onKeyDown={e => handleKeyDown(e, 'other_income', otherInput)}
-              className="text-right"
-              prefix="$"
-            />
-          </div>
+  if (isLoading) {
+    return (
+      <div className="grid gap-4 md:grid-cols-3">
+        <div className="space-y-2">
+          <FormLabel>Lucas</FormLabel>
+          <Input type="text" disabled placeholder="Loading..." />
         </div>
-      </CardContent>
-    </Card>
+        <div className="space-y-2">
+          <FormLabel>Camila</FormLabel>
+          <Input type="text" disabled placeholder="Loading..." />
+        </div>
+        <div className="space-y-2">
+          <FormLabel>Others</FormLabel>
+          <Input type="text" disabled placeholder="Loading..." />
+        </div>
+      </div>
+    )
+  }
+
+  return (
+    <div className="grid gap-4 md:grid-cols-3">
+      <div className="space-y-2">
+        <FormLabel>Lucas</FormLabel>
+        <Input
+          type="text"
+          placeholder="Lucas Income"
+          value={lucasInput}
+          onChange={(e) => setLucasInput(e.target.value)}
+          onBlur={(e) => handleSaveValue('lucas_income', e.target.value)}
+          onKeyDown={(e) => handleKeyDown(e, 'lucas_income', lucasInput)}
+          className="text-right"
+          prefix="$"
+        />
+      </div>
+      <div className="space-y-2">
+        <FormLabel>Camila</FormLabel>
+        <Input
+          type="text"
+          placeholder="Camila Income"
+          value={camilaInput}
+          onChange={(e) => setCamilaInput(e.target.value)}
+          onBlur={(e) => handleSaveValue('camila_income', e.target.value)}
+          onKeyDown={(e) => handleKeyDown(e, 'camila_income', camilaInput)}
+          className="text-right"
+          prefix="$"
+        />
+      </div>
+      <div className="space-y-2">
+        <FormLabel>Others</FormLabel>
+        <Input
+          type="text"
+          placeholder="Other Income"
+          value={otherInput}
+          onChange={(e) => setOtherInput(e.target.value)}
+          onBlur={(e) => handleSaveValue('other_income', e.target.value)}
+          onKeyDown={(e) => handleKeyDown(e, 'other_income', otherInput)}
+          className="text-right"
+          prefix="$"
+        />
+      </div>
+    </div>
   )
 }
