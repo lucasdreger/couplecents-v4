@@ -7,8 +7,6 @@ import PrivateRoute from '@/components/Auth/PrivateRoute';
 import Login from '@/pages/Login';
 import { Dashboard } from '@/pages/Dashboard';
 import { Expenses } from '@/pages/Expenses';
-import { FixedExpenses } from '@/pages/FixedExpenses';
-import { Income } from '@/pages/Income';
 import { Investments } from '@/pages/Investments';
 import { Reserves } from '@/pages/Reserves';
 import Administration from '@/pages/Administration';
@@ -49,14 +47,6 @@ const router = createBrowserRouter([
           {
             path: "/expenses",
             element: <Expenses />
-          },
-          {
-            path: "/expenses/fixed",
-            element: <FixedExpenses />
-          },
-          {
-            path: "/expenses/income",
-            element: <Income />
           },
           {
             path: "/investments",

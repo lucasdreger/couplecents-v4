@@ -7,11 +7,10 @@
  * - Year/month selection for time-based filtering
  * - Real-time updates across all financial data
  */
-import { useState } from 'react'
-import { useLocation, useNavigate } from 'react-router-dom'
+import { useState, useEffect } from 'react'
+import { useLocation } from 'react-router-dom'
 import { useExpenses } from '@/hooks/useExpenses'
 import { useCategories } from '@/hooks/useCategories'
-import { Button } from '@/components/ui/button'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import {
   Card,
@@ -36,13 +35,13 @@ import { MonthlyIncome } from '@/components/expenses/MonthlyIncome'
 export const Expenses = () => {
   // Router state
   const location = useLocation();
-  const navigate = useNavigate();
-  const path = location.pathname;
+  const searchParams = new URLSearchParams(location.search);
   
-  // Determine active tab based on URL
+  // Determine active tab based on URL query param
   const getActiveTab = () => {
-    if (path.includes('/expenses/fixed')) return 'fixed';
-    if (path.includes('/expenses/income')) return 'income';
+    const tab = searchParams.get('tab');
+    if (tab === 'fixed') return 'fixed';
+    if (tab === 'income') return 'income';
     return 'monthly';
   };
   
@@ -61,20 +60,24 @@ export const Expenses = () => {
   // Calculate totals
   const totalExpenses = expenses?.reduce((sum, expense) => sum + expense.amount, 0) || 0;
   
-  // Handle tab changes
+  // Handle tab changes - just update the state, no navigation
   const handleTabChange = (value: string) => {
     setActiveTab(value);
-    switch (value) {
-      case 'fixed':
-        navigate('/expenses/fixed');
-        break;
-      case 'income':
-        navigate('/expenses/income');
-        break;
-      default:
-        navigate('/expenses');
+    
+    // Update the URL with a query param without navigation
+    const newUrl = new URL(window.location.href);
+    if (value !== 'monthly') {
+      newUrl.searchParams.set('tab', value);
+    } else {
+      newUrl.searchParams.delete('tab');
     }
+    window.history.pushState({}, '', newUrl);
   };
+  
+  // Sync tab with URL on mount and URL changes
+  useEffect(() => {
+    setActiveTab(getActiveTab());
+  }, [location.search]);
   
   return (
     <div className="container mx-auto px-4 py-6 space-y-6">
@@ -86,22 +89,6 @@ export const Expenses = () => {
             Manage all your financial transactions for {selectedMonth.toLocaleString('default', { month: 'long', year: 'numeric' })}
           </p>
         </div>
-        {activeTab === 'monthly' && (
-          <ExpenseForm
-            onSubmit={async (data) => {
-              try {
-                await addExpense(data);
-                toast({ description: "Expense added successfully" });
-              } catch (error) {
-                toast({ 
-                  variant: "destructive", 
-                  description: "Failed to add expense" 
-                });
-              }
-            }}
-            categories={categories}
-          />
-        )}
       </div>
       
       {/* Year and Month Selection */}
@@ -177,9 +164,25 @@ export const Expenses = () => {
           
           {/* Variable Expenses Table */}
           <Card>
-            <CardHeader>
-              <CardTitle>Variable Expense Details</CardTitle>
-              <CardDescription>List of all variable expenses for the selected month</CardDescription>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <div>
+                <CardTitle>Variable Expense Details</CardTitle>
+                <CardDescription>List of all variable expenses for the selected month</CardDescription>
+              </div>
+              <ExpenseForm
+                onSubmit={async (data) => {
+                  try {
+                    await addExpense(data);
+                    toast({ description: "Expense added successfully" });
+                  } catch (error) {
+                    toast({ 
+                      variant: "destructive", 
+                      description: "Failed to add expense" 
+                    });
+                  }
+                }}
+                categories={categories}
+              />
             </CardHeader>
             <CardContent>
               <Table>
