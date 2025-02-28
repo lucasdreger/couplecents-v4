@@ -136,7 +136,7 @@ export const Expenses = () => {
           {/* Expenses Summary */}
           <Card>
             <CardHeader>
-              <CardTitle>Variable Expenses</CardTitle>
+              <CardTitle>Variable Expenses Summary</CardTitle>
               <CardDescription>Overview of variable expenses for the selected month</CardDescription>
             </CardHeader>
             <CardContent>
@@ -154,7 +154,7 @@ export const Expenses = () => {
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <div>
-                <CardTitle>Variable Expense Details</CardTitle>
+                <CardTitle>Variable Expenses</CardTitle>
                 <CardDescription>List of all variable expenses for the selected month</CardDescription>
               </div>
               <ExpenseForm onSubmit={async data => {
