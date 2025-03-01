@@ -1,6 +1,6 @@
+
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabaseClient';
-import type { MonthlyDetail } from '@/types/database.types';
 import {
   BarChart,
   Bar,
@@ -15,10 +15,11 @@ import {
 import { Skeleton } from '@/components/ui/skeleton';
 
 interface ChartData {
+  name: string;
+  planned: number;
+  actual: number;
+  month: number;
   year: number;
-  month: string;
-  planned_amount: number;
-  actual_amount: number;
 }
 
 export const MonthlyChart = () => {
@@ -27,7 +28,7 @@ export const MonthlyChart = () => {
     queryFn: async (): Promise<ChartData[]> => {
       const { data, error } = await supabase
         .from('monthly_details')
-        .select('*')
+        .select('year, month, planned_amount, actual_amount')
         .order('year, month');
       
       if (error) {
@@ -35,13 +36,24 @@ export const MonthlyChart = () => {
         throw error;
       }
 
-      // Transform and validate data
-      return (data || []).map((item: MonthlyDetail): ChartData => ({
-        year: item.year,
-        month: new Date(2000, item.month - 1).toLocaleString('default', { month: 'short' }),
-        planned_amount: Number(item.planned_amount || 0),
-        actual_amount: Number(item.actual_amount || 0)
-      }));
+      if (!data || data.length === 0) {
+        return [];
+      }
+
+      // Transform data for the chart
+      return data.map(item => {
+        const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+        const monthIndex = (item.month || 1) - 1; // Ensure it's within bounds
+        const monthName = monthNames[monthIndex >= 0 && monthIndex < 12 ? monthIndex : 0];
+        
+        return {
+          name: `${monthName} ${item.year}`,
+          planned: Number(item.planned_amount || 0),
+          actual: Number(item.actual_amount || 0),
+          month: item.month,
+          year: item.year
+        };
+      });
     }
   });
 
@@ -79,17 +91,17 @@ export const MonthlyChart = () => {
         >
           <CartesianGrid strokeDasharray="3 3" vertical={false} opacity={0.5} />
           <XAxis 
-            dataKey="month" 
+            dataKey="name" 
             axisLine={false}
             tickLine={false}
           />
           <YAxis 
             axisLine={false}
             tickLine={false}
-            tickFormatter={(value) => `€${value}`}
+            tickFormatter={(value) => `$${value}`}
           />
           <Tooltip 
-            formatter={(value: number) => [`€${value.toFixed(2)}`, undefined]}
+            formatter={(value: number) => [`$${value.toFixed(2)}`, undefined]}
             labelFormatter={(label) => `Month: ${label}`}
             contentStyle={{
               borderRadius: '8px',
@@ -100,13 +112,13 @@ export const MonthlyChart = () => {
           <Legend wrapperStyle={{ paddingTop: '10px' }} />
           <ReferenceLine y={0} stroke="#e2e8f0" />
           <Bar 
-            dataKey="planned_amount" 
+            dataKey="planned" 
             name="Planned" 
             fill="#8884d8" 
             radius={[4, 4, 0, 0]}
           />
           <Bar 
-            dataKey="actual_amount" 
+            dataKey="actual" 
             name="Actual" 
             fill="#82ca9d" 
             radius={[4, 4, 0, 0]}

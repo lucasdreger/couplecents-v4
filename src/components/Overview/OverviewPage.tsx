@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import {
   Card,
@@ -11,9 +12,11 @@ import { InvestmentsTile } from './InvestmentsTile';
 import { ReservesTile } from './ReservesTile';
 import { MonthlyChart } from './MonthlyChart';
 import { CategoryBreakdown } from './CategoryBreakdown';
+import { FinancialAnalytics } from './FinancialAnalytics';
 import { useAuth } from '@/context/AuthContext';
 import { CalendarIcon, LayoutDashboard } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 // Create a reusable loading component
 const LoadingFallback = () => (
@@ -88,53 +91,68 @@ export const OverviewPage: React.FC = () => {
         </div>
       </div>
       
-      {/* Budget Overview */}
-      <ErrorBoundary fallback={<ErrorFallback message="Error loading budget" />}>
-        <div className="bg-card rounded-lg border shadow-sm p-1">
-          <BudgetTile />
-        </div>
-      </ErrorBoundary>
-      
-      {/* Investments Section */}
-      <ErrorBoundary fallback={<ErrorFallback message="Error loading investments" />}>
-        <div className="bg-card rounded-lg border shadow-sm">
-          <InvestmentsTile />
-        </div>
-      </ErrorBoundary>
-      
-      {/* Reserves and Categories */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <ErrorBoundary fallback={<ErrorFallback message="Error loading reserves" />}>
-          <div className="bg-card rounded-lg border shadow-sm p-1 h-full">
-            <ReservesTile />
-          </div>
-        </ErrorBoundary>
+      <Tabs defaultValue="overview" className="space-y-6">
+        <TabsList className="grid w-full grid-cols-2">
+          <TabsTrigger value="overview">Overview</TabsTrigger>
+          <TabsTrigger value="analytics">Financial Analytics</TabsTrigger>
+        </TabsList>
         
-        <ErrorBoundary fallback={<ErrorFallback message="Error loading categories" />}>
-          <Card className="shadow-sm border-primary/10 h-full">
-            <CardHeader className="border-b border-border/40 pb-2">
-              <CardTitle>Category Breakdown</CardTitle>
-              <CardDescription>Expenses by category</CardDescription>
-            </CardHeader>
-            <CardContent className="pt-4">
-              <CategoryBreakdown />
-            </CardContent>
-          </Card>
-        </ErrorBoundary>
-      </div>
-      
-      {/* Monthly Chart */}
-      <ErrorBoundary fallback={<ErrorFallback message="Error loading monthly data" />}>
-        <Card className="shadow-sm border-primary/10">
-          <CardHeader className="border-b border-border/40 pb-2">
-            <CardTitle>Monthly Budget vs Actual</CardTitle>
-            <CardDescription>Compare planned versus actual spending</CardDescription>
-          </CardHeader>
-          <CardContent className="pt-4">
-            <MonthlyChart />
-          </CardContent>
-        </Card>
-      </ErrorBoundary>
+        <TabsContent value="overview" className="space-y-6">
+          {/* Budget Overview */}
+          <ErrorBoundary fallback={<ErrorFallback message="Error loading budget" />}>
+            <Card className="border shadow-sm">
+              <BudgetTile />
+            </Card>
+          </ErrorBoundary>
+          
+          {/* Investments Section */}
+          <ErrorBoundary fallback={<ErrorFallback message="Error loading investments" />}>
+            <div className="bg-card rounded-lg border shadow-sm">
+              <InvestmentsTile />
+            </div>
+          </ErrorBoundary>
+          
+          {/* Reserves and Categories */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <ErrorBoundary fallback={<ErrorFallback message="Error loading reserves" />}>
+              <div className="bg-card rounded-lg border shadow-sm h-full">
+                <ReservesTile />
+              </div>
+            </ErrorBoundary>
+            
+            <ErrorBoundary fallback={<ErrorFallback message="Error loading categories" />}>
+              <Card className="shadow-sm border-primary/10 h-full">
+                <CardHeader className="border-b border-border/40 pb-2">
+                  <CardTitle>Category Breakdown</CardTitle>
+                  <CardDescription>Expenses by category</CardDescription>
+                </CardHeader>
+                <CardContent className="pt-4">
+                  <CategoryBreakdown />
+                </CardContent>
+              </Card>
+            </ErrorBoundary>
+          </div>
+          
+          {/* Monthly Chart */}
+          <ErrorBoundary fallback={<ErrorFallback message="Error loading monthly data" />}>
+            <Card className="shadow-sm border-primary/10">
+              <CardHeader className="border-b border-border/40 pb-2">
+                <CardTitle>Monthly Budget vs Actual</CardTitle>
+                <CardDescription>Compare planned versus actual spending</CardDescription>
+              </CardHeader>
+              <CardContent className="pt-4">
+                <MonthlyChart />
+              </CardContent>
+            </Card>
+          </ErrorBoundary>
+        </TabsContent>
+        
+        <TabsContent value="analytics">
+          <ErrorBoundary fallback={<ErrorFallback message="Error loading analytics" />}>
+            <FinancialAnalytics />
+          </ErrorBoundary>
+        </TabsContent>
+      </Tabs>
     </div>
   );
 };

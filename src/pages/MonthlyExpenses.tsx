@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -8,9 +9,13 @@ import { useQuery } from '@tanstack/react-query';
 import { queryKeys } from '@/lib/queries';
 import { getMonthlyExpenses } from '@/lib/supabase';
 import { ErrorBoundary } from 'react-error-boundary';
+import { Button } from "@/components/ui/button";
+import { PlusCircle } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { ExpenseForm } from "@/components/expenses/ExpenseForm";
 
 // Error fallback component
-const ErrorFallback = ({ error, resetErrorBoundary }) => {
+const ErrorFallback = ({ error, resetErrorBoundary }: { error: any, resetErrorBoundary: any }) => {
   return (
     <div className="p-6 bg-red-50 border border-red-200 rounded-md">
       <h2 className="text-lg font-semibold text-red-800 mb-2">Something went wrong:</h2>
@@ -34,6 +39,7 @@ export function MonthlyExpenses() {
   
   const [selectedYear, setSelectedYear] = useState(defaultYear);
   const [selectedMonth, setSelectedMonth] = useState(currentMonth);
+  const [isExpenseDialogOpen, setIsExpenseDialogOpen] = useState(false);
   
   // Get monthly expenses data
   const { data: expenses } = useQuery({
@@ -63,6 +69,10 @@ export function MonthlyExpenses() {
   
   const handleMonthChange = (value: string) => {
     setSelectedMonth(parseInt(value));
+  };
+
+  const handleExpenseAdded = () => {
+    setIsExpenseDialogOpen(false);
   };
   
   return (
@@ -135,8 +145,26 @@ export function MonthlyExpenses() {
         
         <ErrorBoundary FallbackComponent={ErrorFallback}>
           <Card>
-            <CardHeader className="pb-2">
+            <CardHeader className="pb-2 flex justify-between items-center">
               <CardTitle>Variable Expenses</CardTitle>
+              <Dialog open={isExpenseDialogOpen} onOpenChange={setIsExpenseDialogOpen}>
+                <DialogTrigger asChild>
+                  <Button size="sm" className="h-8">
+                    <PlusCircle className="h-4 w-4 mr-1" />
+                    Add Expense
+                  </Button>
+                </DialogTrigger>
+                <DialogContent>
+                  <DialogHeader>
+                    <DialogTitle>Add New Expense</DialogTitle>
+                  </DialogHeader>
+                  <ExpenseForm 
+                    year={selectedYear}
+                    month={selectedMonth}
+                    onSuccess={handleExpenseAdded}
+                  />
+                </DialogContent>
+              </Dialog>
             </CardHeader>
             <CardContent>
               <VariableExpensesList

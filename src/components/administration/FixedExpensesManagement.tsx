@@ -1,3 +1,4 @@
+
 import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -16,7 +17,8 @@ export const FixedExpensesManagement = () => {
     amount: '',
     category_id: '',
     owner: 'Lucas',
-    status_required: false
+    status_required: false,
+    due_date: ''
   })
   
   const { toast } = useToast()
@@ -58,10 +60,11 @@ export const FixedExpensesManagement = () => {
         .from('fixed_expenses')
         .insert({
           description: data.description,
-          estimated_amount: numericAmount, // Use the correct column name
+          estimated_amount: numericAmount,
           category_id: data.category_id,
           owner: data.owner,
-          status_required: data.status_required
+          status_required: data.status_required,
+          due_date: data.due_date || null
         })
         .select()
       
@@ -79,7 +82,8 @@ export const FixedExpensesManagement = () => {
         amount: '',
         category_id: '',
         owner: 'Lucas',
-        status_required: false
+        status_required: false,
+        due_date: ''
       })
       toast({ description: "Fixed expense added successfully" })
     },
@@ -128,7 +132,7 @@ export const FixedExpensesManagement = () => {
               <SelectValue placeholder="Select category" />
             </SelectTrigger>
             <SelectContent>
-              {categories?.map(category => (
+              {categories?.map((category) => (
                 <SelectItem key={category.id} value={category.id}>
                   {category.name}
                 </SelectItem>
@@ -148,6 +152,13 @@ export const FixedExpensesManagement = () => {
               <SelectItem value="Camila">Camila</SelectItem>
             </SelectContent>
           </Select>
+          
+          <Input 
+            type="text"
+            placeholder="Due Date (e.g., 15th or Last day)"
+            value={expense.due_date}
+            onChange={(e) => setExpense(prev => ({ ...prev, due_date: e.target.value }))}
+          />
           
           <div className="flex items-center space-x-2">
             <Switch
@@ -175,6 +186,7 @@ export const FixedExpensesManagement = () => {
                 <p className="font-medium">{expense.description}</p>
                 <p className="text-sm text-muted-foreground">
                   ${expense.estimated_amount} • {expense.categories?.name} • {expense.owner}
+                  {expense.due_date && ` • Due: ${expense.due_date}`}
                 </p>
               </div>
               {expense.status_required && (

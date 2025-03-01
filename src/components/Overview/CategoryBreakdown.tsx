@@ -1,3 +1,4 @@
+
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabaseClient';
 import {
@@ -8,6 +9,7 @@ import {
   Tooltip,
   Legend,
 } from 'recharts';
+import { Skeleton } from '@/components/ui/skeleton';
 
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8', '#4B0082', '#FF1493', '#008B8B', '#8B4513', '#808000'];
 
@@ -16,10 +18,10 @@ type CategoryData = {
   value: number;
 };
 
-type VariableExpenseRow = {
+interface VariableExpenseRow {
   category: { name: string } | null;
   amount: number;
-};
+}
 
 export const CategoryBreakdown = () => {
   const { data: categoryData, isLoading } = useQuery({
@@ -50,7 +52,7 @@ export const CategoryBreakdown = () => {
       }
       
       // Aggregate by category with null checking
-      const categoryTotals = (data as VariableExpenseRow[]).reduce((acc: Record<string, number>, curr) => {
+      const categoryTotals = (data as any[]).reduce((acc: Record<string, number>, curr) => {
         // Ensure we have valid category name and amount
         const categoryName = curr.category?.name || 'Uncategorized';
         const amount = typeof curr.amount === 'number' ? curr.amount : 0;
@@ -76,7 +78,7 @@ export const CategoryBreakdown = () => {
 
   if (isLoading) {
     return <div className="flex items-center justify-center h-[300px]">
-      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+      <Skeleton className="h-[250px] w-[250px] rounded-full" />
     </div>;
   }
 
@@ -86,28 +88,26 @@ export const CategoryBreakdown = () => {
     </div>;
   }
 
-  const chartData = categoryData as CategoryData[];
-  
   return (
     <div className="h-[300px]">
       <ResponsiveContainer width="100%" height="100%">
         <PieChart>
           <Pie
-            data={chartData}
+            data={categoryData as CategoryData[]}
             dataKey="value"
             nameKey="name"
             cx="50%"
             cy="50%"
             outerRadius={100}
-            label={({ name, percent }: { name: string, percent: number }) => 
+            label={({ name, percent }) => 
               `${name}: ${(percent * 100).toFixed(0)}%`
             }
           >
-            {chartData.map((entry, index) => (
+            {categoryData.map((_entry, index) => (
               <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
             ))}
           </Pie>
-          <Tooltip formatter={(value: number) => `€${Number(value).toFixed(2)}`} />
+          <Tooltip formatter={(value: number) => `$${Number(value).toFixed(2)}`} />
           <Legend />
         </PieChart>
       </ResponsiveContainer>

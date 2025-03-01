@@ -5,6 +5,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Checkbox } from "@/components/ui/checkbox"
 import { useToast } from "@/components/ui/use-toast"
 import type { PostgrestError } from '@supabase/supabase-js'
+import { Skeleton } from '@/components/ui/skeleton'
 
 interface Props {
   year: number
@@ -18,13 +19,14 @@ interface FixedExpense {
   due_date?: string
   category?: { name: string }
   status?: Array<{ completed: boolean }>
+  status_required: boolean
 }
 
 export const FixedExpensesList = ({ year, month }: Props) => {
   const queryClient = useQueryClient()
   const { toast } = useToast()
 
-  const { data: fixedExpenses } = useQuery<FixedExpense[], PostgrestError>({
+  const { data: fixedExpenses, isLoading, isError } = useQuery<FixedExpense[], PostgrestError>({
     queryKey: ['fixed-expenses', year, month],
     queryFn: async () => {
       const { data, error } = await getFixedExpenses(year, month)
@@ -43,6 +45,25 @@ export const FixedExpensesList = ({ year, month }: Props) => {
       toast({ description: "Status updated successfully" })
     }
   })
+
+  if (isLoading) {
+    return (
+      <div className="space-y-3">
+        <Skeleton className="h-8 w-full" />
+        <Skeleton className="h-12 w-full" />
+        <Skeleton className="h-12 w-full" />
+        <Skeleton className="h-12 w-full" />
+      </div>
+    )
+  }
+
+  if (isError) {
+    return <div className="text-red-500">Failed to load fixed expenses</div>
+  }
+
+  if (!fixedExpenses?.length) {
+    return <div className="py-4 text-center text-muted-foreground">No fixed expenses found for this month</div>
+  }
 
   return (
     <Table>
@@ -65,12 +86,16 @@ export const FixedExpensesList = ({ year, month }: Props) => {
             </TableCell>
             <TableCell>{expense.due_date}</TableCell>
             <TableCell>
-              <Checkbox
-                checked={expense.status?.[0]?.completed}
-                onCheckedChange={(checked) => 
-                  updateStatus({ id: expense.id, completed: checked as boolean })
-                }
-              />
+              {expense.status_required ? (
+                <Checkbox
+                  checked={expense.status?.[0]?.completed}
+                  onCheckedChange={(checked) => 
+                    updateStatus({ id: expense.id, completed: checked as boolean })
+                  }
+                />
+              ) : (
+                <span className="text-xs text-muted-foreground">N/A</span>
+              )}
             </TableCell>
           </TableRow>
         ))}

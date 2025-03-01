@@ -1,3 +1,4 @@
+
 /**
  * Budget Summary Tile Component
  * 
@@ -6,9 +7,10 @@
  * - Total expenses
  * - Net balance
  */
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabaseClient';
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface BudgetData {
   total_income: number;
@@ -31,17 +33,22 @@ export const BudgetTile = () => {
 
   const totalIncome = budgetData?.total_income || 0;
   const totalExpenses = budgetData?.total_expenses || 0;
+  const balance = totalIncome - totalExpenses;
 
   return (
-    <Card>
+    <>
       <CardHeader>
         <CardTitle>Total Budget</CardTitle>
       </CardHeader>
       <CardContent>
         {isLoading ? (
-          <div>Loading budget...</div>
+          <div className="space-y-2">
+            <Skeleton className="h-8 w-1/2" />
+            <Skeleton className="h-4 w-3/4" />
+            <Skeleton className="h-4 w-3/4" />
+          </div>
         ) : isError ? (
-          <div>Error loading budget</div>
+          <div className="text-red-500">Error loading budget data</div>
         ) : (
           <div className="space-y-2">
             <p className="text-3xl font-bold text-primary">
@@ -50,12 +57,12 @@ export const BudgetTile = () => {
             <p className="text-sm text-muted-foreground">
               Expenses: ${totalExpenses.toFixed(2)}
             </p>
-            <p className="text-sm text-muted-foreground">
-              Balance: ${(totalIncome - totalExpenses).toFixed(2)}
+            <p className={`text-sm ${balance >= 0 ? 'text-green-500' : 'text-red-500'} font-medium`}>
+              Balance: ${balance.toFixed(2)}
             </p>
           </div>
         )}
       </CardContent>
-    </Card>
+    </>
   );
 };
