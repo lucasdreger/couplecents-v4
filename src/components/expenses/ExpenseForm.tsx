@@ -1,3 +1,4 @@
+
 /**
  * Expense Entry Form Component
  * 
@@ -17,11 +18,10 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { useQuery } from '@tanstack/react-query'
-import { getCategories } from '@/lib/supabase'
+import { getCategories, addVariableExpense } from '@/lib/supabase'
 import {
   Form,
   FormControl,
-  FormDescription,
   FormField,
   FormItem,
   FormLabel,
@@ -34,6 +34,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
+import { useToast } from "@/hooks/use-toast"
 import * as z from 'zod'
 import type { VariableExpense } from '@/types/database.types'
 
@@ -50,12 +51,16 @@ const expenseFormSchema = z.object({
 type ExpenseFormData = Omit<VariableExpense, 'id' | 'created_at'>
 
 interface ExpenseFormProps {
-  onSubmit: (data: ExpenseFormData) => Promise<void>
+  onSubmit: (data: ExpenseFormData) => Promise<void>;
+  year: number;
+  month: number;
 }
 
-export const ExpenseForm = ({ onSubmit }: ExpenseFormProps) => {
+export const ExpenseForm = ({ onSubmit, year, month }: ExpenseFormProps) => {
   const [open, setOpen] = useState(false)
+  const [isSubmitting, setIsSubmitting] = useState(false)
   const descriptionInputRef = useRef<HTMLInputElement>(null)
+  const { toast } = useToast()
   
   const form = useForm<ExpenseFormData>({
     resolver: zodResolver(expenseFormSchema),
@@ -64,13 +69,13 @@ export const ExpenseForm = ({ onSubmit }: ExpenseFormProps) => {
       amount: 0,
       date: new Date().toISOString().split('T')[0],
       category_id: '',
-      year: new Date().getFullYear(),
-      month: new Date().getMonth() + 1
+      year: year,
+      month: month
     }
   });
 
   // Load categories
-  const { data: categories } = useQuery({
+  const { data: categories, isLoading: isCategoriesLoading } = useQuery({
     queryKey: ['categories'],
     queryFn: async () => {
       const { data } = await getCategories()
@@ -79,25 +84,58 @@ export const ExpenseForm = ({ onSubmit }: ExpenseFormProps) => {
   });
 
   const handleSubmit = async (values: ExpenseFormData, keepOpen: boolean) => {
-    const date = new Date(values.date);
-    await onSubmit({
-      ...values,
-      year: date.getFullYear(),
-      month: date.getMonth() + 1,
-      amount: Number(values.amount)
-    });
-    
-    form.reset();
-    
-    if (keepOpen) {
-      // Focus on the description field after form reset
-      setTimeout(() => {
-        if (descriptionInputRef.current) {
-          descriptionInputRef.current.focus();
-        }
-      }, 0);
-    } else {
-      setOpen(false);
+    try {
+      setIsSubmitting(true)
+      
+      // Ensure the date is extracted properly
+      const date = new Date(values.date);
+      
+      // Create the expense object
+      const expenseData = {
+        ...values,
+        year: date.getFullYear(),
+        month: date.getMonth() + 1,
+        amount: Number(values.amount)
+      };
+      
+      // Submit the data
+      await onSubmit(expenseData);
+      
+      // Show success message
+      toast({
+        title: "Expense Added",
+        description: "Your expense has been successfully added.",
+      });
+      
+      // Reset the form
+      form.reset({
+        description: '',
+        amount: 0,
+        date: new Date().toISOString().split('T')[0],
+        category_id: '',
+        year: year,
+        month: month
+      });
+      
+      if (keepOpen) {
+        // Focus on the description field after form reset
+        setTimeout(() => {
+          if (descriptionInputRef.current) {
+            descriptionInputRef.current.focus();
+          }
+        }, 0);
+      } else {
+        setOpen(false);
+      }
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to add expense. Please try again.",
+        variant: "destructive"
+      });
+      console.error("Failed to add expense:", error);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -142,7 +180,8 @@ export const ExpenseForm = ({ onSubmit }: ExpenseFormProps) => {
                     <Input 
                       type="number" 
                       step="0.01" 
-                      placeholder="0.00" 
+                      placeholder="0.00"
+                      prefix="$"
                       {...field} 
                     />
                   </FormControl>
@@ -163,11 +202,17 @@ export const ExpenseForm = ({ onSubmit }: ExpenseFormProps) => {
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      {categories?.map(cat => (
-                        <SelectItem key={cat.id} value={cat.id}>
-                          {cat.name}
-                        </SelectItem>
-                      ))}
+                      {isCategoriesLoading ? (
+                        <SelectItem disabled value="loading">Loading...</SelectItem>
+                      ) : categories && categories.length > 0 ? (
+                        categories.map(cat => (
+                          <SelectItem key={cat.id} value={cat.id}>
+                            {cat.name}
+                          </SelectItem>
+                        ))
+                      ) : (
+                        <SelectItem disabled value="none">No categories found</SelectItem>
+                      )}
                     </SelectContent>
                   </Select>
                   <FormMessage />
@@ -192,15 +237,17 @@ export const ExpenseForm = ({ onSubmit }: ExpenseFormProps) => {
                 type="button" 
                 onClick={form.handleSubmit((values) => handleSubmit(values, true))}
                 className="flex-1"
+                disabled={isSubmitting}
               >
-                Save and another
+                {isSubmitting ? "Saving..." : "Save and another"}
               </Button>
               <Button 
                 type="button" 
                 onClick={form.handleSubmit((values) => handleSubmit(values, false))}
                 className="flex-1"
+                disabled={isSubmitting}
               >
-                Save and close
+                {isSubmitting ? "Saving..." : "Save and close"}
               </Button>
             </div>
           </form>

@@ -5,14 +5,13 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { FixedExpensesList } from "@/components/expenses/FixedExpensesList";
 import { VariableExpensesList } from "@/components/expenses/VariableExpensesList";
 import { MonthlyIncome } from "@/components/expenses/MonthlyIncome";
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { queryKeys } from '@/lib/queries';
-import { getMonthlyExpenses } from '@/lib/supabase';
+import { getMonthlyExpenses, addVariableExpense } from '@/lib/supabase';
 import { ErrorBoundary } from 'react-error-boundary';
-import { Button } from "@/components/ui/button";
-import { PlusCircle } from "lucide-react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { ExpenseForm } from "@/components/expenses/ExpenseForm";
+import { toast } from "@/hooks/use-toast";
+import type { VariableExpense } from '@/types/database.types';
 
 // Error fallback component
 const ErrorFallback = ({ error, resetErrorBoundary }: { error: any, resetErrorBoundary: any }) => {
@@ -33,13 +32,13 @@ const ErrorFallback = ({ error, resetErrorBoundary }: { error: any, resetErrorBo
 export function MonthlyExpenses() {
   const currentYear = new Date().getFullYear();
   const currentMonth = new Date().getMonth() + 1;
+  const queryClient = useQueryClient();
   
   // Start with 2025 by default
   const defaultYear = 2025;
   
   const [selectedYear, setSelectedYear] = useState(defaultYear);
   const [selectedMonth, setSelectedMonth] = useState(currentMonth);
-  const [isExpenseDialogOpen, setIsExpenseDialogOpen] = useState(false);
   
   // Get monthly expenses data
   const { data: expenses } = useQuery({
@@ -71,8 +70,25 @@ export function MonthlyExpenses() {
     setSelectedMonth(parseInt(value));
   };
 
-  const handleExpenseAdded = () => {
-    setIsExpenseDialogOpen(false);
+  const handleAddExpense = async (expenseData: Omit<VariableExpense, 'id' | 'created_at'>) => {
+    try {
+      await addVariableExpense(expenseData);
+      
+      // Invalidate the expenses query to refresh the list
+      queryClient.invalidateQueries({ 
+        queryKey: queryKeys.expenses(selectedYear, selectedMonth) 
+      });
+      
+      return Promise.resolve();
+    } catch (error) {
+      console.error("Error adding expense:", error);
+      toast({
+        title: "Error",
+        description: "Failed to add expense. Please try again.",
+        variant: "destructive"
+      });
+      return Promise.reject(error);
+    }
   };
   
   return (
@@ -147,24 +163,11 @@ export function MonthlyExpenses() {
           <Card>
             <CardHeader className="pb-2 flex justify-between items-center">
               <CardTitle>Variable Expenses</CardTitle>
-              <Dialog open={isExpenseDialogOpen} onOpenChange={setIsExpenseDialogOpen}>
-                <DialogTrigger asChild>
-                  <Button size="sm" className="h-8">
-                    <PlusCircle className="h-4 w-4 mr-1" />
-                    Add Expense
-                  </Button>
-                </DialogTrigger>
-                <DialogContent>
-                  <DialogHeader>
-                    <DialogTitle>Add New Expense</DialogTitle>
-                  </DialogHeader>
-                  <ExpenseForm 
-                    year={selectedYear}
-                    month={selectedMonth}
-                    onSuccess={handleExpenseAdded}
-                  />
-                </DialogContent>
-              </Dialog>
+              <ExpenseForm 
+                onSubmit={handleAddExpense}
+                year={selectedYear}
+                month={selectedMonth}
+              />
             </CardHeader>
             <CardContent>
               <VariableExpensesList
