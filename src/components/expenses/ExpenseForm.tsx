@@ -18,7 +18,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { useQuery } from '@tanstack/react-query'
-import { getCategories, addVariableExpense } from '@/lib/supabase'
+import { getCategories } from '@/lib/supabase'
 import {
   Form,
   FormControl,
@@ -107,7 +107,7 @@ export const ExpenseForm = ({ onSubmit, year, month }: ExpenseFormProps) => {
         description: "Your expense has been successfully added.",
       });
       
-      // Reset the form
+      // Reset the form with the current date
       form.reset({
         description: '',
         amount: 0,
@@ -195,7 +195,10 @@ export const ExpenseForm = ({ onSubmit, year, month }: ExpenseFormProps) => {
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Category</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <Select 
+                    onValueChange={field.onChange} 
+                    value={field.value}
+                  >
                     <FormControl>
                       <SelectTrigger>
                         <SelectValue placeholder="Select a category" />
