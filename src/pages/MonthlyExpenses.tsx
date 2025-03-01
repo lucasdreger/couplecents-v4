@@ -79,6 +79,11 @@ export function MonthlyExpenses() {
         queryKey: queryKeys.expenses(selectedYear, selectedMonth) 
       });
       
+      toast({
+        title: "Success",
+        description: "Expense added successfully.",
+      });
+      
       return Promise.resolve();
     } catch (error) {
       console.error("Error adding expense:", error);
