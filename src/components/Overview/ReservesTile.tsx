@@ -1,60 +1,145 @@
+import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { useQuery } from '@tanstack/react-query';
-import { supabase } from '@/lib/supabaseClient';
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Progress } from "@/components/ui/progress";
+import { useReserves } from "@/hooks/useReserves";
+import { useAuth } from "@/context/AuthContext";
+import { PencilIcon, CheckIcon, XIcon } from "lucide-react";
+import { Skeleton } from "@/components/ui/skeleton";
 
-interface MonthlyDetails {
-  total_income: number;
-  total_expenses: number;
-}
-
-interface ReservesData {
-  amount: number;
-  percentage: number;
+interface Reserve {
+  id: string;
+  name: string;
+  category: string;
+  current_value: number;
+  target_value: number | null;
+  last_updated: string;
 }
 
 export const ReservesTile = () => {
-  const { data: reserves, isLoading, isError } = useQuery({
-    queryKey: ['reserves'],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('monthly_details')
-        .select('total_income, total_expenses')
-        .single();
-        
-      if (error) throw error;
-      
-      const totalIncome = (data as MonthlyDetails)?.total_income || 0;
-      const totalExpenses = (data as MonthlyDetails)?.total_expenses || 0;
-      const reserves = totalIncome - totalExpenses;
-      
-      return {
-        amount: reserves,
-        percentage: totalIncome ? (reserves / totalIncome) * 100 : 0
-      } as ReservesData;
-    }
-  });
+  const { user } = useAuth();
+  const { reserves, loading, updateValue } = useReserves();
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editValue, setEditValue] = useState<string>('');
   
-  const amount = reserves?.amount || 0;
-  const percentage = reserves?.percentage || 0;
+  // Ensure reserves is an array before using reduce
+  const reservesArray = Array.isArray(reserves) ? reserves : [];
+  const totalReserves = reservesArray.reduce((sum, res) => sum + res.current_value, 0);
+  
+  const handleEdit = (reserve: Reserve) => {
+    setEditingId(reserve.id);
+    setEditValue(reserve.current_value.toString());
+  };
+
+  const handleSave = (id: string) => {
+    const value = parseFloat(editValue);
+    if (!isNaN(value) && user?.id) {
+      updateValue({ id, value, userId: user.id });
+      setEditingId(null);
+    }
+  };
+
+  const handleCancel = () => {
+    setEditingId(null);
+  };
   
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Reserves</CardTitle>
+        <CardTitle className="flex justify-between items-center">
+          <span>Reserves</span>
+          <span className="text-lg font-medium">${totalReserves.toFixed(2)}</span>
+        </CardTitle>
       </CardHeader>
       <CardContent>
-        {isLoading ? (
-          <div>Loading reserves...</div>
-        ) : isError ? (
-          <div>Error loading reserves</div>
+        {loading ? (
+          <div className="space-y-3">
+            <Skeleton className="h-12 w-full" />
+            <Skeleton className="h-12 w-full" />
+          </div>
+        ) : reservesArray.length === 0 ? (
+          <div className="text-center py-3 text-muted-foreground">No reserves found</div>
         ) : (
-          <div className="space-y-2">
-            <p className="text-3xl font-bold">
-              ${amount.toFixed(2)}
-            </p>
-            <p className="text-sm text-muted-foreground">
-              {percentage.toFixed(1)}% of income
-            </p>
+          <div className="space-y-3 max-h-[300px] overflow-y-auto pr-2">
+            {reservesArray.map(reserve => (
+              <Card key={reserve.id} className="border bg-card/50">
+                <CardContent className="p-3">
+                  <div className="space-y-2">
+                    <div className="flex justify-between items-center">
+                      <div>
+                        <h4 className="font-medium">{reserve.name}</h4>
+                        <p className="text-xs text-muted-foreground">
+                          {reserve.category}
+                        </p>
+                      </div>
+                      
+                      {editingId === reserve.id ? (
+                        <div className="flex items-center space-x-2">
+                          <Input
+                            type="number"
+                            value={editValue}
+                            onChange={(e) => setEditValue(e.target.value)}
+                            className="w-24"
+                          />
+                          <Button 
+                            size="icon" 
+                            variant="ghost" 
+                            onClick={() => handleSave(reserve.id)}
+                            className="h-8 w-8"
+                          >
+                            <CheckIcon className="h-4 w-4" />
+                          </Button>
+                          <Button 
+                            size="icon" 
+                            variant="ghost" 
+                            onClick={handleCancel}
+                            className="h-8 w-8"
+                          >
+                            <XIcon className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      ) : (
+                        <div className="flex items-center space-x-2">
+                          <div className="text-right">
+                            <p className="font-bold">${reserve.current_value.toFixed(2)}</p>
+                            {reserve.target_value && (
+                              <p className="text-xs text-muted-foreground">
+                                Target: ${reserve.target_value.toFixed(2)}
+                              </p>
+                            )}
+                          </div>
+                          <Button 
+                            size="icon" 
+                            variant="ghost" 
+                            onClick={() => handleEdit(reserve)}
+                            className="h-8 w-8"
+                          >
+                            <PencilIcon className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      )}
+                    </div>
+                    
+                    {reserve.target_value && (
+                      <div className="flex items-center gap-2">
+                        <Progress 
+                          value={(reserve.current_value / reserve.target_value) * 100} 
+                          className="h-2"
+                        />
+                        <span className="text-xs text-muted-foreground">
+                          {Math.round((reserve.current_value / reserve.target_value) * 100)}%
+                        </span>
+                      </div>
+                    )}
+                    
+                    <p className="text-xs text-muted-foreground">
+                      Last updated: {new Date(reserve.last_updated).toLocaleDateString()}
+                    </p>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
           </div>
         )}
       </CardContent>

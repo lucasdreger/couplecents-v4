@@ -21,7 +21,7 @@ export const FixedExpensesManagement = () => {
   
   const { toast } = useToast()
   const queryClient = useQueryClient()
-
+  
   const { data: categories } = useQuery({
     queryKey: queryKeys.categories(),
     queryFn: async () => {
@@ -33,7 +33,7 @@ export const FixedExpensesManagement = () => {
       return data
     }
   })
-
+  
   const { data: fixedExpenses } = useQuery({
     queryKey: queryKeys.fixedExpenses(),
     queryFn: async () => {
@@ -45,19 +45,32 @@ export const FixedExpensesManagement = () => {
       return data
     }
   })
-
-  const { mutate: addExpense } = useMutation({
+  
+  const { mutate: addExpense, isPending } = useMutation({
     mutationFn: async (data: typeof expense) => {
-      const { error } = await supabase
+      // Make sure the amount is properly converted to a number
+      const numericAmount = parseFloat(data.amount);
+      if (isNaN(numericAmount)) {
+        throw new Error("Amount must be a valid number");
+      }
+      
+      const { error, data: insertedData } = await supabase
         .from('fixed_expenses')
         .insert({
           description: data.description,
-          amount: parseFloat(data.amount),
+          estimated_amount: numericAmount, // Use the correct column name
           category_id: data.category_id,
           owner: data.owner,
           status_required: data.status_required
         })
-      if (error) throw error
+        .select()
+      
+      if (error) {
+        console.error("Supabase insert error:", error);
+        throw error;
+      }
+      
+      return insertedData;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.fixedExpenses() })
@@ -71,6 +84,7 @@ export const FixedExpensesManagement = () => {
       toast({ description: "Fixed expense added successfully" })
     },
     onError: (error: Error) => {
+      console.error("Mutation error:", error);
       toast({ 
         description: "Failed to add fixed expense: " + error.message,
         variant: "destructive"
@@ -78,17 +92,23 @@ export const FixedExpensesManagement = () => {
     }
   })
 
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    addExpense(expense);
+  }
+  
   return (
     <Card>
       <CardHeader>
         <CardTitle>Fixed Expenses Management</CardTitle>
       </CardHeader>
       <CardContent className="space-y-6">
-        <div className="grid gap-4">
+        <form onSubmit={handleSubmit} className="grid gap-4">
           <Input 
             placeholder="Description"
             value={expense.description}
             onChange={(e) => setExpense(prev => ({ ...prev, description: e.target.value }))}
+            required
           />
           
           <Input 
@@ -96,11 +116,13 @@ export const FixedExpensesManagement = () => {
             placeholder="Amount"
             value={expense.amount}
             onChange={(e) => setExpense(prev => ({ ...prev, amount: e.target.value }))}
+            required
           />
           
           <Select 
             value={expense.category_id}
             onValueChange={(value) => setExpense(prev => ({ ...prev, category_id: value }))}
+            required
           >
             <SelectTrigger>
               <SelectValue placeholder="Select category" />
@@ -139,20 +161,20 @@ export const FixedExpensesManagement = () => {
           </div>
           
           <Button 
-            onClick={() => addExpense(expense)}
-            disabled={!expense.description || !expense.amount || !expense.category_id}
+            type="submit"
+            disabled={!expense.description || !expense.amount || !expense.category_id || isPending}
           >
-            Add Fixed Expense
+            {isPending ? 'Adding...' : 'Add Fixed Expense'}
           </Button>
-        </div>
-
+        </form>
+        
         <div className="space-y-2">
           {fixedExpenses?.map((expense) => (
             <div key={expense.id} className="flex justify-between items-center p-3 rounded border">
               <div>
                 <p className="font-medium">{expense.description}</p>
                 <p className="text-sm text-muted-foreground">
-                  ${expense.amount} • {expense.categories?.name} • {expense.owner}
+                  ${expense.estimated_amount} • {expense.categories?.name} • {expense.owner}
                 </p>
               </div>
               {expense.status_required && (

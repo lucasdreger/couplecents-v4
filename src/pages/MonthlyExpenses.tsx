@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -30,7 +29,10 @@ export function MonthlyExpenses() {
   const currentYear = new Date().getFullYear();
   const currentMonth = new Date().getMonth() + 1;
   
-  const [selectedYear, setSelectedYear] = useState(currentYear);
+  // Start with 2025 by default
+  const defaultYear = 2025;
+  
+  const [selectedYear, setSelectedYear] = useState(defaultYear);
   const [selectedMonth, setSelectedMonth] = useState(currentMonth);
   
   // Get monthly expenses data
@@ -43,8 +45,11 @@ export function MonthlyExpenses() {
   const totalVariableExpenses = expenses?.data?.reduce((sum, expense) => sum + Number(expense.amount), 0) || 0;
   const totalExpenses = totalVariableExpenses; // Add fixed expenses if needed
   
-  // Generate years for dropdown (from 2023 to current year + 1)
-  const years = Array.from({ length: (currentYear + 1) - 2023 + 1 }, (_, i) => 2023 + i);
+  // Generate years for dropdown (from 2023 to current year + 2)
+  // Ensure 2025 is included in the range
+  const startYear = Math.min(2023, defaultYear);
+  const endYear = Math.max(currentYear + 2, defaultYear + 2);
+  const years = Array.from({ length: endYear - startYear + 1 }, (_, i) => startYear + i);
   
   // Month names for display
   const monthNames = [
@@ -63,9 +68,14 @@ export function MonthlyExpenses() {
   return (
     <div className="container mx-auto p-6">
       <div className="flex flex-col md:flex-row items-start md:items-center justify-between mb-6">
-        <h1 className="text-3xl font-bold tracking-tight mb-2 md:mb-0">Monthly Expenses</h1>
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight mb-2">Monthly Expenses</h1>
+          <p className="text-muted-foreground text-sm">
+            Managing expenses for {monthNames[selectedMonth - 1]} {selectedYear}
+          </p>
+        </div>
         
-        <div className="flex gap-2 flex-wrap">
+        <div className="flex gap-2 flex-wrap mt-4 md:mt-0">
           <select 
             className="border border-border rounded px-2 py-1 bg-background text-foreground"
             value={selectedYear} 
