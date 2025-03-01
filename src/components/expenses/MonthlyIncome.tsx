@@ -1,4 +1,3 @@
-
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { getMonthlyIncome, updateMonthlyIncome } from '@/lib/supabase'
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -33,9 +32,10 @@ export const MonthlyIncome = ({ year, month }: Props) => {
   // Update local state when data changes or on initial load
   useEffect(() => {
     if (income) {
-      setLucasInput(income.lucas_income ? formatCurrency(Number(income.lucas_income), 'USD').replace('$', '') : '')
-      setCamilaInput(income.camila_income ? formatCurrency(Number(income.camila_income), 'USD').replace('$', '') : '')
-      setOtherInput(income.other_income ? formatCurrency(Number(income.other_income), 'USD').replace('$', '') : '')
+      // Use Euro currency format instead of USD
+      setLucasInput(income.lucas_income ? income.lucas_income.toFixed(2) : '')
+      setCamilaInput(income.camila_income ? income.camila_income.toFixed(2) : '')
+      setOtherInput(income.other_income ? income.other_income.toFixed(2) : '')
     }
   }, [income])
 
@@ -63,14 +63,14 @@ export const MonthlyIncome = ({ year, month }: Props) => {
   // Format and save input when blurring or pressing Enter
   const handleSaveValue = (field: 'lucas_income' | 'camila_income' | 'other_income', value: string) => {
     // Remove any existing formatting (commas, currency symbols)
-    const numericValue = parseFloat(value.replace(/[$,]/g, ''))
+    const numericValue = parseFloat(value.replace(/[€,]/g, ''))
     
     if (!isNaN(numericValue)) {
       // Update the database with the numeric value
       updateIncome({ [field]: numericValue })
       
-      // Format the display value
-      const formattedValue = formatCurrency(numericValue, 'USD').replace('$', '')
+      // Format the display value - just show decimal places
+      const formattedValue = numericValue.toFixed(2)
       
       // Update the corresponding input field
       if (field === 'lucas_income') {
@@ -109,46 +109,66 @@ export const MonthlyIncome = ({ year, month }: Props) => {
     )
   }
 
+  // Calculate total monthly income
+  const totalIncome = [
+    parseFloat(lucasInput) || 0,
+    parseFloat(camilaInput) || 0,
+    parseFloat(otherInput) || 0
+  ].reduce((sum, val) => sum + val, 0);
+
   return (
-    <div className="grid gap-4 md:grid-cols-3">
-      <div className="space-y-2">
-        <FormLabel>Lucas</FormLabel>
-        <Input
-          type="text"
-          placeholder="Lucas Income"
-          value={lucasInput}
-          onChange={(e) => setLucasInput(e.target.value)}
-          onBlur={(e) => handleSaveValue('lucas_income', e.target.value)}
-          onKeyDown={(e) => handleKeyDown(e, 'lucas_income', lucasInput)}
-          className="text-right"
-          prefix="$"
-        />
+    <div className="space-y-4">
+      <div className="flex justify-between items-center">
+        <h3 className="text-sm font-medium text-muted-foreground">Monthly Income</h3>
+        <p className="text-lg font-semibold">Total: €{totalIncome.toFixed(2)}</p>
       </div>
-      <div className="space-y-2">
-        <FormLabel>Camila</FormLabel>
-        <Input
-          type="text"
-          placeholder="Camila Income"
-          value={camilaInput}
-          onChange={(e) => setCamilaInput(e.target.value)}
-          onBlur={(e) => handleSaveValue('camila_income', e.target.value)}
-          onKeyDown={(e) => handleKeyDown(e, 'camila_income', camilaInput)}
-          className="text-right"
-          prefix="$"
-        />
-      </div>
-      <div className="space-y-2">
-        <FormLabel>Others</FormLabel>
-        <Input
-          type="text"
-          placeholder="Other Income"
-          value={otherInput}
-          onChange={(e) => setOtherInput(e.target.value)}
-          onBlur={(e) => handleSaveValue('other_income', e.target.value)}
-          onKeyDown={(e) => handleKeyDown(e, 'other_income', otherInput)}
-          className="text-right"
-          prefix="$"
-        />
+
+      <div className="grid gap-4 md:grid-cols-3">
+        <div className="space-y-2">
+          <FormLabel>Lucas</FormLabel>
+          <div className="relative">
+            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">€</span>
+            <Input
+              type="text"
+              placeholder="Lucas Income"
+              value={lucasInput}
+              onChange={(e) => setLucasInput(e.target.value)}
+              onBlur={(e) => handleSaveValue('lucas_income', e.target.value)}
+              onKeyDown={(e) => handleKeyDown(e, 'lucas_income', lucasInput)}
+              className="text-right pl-7"
+            />
+          </div>
+        </div>
+        <div className="space-y-2">
+          <FormLabel>Camila</FormLabel>
+          <div className="relative">
+            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">€</span>
+            <Input
+              type="text"
+              placeholder="Camila Income"
+              value={camilaInput}
+              onChange={(e) => setCamilaInput(e.target.value)}
+              onBlur={(e) => handleSaveValue('camila_income', e.target.value)}
+              onKeyDown={(e) => handleKeyDown(e, 'camila_income', camilaInput)}
+              className="text-right pl-7"
+            />
+          </div>
+        </div>
+        <div className="space-y-2">
+          <FormLabel>Others</FormLabel>
+          <div className="relative">
+            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">€</span>
+            <Input
+              type="text"
+              placeholder="Other Income"
+              value={otherInput}
+              onChange={(e) => setOtherInput(e.target.value)}
+              onBlur={(e) => handleSaveValue('other_income', e.target.value)}
+              onKeyDown={(e) => handleKeyDown(e, 'other_income', otherInput)}
+              className="text-right pl-7"
+            />
+          </div>
+        </div>
       </div>
     </div>
   )

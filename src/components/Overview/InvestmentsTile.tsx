@@ -15,12 +15,14 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { ArrowUpIcon, ArrowDownIcon, PencilIcon, CheckIcon, XIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { toast } from 'sonner';
 import {
   PieChart,
   Pie,
   Cell,
   ResponsiveContainer,
   Tooltip,
+  Legend
 } from 'recharts';
 
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8'];
@@ -38,6 +40,7 @@ export const InvestmentsTile = () => {
   const { investments, isLoading, updateValue } = useInvestments();
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editValue, setEditValue] = useState<string>('');
+  const [currentInvestment, setCurrentInvestment] = useState<Investment | null>(null);
   
   const totalInvestments = investments?.reduce((sum: number, inv: Investment) => sum + inv.current_value, 0) || 0;
   
@@ -48,19 +51,39 @@ export const InvestmentsTile = () => {
 
   const handleEdit = (investment: Investment) => {
     setEditingId(investment.id);
+    setCurrentInvestment(investment);
     setEditValue(investment.current_value.toString());
   };
 
   const handleSave = (id: string) => {
     const value = parseFloat(editValue);
-    if (!isNaN(value) && user?.id) {
-      updateValue({ id, value, userId: user.id });
+    if (!isNaN(value) && user?.id && currentInvestment) {
+      const oldValue = currentInvestment.current_value;
+      
+      // Pass both the new value and old value to the mutation function
+      updateValue({ 
+        id, 
+        value, 
+        oldValue  // This was missing before
+      });
+      
+      toast.success('Investment updated successfully');
       setEditingId(null);
+      setCurrentInvestment(null);
+    } else if (isNaN(value)) {
+      toast.error('Please enter a valid number');
     }
   };
 
   const handleCancel = () => {
     setEditingId(null);
+    setCurrentInvestment(null);
+  };
+  
+  // Format date as DD/MM/YYYY
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-GB'); // Uses DD/MM/YYYY format
   };
   
   return (
@@ -71,7 +94,7 @@ export const InvestmentsTile = () => {
           <CardHeader>
             <CardTitle className="flex items-center justify-between">
               <span>Investments</span>
-              <span className="text-lg font-medium">${totalInvestments.toFixed(2)}</span>
+              <span className="text-lg font-medium">€{totalInvestments.toFixed(2)}</span>
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -86,13 +109,13 @@ export const InvestmentsTile = () => {
             ) : (
               <div className="space-y-3 max-h-[400px] overflow-y-auto pr-2">
                 {investments.map((investment: Investment) => (
-                  <Card key={investment.id} className="border bg-card/50">
+                  <Card key={investment.id} className="border bg-card/50 hover:bg-accent/5 transition-colors">
                     <CardContent className="p-3">
                       <div className="flex items-center justify-between">
                         <div>
                           <h4 className="font-medium">{investment.name}</h4>
                           <p className="text-sm text-muted-foreground">
-                            Last updated: {new Date(investment.last_updated).toLocaleDateString()}
+                            Last updated: {formatDate(investment.last_updated)}
                           </p>
                         </div>
                         
@@ -124,7 +147,7 @@ export const InvestmentsTile = () => {
                         ) : (
                           <div className="flex items-center space-x-2">
                             <div className="text-right">
-                              <p className="font-bold">${investment.current_value.toFixed(2)}</p>
+                              <p className="font-bold">€{investment.current_value.toFixed(2)}</p>
                               {investment.change_percentage !== undefined && (
                                 <div className={`flex items-center text-xs ${investment.change_percentage >= 0 ? 'text-green-500' : 'text-red-500'}`}>
                                   {investment.change_percentage >= 0 ? (
@@ -181,13 +204,14 @@ export const InvestmentsTile = () => {
                     cx="50%"
                     cy="50%"
                     outerRadius={80}
-                    label={(entry) => entry.name}
+                    label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
                   >
                     {pieData?.map((_, index) => (
                       <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                     ))}
                   </Pie>
-                  <Tooltip formatter={(value) => `$${Number(value).toFixed(2)}`} />
+                  <Tooltip formatter={(value) => `€${Number(value).toFixed(2)}`} />
+                  <Legend />
                 </PieChart>
               </ResponsiveContainer>
             )}

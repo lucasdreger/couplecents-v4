@@ -45,9 +45,9 @@ export function MonthlyExpenses() {
   const totalVariableExpenses = expenses?.data?.reduce((sum, expense) => sum + Number(expense.amount), 0) || 0;
   const totalExpenses = totalVariableExpenses; // Add fixed expenses if needed
   
-  // Generate years for dropdown (from 2023 to current year + 2)
+  // Generate years for dropdown (from 2025 to current year + 2)
   // Ensure 2025 is included in the range
-  const startYear = Math.min(2023, defaultYear);
+  const startYear = Math.min(2025, defaultYear);
   const endYear = Math.max(currentYear + 2, defaultYear + 2);
   const years = Array.from({ length: endYear - startYear + 1 }, (_, i) => startYear + i);
   

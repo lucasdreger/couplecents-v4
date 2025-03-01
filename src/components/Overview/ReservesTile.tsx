@@ -7,6 +7,7 @@ import { useReserves } from "@/hooks/useReserves";
 import { useAuth } from "@/context/AuthContext";
 import { PencilIcon, CheckIcon, XIcon } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
+import { toast } from "sonner";
 
 interface Reserve {
   id: string;
@@ -27,6 +28,12 @@ export const ReservesTile = () => {
   const reservesArray = Array.isArray(reserves) ? reserves : [];
   const totalReserves = reservesArray.reduce((sum, res) => sum + res.current_value, 0);
   
+  // Format date as DD/MM/YYYY
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-GB'); // Uses DD/MM/YYYY format
+  };
+
   const handleEdit = (reserve: Reserve) => {
     setEditingId(reserve.id);
     setEditValue(reserve.current_value.toString());
@@ -37,6 +44,9 @@ export const ReservesTile = () => {
     if (!isNaN(value) && user?.id) {
       updateValue({ id, value, userId: user.id });
       setEditingId(null);
+      toast.success("Reserve updated successfully");
+    } else if (isNaN(value)) {
+      toast.error("Please enter a valid number");
     }
   };
 
@@ -49,7 +59,7 @@ export const ReservesTile = () => {
       <CardHeader>
         <CardTitle className="flex justify-between items-center">
           <span>Reserves</span>
-          <span className="text-lg font-medium">${totalReserves.toFixed(2)}</span>
+          <span className="text-lg font-medium">€{totalReserves.toFixed(2)}</span>
         </CardTitle>
       </CardHeader>
       <CardContent>
@@ -102,10 +112,10 @@ export const ReservesTile = () => {
                       ) : (
                         <div className="flex items-center space-x-2">
                           <div className="text-right">
-                            <p className="font-bold">${reserve.current_value.toFixed(2)}</p>
+                            <p className="font-bold">€{reserve.current_value.toFixed(2)}</p>
                             {reserve.target_value && (
                               <p className="text-xs text-muted-foreground">
-                                Target: ${reserve.target_value.toFixed(2)}
+                                Target: €{reserve.target_value.toFixed(2)}
                               </p>
                             )}
                           </div>
@@ -134,7 +144,7 @@ export const ReservesTile = () => {
                     )}
                     
                     <p className="text-xs text-muted-foreground">
-                      Last updated: {new Date(reserve.last_updated).toLocaleDateString()}
+                      Last updated: {formatDate(reserve.last_updated)}
                     </p>
                   </div>
                 </CardContent>

@@ -1,13 +1,12 @@
-
 import { NavLink } from "react-router-dom";
 import {
-  BarChart4,
   LayoutDashboard, 
   LogOut, 
   Settings, 
-  PiggyBank,
-  Wallet,
-  Calendar
+  Calendar,
+  Receipt,
+  LineChart,
+  Wallet
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/context/AuthContext";
@@ -15,8 +14,8 @@ import { useAuth } from "@/context/AuthContext";
 const navigation = [
   { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
   { name: 'Monthly Expenses', href: '/monthly-expenses', icon: Calendar },
-  { name: 'Investments', href: '/investments', icon: BarChart4 },
-  { name: 'Reserves', href: '/reserves', icon: PiggyBank },
+  { name: 'Expenses', href: '/expenses', icon: Receipt },
+  { name: 'Financial Analytics', href: '/analytics', icon: LineChart },
   { name: 'Administration', href: '/administration', icon: Settings },
 ];
 
@@ -28,7 +27,9 @@ export default function Sidebar() {
       {/* Logo */}
       <div className="flex h-16 items-center justify-between border-b border-border px-4">
         <div className="flex items-center space-x-2">
-          <Wallet className="h-6 w-6 text-primary" />
+          <div className="flex h-8 w-8 items-center justify-center rounded-md bg-primary">
+            <Wallet className="h-4 w-4 text-primary-foreground" />
+          </div>
           <span className="font-bold">Expense Empower</span>
         </div>
       </div>
@@ -49,7 +50,7 @@ export default function Sidebar() {
               cn(
                 "flex items-center gap-3 rounded-md px-3 py-2 transition-colors",
                 isActive 
-                  ? "bg-accent text-accent-foreground" 
+                  ? "bg-primary/10 text-primary border-l-2 border-primary font-medium" 
                   : "hover:bg-accent/50 hover:text-accent-foreground"
               )
             }
