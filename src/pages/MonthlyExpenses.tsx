@@ -8,6 +8,10 @@ import { useQuery } from '@tanstack/react-query';
 import { queryKeys } from '@/lib/queries';
 import { getMonthlyExpenses } from '@/lib/supabase';
 import { ErrorBoundary } from 'react-error-boundary';
+import { Button } from "@/components/ui/button";
+import { PlusCircle } from "lucide-react";
+import { ExpenseForm } from "@/components/expenses/ExpenseForm";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 
 // Error fallback component
 const ErrorFallback = ({ error, resetErrorBoundary }) => {
@@ -135,8 +139,39 @@ export function MonthlyExpenses() {
         
         <ErrorBoundary FallbackComponent={ErrorFallback}>
           <Card>
-            <CardHeader className="pb-2">
+            <CardHeader className="pb-2 flex flex-row items-center justify-between">
               <CardTitle>Variable Expenses</CardTitle>
+              <Dialog>
+                <DialogTrigger asChild>
+                  <Button variant="outline" size="sm">
+                    <PlusCircle className="h-4 w-4 mr-2" />
+                    Add Expense
+                  </Button>
+                </DialogTrigger>
+                <DialogContent>
+                  <DialogHeader>
+                    <DialogTitle>Add Variable Expense</DialogTitle>
+                  </DialogHeader>
+                  <ExpenseForm
+                    onSubmit={async (data) => {
+                      try {
+                        await addExpense({
+                          ...data,
+                          year: selectedYear,
+                          month: selectedMonth
+                        });
+                        toast({ description: "Expense added successfully" });
+                      } catch (error) {
+                        toast({
+                          variant: "destructive",
+                          description: "Failed to add expense"
+                        });
+                      }
+                    }}
+                    categories={categories}
+                  />
+                </DialogContent>
+              </Dialog>
             </CardHeader>
             <CardContent>
               <VariableExpensesList

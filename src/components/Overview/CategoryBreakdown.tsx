@@ -25,19 +25,17 @@ export const CategoryBreakdown = () => {
   const { data: categoryData, isLoading } = useQuery({
     queryKey: ['categoryBreakdown'],
     queryFn: async () => {
-      // Get current date info
       const today = new Date();
       const currentYear = today.getFullYear();
       const currentMonth = today.getMonth() + 1;
       
-      // Query for the last 6 months of data instead of only current month
       const { data, error } = await supabase
         .from('variable_expenses')
         .select(`
           category:categories (name),
           amount
         `)
-        .or(`year.gt.${currentYear-1}, and(year.eq.${currentYear-1}, month.gte.${currentMonth})`); // Past 12 months
+        .or(`year.gt.${currentYear-1}, and(year.eq.${currentYear-1}, month.gte.${currentMonth})`);
       
       if (error) {
         console.error("Error fetching category data:", error);
@@ -49,13 +47,10 @@ export const CategoryBreakdown = () => {
         return [];
       }
       
-      // Aggregate by category with null checking
       const categoryTotals = (data as VariableExpenseRow[]).reduce((acc: Record<string, number>, curr) => {
-        // Ensure we have valid category name and amount
         const categoryName = curr.category?.name || 'Uncategorized';
         const amount = typeof curr.amount === 'number' ? curr.amount : 0;
         
-        // Initialize category if it doesn't exist
         if (!acc[categoryName]) {
           acc[categoryName] = 0;
         }
@@ -64,13 +59,12 @@ export const CategoryBreakdown = () => {
         return acc;
       }, {});
       
-      // Convert to array format for recharts with explicit number typing
       return Object.entries(categoryTotals)
         .map(([name, value]) => ({
           name,
           value: Number(value) || 0,
         }))
-        .sort((a, b) => b.value - a.value); // Sort by value descending
+        .sort((a, b) => b.value - a.value);
     },
   });
 
@@ -87,7 +81,7 @@ export const CategoryBreakdown = () => {
   }
 
   const chartData = categoryData as CategoryData[];
-  
+
   return (
     <div className="h-[300px]">
       <ResponsiveContainer width="100%" height="100%">
@@ -99,9 +93,7 @@ export const CategoryBreakdown = () => {
             cx="50%"
             cy="50%"
             outerRadius={100}
-            label={({ name, percent }: { name: string, percent: number }) => 
-              `${name}: ${(percent * 100).toFixed(0)}%`
-            }
+            label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
           >
             {chartData.map((entry, index) => (
               <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />

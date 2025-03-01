@@ -1,4 +1,3 @@
-
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { getFixedExpenses, updateFixedExpenseStatus } from '@/lib/supabase/queries'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
@@ -18,6 +17,7 @@ interface FixedExpense {
   due_date?: string
   category?: { name: string }
   status?: Array<{ completed: boolean }>
+  status_required?: boolean
 }
 
 export const FixedExpensesList = ({ year, month }: Props) => {
@@ -65,12 +65,14 @@ export const FixedExpensesList = ({ year, month }: Props) => {
             </TableCell>
             <TableCell>{expense.due_date}</TableCell>
             <TableCell>
-              <Checkbox
-                checked={expense.status?.[0]?.completed}
-                onCheckedChange={(checked) => 
-                  updateStatus({ id: expense.id, completed: checked as boolean })
-                }
-              />
+              {expense.status_required && (
+                <Checkbox
+                  checked={expense.status?.[0]?.completed}
+                  onCheckedChange={(checked) => 
+                    updateStatus({ id: expense.id, completed: checked as boolean })
+                  }
+                />
+              )}
             </TableCell>
           </TableRow>
         ))}
