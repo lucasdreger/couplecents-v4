@@ -33,25 +33,29 @@ export const BudgetTile = () => {
   const totalExpenses = budgetData?.total_expenses || 0;
 
   return (
-    <div className="p-6">
-      <h3 className="text-lg font-semibold mb-4">Total Budget</h3>
-      {isLoading ? (
-        <div>Loading budget...</div>
-      ) : isError ? (
-        <div>Error loading budget</div>
-      ) : (
-        <div className="space-y-2">
-          <p className="text-3xl font-bold text-primary">
-            €{totalIncome.toFixed(2)}
-          </p>
-          <p className="text-sm text-muted-foreground">
-            Expenses: €{totalExpenses.toFixed(2)}
-          </p>
-          <p className="text-sm text-muted-foreground">
-            Balance: €{(totalIncome - totalExpenses).toFixed(2)}
-          </p>
-        </div>
-      )}
-    </div>
+    <Card>
+      <CardHeader>
+        <CardTitle>Total Budget</CardTitle>
+      </CardHeader>
+      <CardContent>
+        {isLoading ? (
+          <div>Loading budget...</div>
+        ) : isError ? (
+          <div>Error loading budget</div>
+        ) : (
+          <div className="space-y-2">
+            <p className="text-3xl font-bold text-primary">
+              ${totalIncome.toFixed(2)}
+            </p>
+            <p className="text-sm text-muted-foreground">
+              Expenses: ${totalExpenses.toFixed(2)}
+            </p>
+            <p className="text-sm text-muted-foreground">
+              Balance: ${(totalIncome - totalExpenses).toFixed(2)}
+            </p>
+          </div>
+        )}
+      </CardContent>
+    </Card>
   );
 };

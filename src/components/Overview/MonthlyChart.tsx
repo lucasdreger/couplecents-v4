@@ -25,15 +25,9 @@ export const MonthlyChart = () => {
   const { data: monthlyData, isLoading, isError } = useQuery({
     queryKey: ['monthlyExpenses'],
     queryFn: async (): Promise<ChartData[]> => {
-      // Get the last 12 months
-      const now = new Date();
-      const currentYear = now.getFullYear();
-      const currentMonth = now.getMonth() + 1;
-
       const { data, error } = await supabase
         .from('monthly_details')
         .select('*')
-        .or(`year.gt.${currentYear-1}, and(year.eq.${currentYear-1}, month.gte.${currentMonth})`)
         .order('year, month');
       
       if (error) {
@@ -44,11 +38,11 @@ export const MonthlyChart = () => {
       // Transform and validate data
       return (data || []).map((item: MonthlyDetail): ChartData => ({
         year: item.year,
-        month: new Date(item.year, item.month - 1).toLocaleString('default', { month: 'short' }),
+        month: new Date(2000, item.month - 1).toLocaleString('default', { month: 'short' }),
         planned_amount: Number(item.planned_amount || 0),
         actual_amount: Number(item.actual_amount || 0)
       }));
-    },
+    }
   });
 
   if (isLoading) {
@@ -62,7 +56,7 @@ export const MonthlyChart = () => {
   if (isError) {
     return (
       <div className="h-[300px] flex items-center justify-center text-red-500">
-        Error loading chart data
+        Error loading chart data. Please try again later.
       </div>
     );
   }

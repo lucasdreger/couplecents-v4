@@ -1,3 +1,4 @@
+
 import { RouterProvider, createBrowserRouter } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Toaster } from 'sonner';
@@ -12,7 +13,6 @@ import { MonthlyExpenses } from '@/pages/MonthlyExpenses';
 import Administration from '@/pages/Administration';
 import NotFound from '@/pages/NotFound';
 import DashboardLayout from '@/layouts/DashboardLayout';
-import { FinancialAnalytics } from '@/pages/FinancialAnalytics';
 
 // Create a client
 const queryClient = new QueryClient({
@@ -60,10 +60,6 @@ const router = createBrowserRouter([
           {
             path: "/administration",
             element: <Administration />
-          },
-          {
-            path: "/financial-analytics",
-            element: <FinancialAnalytics />
           }
         ]
       }

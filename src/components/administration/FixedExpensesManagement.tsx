@@ -9,10 +9,6 @@ import { Label } from "@/components/ui/label"
 import { supabase } from '@/lib/supabaseClient'
 import { useToast } from "@/components/ui/use-toast"
 import { queryKeys } from '@/lib/queries'
-import { Calendar } from "@/components/ui/calendar";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { CalendarIcon } from "lucide-react";
-import { format } from "date-fns";
 
 export const FixedExpensesManagement = () => {
   const [expense, setExpense] = useState({
@@ -20,8 +16,7 @@ export const FixedExpensesManagement = () => {
     amount: '',
     category_id: '',
     owner: 'Lucas',
-    status_required: false,
-    due_date: undefined as Date | undefined
+    status_required: false
   })
   
   const { toast } = useToast()
@@ -66,8 +61,7 @@ export const FixedExpensesManagement = () => {
           estimated_amount: numericAmount, // Use the correct column name
           category_id: data.category_id,
           owner: data.owner,
-          status_required: data.status_required,
-          due_date: data.due_date
+          status_required: data.status_required
         })
         .select()
       
@@ -85,8 +79,7 @@ export const FixedExpensesManagement = () => {
         amount: '',
         category_id: '',
         owner: 'Lucas',
-        status_required: false,
-        due_date: undefined
+        status_required: false
       })
       toast({ description: "Fixed expense added successfully" })
     },
@@ -156,28 +149,6 @@ export const FixedExpensesManagement = () => {
             </SelectContent>
           </Select>
           
-          <Popover>
-            <PopoverTrigger asChild>
-              <Button
-                variant="outline"
-                className={cn(
-                  "w-full justify-start text-left font-normal",
-                  !expense.due_date && "text-muted-foreground"
-                )}
-              >
-                <CalendarIcon className="mr-2 h-4 w-4" />
-                {expense.due_date ? format(expense.due_date, "PPP") : "Select due date (optional)"}
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-auto p-0" align="start">
-              <Calendar
-                mode="single"
-                selected={expense.due_date}
-                onSelect={(date) => setExpense(prev => ({ ...prev, due_date: date || undefined }))}
-              />
-            </PopoverContent>
-          </Popover>
-          
           <div className="flex items-center space-x-2">
             <Switch
               id="status-required"
@@ -205,11 +176,6 @@ export const FixedExpensesManagement = () => {
                 <p className="text-sm text-muted-foreground">
                   ${expense.estimated_amount} • {expense.categories?.name} • {expense.owner}
                 </p>
-                {expense.due_date && (
-                  <p className="text-sm text-muted-foreground">
-                    Due: {format(new Date(expense.due_date), "PPP")}
-                  </p>
-                )}
               </div>
               {expense.status_required && (
                 <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">
