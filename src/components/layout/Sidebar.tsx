@@ -4,7 +4,6 @@ import {
   LogOut, 
   Settings, 
   Calendar,
-  Receipt,
   LineChart,
   Wallet
 } from "lucide-react";
@@ -14,7 +13,6 @@ import { useAuth } from "@/context/AuthContext";
 const navigation = [
   { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
   { name: 'Monthly Expenses', href: '/monthly-expenses', icon: Calendar },
-  { name: 'Expenses', href: '/expenses', icon: Receipt },
   { name: 'Financial Analytics', href: '/analytics', icon: LineChart },
   { name: 'Administration', href: '/administration', icon: Settings },
 ];

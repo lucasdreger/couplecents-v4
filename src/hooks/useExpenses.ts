@@ -60,6 +60,8 @@ export const useExpenses = (year: number, month: number) => {
     mutationFn: addVariableExpense,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.expenses(year, month) })
+      // Also invalidate category breakdown since it depends on expenses
+      queryClient.invalidateQueries({ queryKey: ['categoryBreakdown'] })
     }
   })
 
@@ -69,6 +71,7 @@ export const useExpenses = (year: number, month: number) => {
       updateVariableExpense(id, expense),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.expenses(year, month) })
+      queryClient.invalidateQueries({ queryKey: ['categoryBreakdown'] })
     }
   })
 
@@ -77,6 +80,7 @@ export const useExpenses = (year: number, month: number) => {
     mutationFn: deleteVariableExpense,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.expenses(year, month) })
+      queryClient.invalidateQueries({ queryKey: ['categoryBreakdown'] })
     }
   })
 

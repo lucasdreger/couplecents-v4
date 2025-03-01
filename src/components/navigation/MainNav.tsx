@@ -6,18 +6,6 @@ const navigationItems = [
     path: "/dashboard"
   },
   {
-    name: "Expenses",
-    path: "/expenses"
-  },
-  {
-    name: "Fixed Expenses",
-    path: "/fixed-expenses"
-  },
-  {
-    name: "Income",
-    path: "/income"
-  },
-  {
     name: "Investments",
     path: "/investments"
   },
