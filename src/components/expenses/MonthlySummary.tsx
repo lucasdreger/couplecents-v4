@@ -24,13 +24,13 @@ export const MonthlySummary = ({ year, month }: Props) => {
   });
 
   // Get variable expenses
-  const { data: variableExpenses } = useQuery({
+  const { data: variableExpensesResponse } = useQuery({
     queryKey: ['variable-expenses', year, month],
     queryFn: () => getMonthlyExpenses(year, month)
   });
 
   // Get fixed expenses
-  const { data: fixedExpensesData } = useQuery({
+  const { data: fixedExpensesResponse } = useQuery({
     queryKey: ['fixed-expenses', year, month],
     queryFn: () => getFixedExpenses(year, month)
   });
@@ -43,18 +43,19 @@ export const MonthlySummary = ({ year, month }: Props) => {
     (income.camila_other_income || 0)
   ) : 0;
 
-  // Calculate total variable expenses
-  const totalVariableExpenses = variableExpenses?.data?.reduce(
-    (sum: number, expense: { amount: number }) => sum + expense.amount,
-    0
-  ) || 0;
+  // Calculate total variable expenses - ensure we're working with an array
+  const variableExpenses = variableExpensesResponse?.data || [];
+  const totalVariableExpenses = Array.isArray(variableExpenses) 
+    ? variableExpenses.reduce((sum: number, expense: { amount: number }) => 
+        sum + (expense.amount || 0), 0)
+    : 0;
 
-  // Calculate total fixed expenses
-  const totalFixedExpenses = fixedExpensesData?.data?.reduce(
-    (sum: number, expense: { estimated_amount: number }) => 
-      sum + expense.estimated_amount,
-    0
-  ) || 0;
+  // Calculate total fixed expenses - ensure we're working with an array
+  const fixedExpenses = fixedExpensesResponse?.data || [];
+  const totalFixedExpenses = Array.isArray(fixedExpenses)
+    ? fixedExpenses.reduce((sum: number, expense: { estimated_amount: number }) => 
+        sum + (expense.estimated_amount || 0), 0)
+    : 0;
 
   // Calculate total expenses
   const totalExpenses = totalVariableExpenses + totalFixedExpenses;
