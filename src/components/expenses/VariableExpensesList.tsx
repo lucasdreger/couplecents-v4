@@ -21,10 +21,11 @@ interface VariableExpense {
   amount: number;
   date: string;
   category: { name: string } | null;
+  year: number;
+  month: number;
 }
 
 interface Props {
-  expenses?: VariableExpense[];
   year?: number;
   month?: number;
   onEdit?: (expense: VariableExpense) => void;
@@ -38,11 +39,14 @@ export const VariableExpensesList = ({ year, month, onEdit }: Props) => {
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
 
   // Fetch expenses if year and month are provided
-  const { data: expenses, isLoading } = useQuery({
+  const { data: expensesResponse, isLoading } = useQuery({
     queryKey: queryKeys.expenses(year || 0, month || 0),
     queryFn: () => getMonthlyExpenses(year || 0, month || 0),
     enabled: !!year && !!month,
-  })
+  });
+
+  // Extract expenses from the response
+  const expenses = expensesResponse?.data || [];
 
   // Handle delete confirmation
   const handleDelete = async () => {
@@ -105,7 +109,7 @@ export const VariableExpensesList = ({ year, month, onEdit }: Props) => {
     return <div className="text-center py-4">Loading expenses...</div>
   }
   
-  if (!expenses?.data?.length) {
+  if (!expenses.length) {
     return <div className="text-center py-4 text-muted-foreground">No expenses found for this month.</div>
   }
 
@@ -130,15 +134,15 @@ export const VariableExpensesList = ({ year, month, onEdit }: Props) => {
       <Table>
         <TableHeader>
           <TableRow>
+            <TableHead>Date</TableHead>
             <TableHead>Description</TableHead>
             <TableHead>Category</TableHead>
-            <TableHead>Date</TableHead>
             <TableHead className="text-right">Amount</TableHead>
             <TableHead className="text-right">Actions</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
-          {sortExpenses(expenses.data).map((expense) => (
+          {sortExpenses(expenses).map((expense) => (
             <TableRow key={expense.id}>
               <TableCell>{new Date(expense.date).toLocaleDateString()}</TableCell>
               <TableCell>{expense.description}</TableCell>
@@ -147,7 +151,7 @@ export const VariableExpensesList = ({ year, month, onEdit }: Props) => {
                 {expense.amount.toLocaleString('de-DE', { style: 'currency', currency: 'EUR' })}
               </TableCell>
               <TableCell>
-                <div className="flex gap-2">
+                <div className="flex gap-2 justify-end">
                   <Button variant="ghost" size="icon" onClick={() => onEdit?.(expense)}>
                     <Edit className="h-4 w-4" />
                   </Button>
@@ -183,5 +187,5 @@ export const VariableExpensesList = ({ year, month, onEdit }: Props) => {
         </AlertDialogContent>
       </AlertDialog>
     </div>
-  )
-}
+  );
+};

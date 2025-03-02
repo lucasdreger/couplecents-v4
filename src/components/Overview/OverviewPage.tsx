@@ -12,6 +12,7 @@ import { InvestmentsTile } from './InvestmentsTile';
 import { ReservesTile } from './ReservesTile';
 import { MonthlyChart } from './MonthlyChart';
 import { CategoryBreakdown } from './CategoryBreakdown';
+import { InvestmentDistribution } from './InvestmentDistribution';
 import { useAuth } from '@/context/AuthContext';
 import { Button } from '@/components/ui/button';
 
@@ -86,32 +87,53 @@ export const OverviewPage: React.FC = () => {
         </CardContent>
       </Card>
 
-      {/* Category Breakdown and Charts Row */}
+      {/* Investments and Reserves Row */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <ErrorBoundary fallback={<ErrorFallback message="Error loading investments" />}>
-          <div className="bg-card rounded-lg border shadow-sm">
-            <InvestmentsTile />
-          </div>
-        </ErrorBoundary>
-        
-        <ErrorBoundary fallback={<ErrorFallback message="Error loading reserves" />}>
-          <div className="bg-card rounded-lg border shadow-sm">
-            <ReservesTile />
-          </div>
-        </ErrorBoundary>
-      </div>
-
-      <ErrorBoundary fallback={<ErrorFallback message="Error loading categories" />}>
-        <Card className="shadow-sm border-primary/10">
-          <CardHeader className="border-b border-border/40 pb-2">
-            <CardTitle>Category Breakdown</CardTitle>
-            <CardDescription>Expenses by category</CardDescription>
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle>Investments</CardTitle>
           </CardHeader>
-          <CardContent className="pt-4">
-            <CategoryBreakdown />
+          <CardContent>
+            <InvestmentsTile />
           </CardContent>
         </Card>
-      </ErrorBoundary>
+        
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle>Reserves</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <ReservesTile />
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Category and Investment Distribution Row */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <ErrorBoundary fallback={<ErrorFallback message="Error loading categories" />}>
+          <Card className="shadow-sm border-primary/10">
+            <CardHeader className="border-b border-border/40 pb-2">
+              <CardTitle>Category Breakdown</CardTitle>
+              <CardDescription>Expenses by category</CardDescription>
+            </CardHeader>
+            <CardContent className="pt-4">
+              <CategoryBreakdown />
+            </CardContent>
+          </Card>
+        </ErrorBoundary>
+
+        <ErrorBoundary fallback={<ErrorFallback message="Error loading investment distribution" />}>
+          <Card className="shadow-sm border-primary/10">
+            <CardHeader className="border-b border-border/40 pb-2">
+              <CardTitle>Investment Distribution</CardTitle>
+              <CardDescription>Distribution by investment type</CardDescription>
+            </CardHeader>
+            <CardContent className="pt-4">
+              <InvestmentDistribution />
+            </CardContent>
+          </Card>
+        </ErrorBoundary>
+      </div>
 
       {/* Monthly Chart */}
       <ErrorBoundary fallback={<ErrorFallback message="Error loading monthly data" />}>
