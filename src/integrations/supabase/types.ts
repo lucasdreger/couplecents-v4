@@ -41,29 +41,41 @@ export type Database = {
       default_income: {
         Row: {
           camila_income: number
+          camila_main_income: number | null
+          camila_other_income: number | null
           created_at: string
           household_id: string | null
           id: string
           last_updated: string
           lucas_income: number
+          lucas_main_income: number | null
+          lucas_other_income: number | null
           other_income: number
         }
         Insert: {
           camila_income?: number
+          camila_main_income?: number | null
+          camila_other_income?: number | null
           created_at?: string
           household_id?: string | null
           id?: string
           last_updated?: string
           lucas_income?: number
+          lucas_main_income?: number | null
+          lucas_other_income?: number | null
           other_income?: number
         }
         Update: {
           camila_income?: number
+          camila_main_income?: number | null
+          camila_other_income?: number | null
           created_at?: string
           household_id?: string | null
           id?: string
           last_updated?: string
           lucas_income?: number
+          lucas_main_income?: number | null
+          lucas_other_income?: number | null
           other_income?: number
         }
         Relationships: [
@@ -210,6 +222,9 @@ export type Database = {
           created_at: string
           id: string
           month: number
+          notes: string | null
+          transfer_completed: boolean | null
+          transfer_completed_at: string | null
           year: number
         }
         Insert: {
@@ -217,6 +232,9 @@ export type Database = {
           created_at?: string
           id?: string
           month: number
+          notes?: string | null
+          transfer_completed?: boolean | null
+          transfer_completed_at?: string | null
           year: number
         }
         Update: {
@@ -224,6 +242,9 @@ export type Database = {
           created_at?: string
           id?: string
           month?: number
+          notes?: string | null
+          transfer_completed?: boolean | null
+          transfer_completed_at?: string | null
           year?: number
         }
         Relationships: []
@@ -302,27 +323,39 @@ export type Database = {
       monthly_income: {
         Row: {
           camila_income: number
+          camila_main_income: number | null
+          camila_other_income: number | null
           created_at: string
           id: string
           lucas_income: number
+          lucas_main_income: number | null
+          lucas_other_income: number | null
           month: number
           other_income: number
           year: number
         }
         Insert: {
           camila_income?: number
+          camila_main_income?: number | null
+          camila_other_income?: number | null
           created_at?: string
           id?: string
           lucas_income?: number
+          lucas_main_income?: number | null
+          lucas_other_income?: number | null
           month: number
           other_income?: number
           year: number
         }
         Update: {
           camila_income?: number
+          camila_main_income?: number | null
+          camila_other_income?: number | null
           created_at?: string
           id?: string
           lucas_income?: number
+          lucas_main_income?: number | null
+          lucas_other_income?: number | null
           month?: number
           other_income?: number
           year?: number
