@@ -33,11 +33,11 @@ export const MonthlyIncome = ({ year, month }: Props) => {
   // Update local state when data changes or on initial load
   useEffect(() => {
     if (income) {
-      // Use Euro currency format instead of USD
-      setLucasMainInput(income.lucas_main_income ? income.lucas_main_income.toFixed(2) : '')
-      setLucasOtherInput(income.lucas_other_income ? income.lucas_other_income.toFixed(2) : '')
-      setCamilaMainInput(income.camila_main_income ? income.camila_main_income.toFixed(2) : '')
-      setCamilaOtherInput(income.camila_other_income ? income.camila_other_income.toFixed(2) : '')
+      // Format numbers with German locale (comma as decimal separator)
+      setLucasMainInput(income.lucas_main_income ? income.lucas_main_income.toFixed(2).replace('.', ',') : '')
+      setLucasOtherInput(income.lucas_other_income ? income.lucas_other_income.toFixed(2).replace('.', ',') : '')
+      setCamilaMainInput(income.camila_main_income ? income.camila_main_income.toFixed(2).replace('.', ',') : '')
+      setCamilaOtherInput(income.camila_other_income ? income.camila_other_income.toFixed(2).replace('.', ',') : '')
     }
   }, [income])
 
@@ -66,24 +66,25 @@ export const MonthlyIncome = ({ year, month }: Props) => {
   // Format and save input when blurring or pressing Enter
   const handleSaveValue = (field: 'lucas_main_income' | 'lucas_other_income' | 'camila_main_income' | 'camila_other_income', value: string) => {
     // Remove any existing formatting (commas, currency symbols)
-    const numericValue = parseFloat(value.replace(/[€,]/g, ''))
+    const sanitizedValue = value.replace(/[€\s]/g, '').replace(',', '.');
+    const numericValue = parseFloat(sanitizedValue);
     
     if (!isNaN(numericValue)) {
       // Update the database with the numeric value
-      updateIncome({ [field]: numericValue })
+      updateIncome({ [field]: numericValue });
       
-      // Format the display value - just show decimal places
-      const formattedValue = numericValue.toFixed(2)
+      // Format the display value with German locale
+      const formattedValue = numericValue.toFixed(2).replace('.', ',');
       
       // Update the corresponding input field
       if (field === 'lucas_main_income') {
-        setLucasMainInput(formattedValue)
+        setLucasMainInput(formattedValue);
       } else if (field === 'lucas_other_income') {
-        setLucasOtherInput(formattedValue)
+        setLucasOtherInput(formattedValue);
       } else if (field === 'camila_main_income') {
-        setCamilaMainInput(formattedValue)
+        setCamilaMainInput(formattedValue);
       } else if (field === 'camila_other_income') {
-        setCamilaOtherInput(formattedValue)
+        setCamilaOtherInput(formattedValue);
       }
     }
   }

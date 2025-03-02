@@ -5,16 +5,50 @@ import {
   Settings, 
   Calendar,
   LineChart,
-  Wallet
+  Wallet,
+  Banknote,
+  TrendingUp,
+  Vault
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/context/AuthContext";
 
-const navigation = [
-  { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
-  { name: 'Monthly Expenses', href: '/monthly-expenses', icon: Calendar },
-  { name: 'Financial Analytics', href: '/analytics', icon: LineChart },
-  { name: 'Administration', href: '/administration', icon: Settings },
+const sidebarLinks = [
+  {
+    title: "Overview",
+    href: "/",
+    icon: LayoutDashboard
+  },
+  {
+    title: "Monthly Expenses",
+    href: "/monthly-expenses",
+    icon: Wallet
+  },
+  {
+    title: "Financial Analytics",
+    href: "/analytics",
+    icon: LineChart
+  },
+  {
+    title: "Income",
+    href: "/income",
+    icon: Banknote
+  },
+  {
+    title: "Investments",
+    href: "/investments",
+    icon: TrendingUp
+  },
+  {
+    title: "Reserves",
+    href: "/reserves",
+    icon: Vault
+  },
+  {
+    title: "Administration",
+    href: "/administration",
+    icon: Settings
+  }
 ];
 
 export default function Sidebar() {
@@ -40,9 +74,9 @@ export default function Sidebar() {
       
       {/* Navigation links */}
       <nav className="flex flex-1 flex-col gap-1 overflow-y-auto p-4">
-        {navigation.map((item) => (
+        {sidebarLinks.map((item) => (
           <NavLink
-            key={item.name}
+            key={item.title}
             to={item.href}
             className={({ isActive }) =>
               cn(
@@ -54,7 +88,7 @@ export default function Sidebar() {
             }
           >
             <item.icon className="h-5 w-5" />
-            <span>{item.name}</span>
+            <span>{item.title}</span>
           </NavLink>
         ))}
       </nav>

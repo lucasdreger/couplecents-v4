@@ -306,13 +306,15 @@ export function MonthlyExpenses() {
         
         <ErrorBoundary FallbackComponent={ErrorFallback}>
           <Card>
-            <CardHeader className="pb-2 flex justify-between items-center">
-              <CardTitle>Variable Expenses</CardTitle>
-              <ExpenseForm 
-                onSubmit={handleAddExpense}
-                year={selectedYear}
-                month={selectedMonth}
-              />
+            <CardHeader className="pb-2">
+              <div className="flex justify-between items-center">
+                <CardTitle>Variable Expenses</CardTitle>
+                <ExpenseForm 
+                  onSubmit={handleAddExpense}
+                  year={selectedYear}
+                  month={selectedMonth}
+                />
+              </div>
             </CardHeader>
             <CardContent>
               <VariableExpensesList

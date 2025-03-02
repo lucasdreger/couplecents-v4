@@ -132,7 +132,10 @@ export const InvestmentsTile = () => {
             ) : (
               <div className="space-y-3 max-h-[400px] overflow-y-auto pr-2">
                 {investments.map((investment: Investment) => (
-                  <Card key={investment.id} className="border bg-card/50 hover:bg-accent/5 transition-colors">
+                  <Card 
+                    key={investment.id} 
+                    className="border bg-card/50 hover:bg-accent/5 transition-all duration-200 group"
+                  >
                     <CardContent className="p-3">
                       <div className="flex items-center justify-between">
                         <div>
@@ -189,7 +192,7 @@ export const InvestmentsTile = () => {
                               size="icon" 
                               variant="ghost" 
                               onClick={() => handleEdit(investment)}
-                              className="h-8 w-8"
+                              className="h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity duration-500 delay-500"
                             >
                               <PencilIcon className="h-4 w-4" />
                             </Button>

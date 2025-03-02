@@ -1,4 +1,3 @@
-
 import { RouterProvider, createBrowserRouter } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Toaster } from 'sonner';
@@ -6,13 +5,15 @@ import { AuthProvider } from '@/context/AuthContext';
 import { ThemeProvider } from '@/context/ThemeContext';
 import PrivateRoute from '@/components/Auth/PrivateRoute';
 import Login from '@/pages/Login';
+import DashboardLayout from '@/layouts/DashboardLayout';
 import { Dashboard } from '@/pages/Dashboard';
+import { MonthlyExpenses } from '@/pages/MonthlyExpenses';
 import { Investments } from '@/pages/Investments';
 import { Reserves } from '@/pages/Reserves';
-import { MonthlyExpenses } from '@/pages/MonthlyExpenses';
+import { Income } from '@/pages/Income';
 import Administration from '@/pages/Administration';
+import FinancialAnalytics from '@/pages/FinancialAnalytics';
 import NotFound from '@/pages/NotFound';
-import DashboardLayout from '@/layouts/DashboardLayout';
 
 // Create a client
 const queryClient = new QueryClient({
@@ -42,16 +43,20 @@ const router = createBrowserRouter([
             element: <Dashboard />
           },
           {
-            path: "/dashboard",
-            element: <Dashboard />
-          },
-          {
             path: "/monthly-expenses",
             element: <MonthlyExpenses />
           },
           {
+            path: "/analytics",
+            element: <FinancialAnalytics />
+          },
+          {
             path: "/investments",
             element: <Investments />
+          },
+          {
+            path: "/income",
+            element: <Income />
           },
           {
             path: "/reserves",
@@ -77,7 +82,6 @@ function App() {
       <ThemeProvider defaultTheme="system" storageKey="expense-empower-theme">
         <AuthProvider>
           <RouterProvider router={router} />
-          
           <Toaster 
             position="top-right" 
             richColors 

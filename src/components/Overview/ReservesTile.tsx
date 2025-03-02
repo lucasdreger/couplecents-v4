@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Progress } from "@/components/ui/progress";
 import { useReserves } from "@/hooks/useReserves";
 import { useAuth } from "@/context/AuthContext";
-import { PencilIcon, CheckIcon, XIcon } from "lucide-react";
+import { PencilIcon, CheckIcon, XIcon, ArrowUpIcon, ArrowDownIcon } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
 
@@ -16,6 +16,7 @@ interface Reserve {
   current_value: number;
   target_value: number | null;
   last_updated: string;
+  change_percentage?: number;
 }
 
 export const ReservesTile = () => {
@@ -75,7 +76,10 @@ export const ReservesTile = () => {
         ) : (
           <div className="space-y-3 max-h-[300px] overflow-y-auto pr-2">
             {reservesArray.map(reserve => (
-              <Card key={reserve.id} className="border bg-card/50">
+              <Card 
+                key={reserve.id} 
+                className="border bg-card/50 hover:bg-accent/5 transition-all duration-200 group"
+              >
                 <CardContent className="p-3">
                   <div className="space-y-2">
                     <div className="flex justify-between items-center">
@@ -128,7 +132,7 @@ export const ReservesTile = () => {
                             size="icon" 
                             variant="ghost" 
                             onClick={() => handleEdit(reserve)}
-                            className="h-8 w-8"
+                            className="h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity duration-500 delay-500"
                           >
                             <PencilIcon className="h-4 w-4" />
                           </Button>

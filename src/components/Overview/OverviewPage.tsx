@@ -14,14 +14,7 @@ import { CategoryBreakdown } from './CategoryBreakdown';
 import { useAuth } from '@/context/AuthContext';
 import { CalendarIcon, LayoutDashboard } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-
-// Create a reusable loading component
-const LoadingFallback = () => (
-  <div className="flex items-center justify-center p-4">
-    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-  </div>
-);
+import { InvestmentDistribution } from './InvestmentDistribution';
 
 // Create a reusable error fallback component
 const ErrorFallback = ({ message }: { message: string }) => (
@@ -45,106 +38,109 @@ export const OverviewPage: React.FC = () => {
   }
   
   return (
-    <div className="container mx-auto p-6 space-y-8">
+    <div className="container mx-auto p-6 space-y-6">
       {/* Header with greeting and date */}
-      <div className="mb-8">
-        <div className="bg-gradient-to-r from-primary/10 to-primary/5 rounded-lg p-6 shadow-sm">
-          <div className="flex justify-between items-center">
-            <div>
-              <h2 className="text-3xl font-bold tracking-tight flex items-center gap-2">
-                <LayoutDashboard className="h-7 w-7 text-primary" />
-                <span>Financial Overview</span>
-              </h2>
-              <p className="text-muted-foreground mt-1 flex items-center gap-1">
-                <CalendarIcon className="h-3 w-3" /> {formattedDate}
-              </p>
-            </div>
-            <div className="flex flex-col items-end">
-              <p className="text-sm font-medium">Welcome back, <span className="text-primary">{user.email}</span></p>
-              <div className="flex gap-2 mt-2">
-                <Button 
-                  size="sm" 
-                  variant={selectedTimeRange === 'month' ? "default" : "outline"}
-                  onClick={() => setSelectedTimeRange('month')}
-                >
-                  Month
-                </Button>
-                <Button 
-                  size="sm" 
-                  variant={selectedTimeRange === 'quarter' ? "default" : "outline"}
-                  onClick={() => setSelectedTimeRange('quarter')}
-                >
-                  Quarter
-                </Button>
-                <Button 
-                  size="sm" 
-                  variant={selectedTimeRange === 'year' ? "default" : "outline"}
-                  onClick={() => setSelectedTimeRange('year')}
-                >
-                  Year
-                </Button>
-              </div>
-            </div>
+      <div className="bg-gradient-to-r from-primary/10 to-primary/5 rounded-lg p-6 shadow-sm">
+        <div className="flex justify-between items-center">
+          <div>
+            <h2 className="text-3xl font-bold tracking-tight flex items-center gap-2">
+              <LayoutDashboard className="h-7 w-7 text-primary" />
+              <span>Financial Overview</span>
+            </h2>
+            <p className="text-muted-foreground mt-1 flex items-center gap-1">
+              <CalendarIcon className="h-3 w-3" /> {formattedDate}
+            </p>
+          </div>
+          <div className="flex gap-2">
+            <Button 
+              size="sm" 
+              variant={selectedTimeRange === 'month' ? "default" : "outline"}
+              onClick={() => setSelectedTimeRange('month')}
+            >
+              Month
+            </Button>
+            <Button 
+              size="sm" 
+              variant={selectedTimeRange === 'quarter' ? "default" : "outline"}
+              onClick={() => setSelectedTimeRange('quarter')}
+            >
+              Quarter
+            </Button>
+            <Button 
+              size="sm" 
+              variant={selectedTimeRange === 'year' ? "default" : "outline"}
+              onClick={() => setSelectedTimeRange('year')}
+            >
+              Year
+            </Button>
           </div>
         </div>
       </div>
-      
-      <Tabs defaultValue="overview" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-1">
-          <TabsTrigger value="overview">Overview</TabsTrigger>
-        </TabsList>
-        
-        <TabsContent value="overview" className="space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <ErrorBoundary fallback={<ErrorFallback message="Error loading budget" />}>
-              <Card className="border shadow-sm md:col-span-1">
-                <BudgetTile />
-              </Card>
-            </ErrorBoundary>
 
-            {/* Investments Section */}
-            <ErrorBoundary fallback={<ErrorFallback message="Error loading investments" />}>
-              <div className="bg-card rounded-lg border shadow-sm md:col-span-2">
-                <InvestmentsTile />
-              </div>
-            </ErrorBoundary>
+      {/* Total Budget Card */}
+      <Card className="w-full">
+        <CardHeader className="pb-2">
+          <CardTitle>Total Budget</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <BudgetTile />
+        </CardContent>
+      </Card>
+
+      {/* Investments and Reserves Row */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <ErrorBoundary fallback={<ErrorFallback message="Error loading investments" />}>
+          <div className="bg-card rounded-lg border shadow-sm">
+            <InvestmentsTile />
           </div>
-          
-          {/* Reserves and Categories */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <ErrorBoundary fallback={<ErrorFallback message="Error loading reserves" />}>
-              <div className="bg-card rounded-lg border shadow-sm h-full">
-                <ReservesTile />
-              </div>
-            </ErrorBoundary>
-            
-            <ErrorBoundary fallback={<ErrorFallback message="Error loading categories" />}>
-              <Card className="shadow-sm border-primary/10 h-full">
-                <CardHeader className="border-b border-border/40 pb-2">
-                  <CardTitle>Category Breakdown</CardTitle>
-                  <CardDescription>Expenses by category</CardDescription>
-                </CardHeader>
-                <CardContent className="pt-4">
-                  <CategoryBreakdown />
-                </CardContent>
-              </Card>
-            </ErrorBoundary>
+        </ErrorBoundary>
+        
+        <ErrorBoundary fallback={<ErrorFallback message="Error loading reserves" />}>
+          <div className="bg-card rounded-lg border shadow-sm">
+            <ReservesTile />
           </div>
-          
-          {/* Monthly Chart */}
-          <ErrorBoundary fallback={<ErrorFallback message="Error loading monthly data" />}>
-            <Card className="shadow-sm border-primary/10">
-              <CardHeader className="border-b border-border/40 pb-2">
-                <CardTitle>Monthly Budget vs Actual</CardTitle>
-                <CardDescription>Compare planned versus actual spending</CardDescription>
-              </CardHeader>
-              <CardContent className="pt-4">
-                <MonthlyChart />
-              </CardContent>
-            </Card>
-          </ErrorBoundary>
-        </TabsContent>
-      </Tabs>
+        </ErrorBoundary>
+      </div>
+
+      {/* Category and Investment Distribution Row */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <ErrorBoundary fallback={<ErrorFallback message="Error loading categories" />}>
+          <Card className="shadow-sm border-primary/10">
+            <CardHeader className="border-b border-border/40 pb-2">
+              <CardTitle>Category Breakdown</CardTitle>
+              <CardDescription>Expenses by category</CardDescription>
+            </CardHeader>
+            <CardContent className="pt-4">
+              <CategoryBreakdown />
+            </CardContent>
+          </Card>
+        </ErrorBoundary>
+
+        <ErrorBoundary fallback={<ErrorFallback message="Error loading investment distribution" />}>
+          <Card className="shadow-sm border-primary/10">
+            <CardHeader className="border-b border-border/40 pb-2">
+              <CardTitle>Investment Distribution</CardTitle>
+              <CardDescription>Distribution by investment type</CardDescription>
+            </CardHeader>
+            <CardContent className="pt-4">
+              <InvestmentDistribution />
+            </CardContent>
+          </Card>
+        </ErrorBoundary>
+      </div>
+
+      {/* Monthly Chart */}
+      <ErrorBoundary fallback={<ErrorFallback message="Error loading monthly data" />}>
+        <Card className="shadow-sm border-primary/10">
+          <CardHeader className="border-b border-border/40 pb-2">
+            <CardTitle>Monthly Budget vs Actual</CardTitle>
+            <CardDescription>Compare planned versus actual spending</CardDescription>
+          </CardHeader>
+          <CardContent className="pt-4">
+            <MonthlyChart />
+          </CardContent>
+        </Card>
+      </ErrorBoundary>
     </div>
   );
 };

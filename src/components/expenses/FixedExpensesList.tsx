@@ -1,4 +1,3 @@
-
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { getFixedExpenses, updateFixedExpenseStatus } from '@/lib/supabase/queries'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
@@ -46,6 +45,37 @@ export const FixedExpensesList = ({ year, month }: Props) => {
     }
   })
 
+  const handleStatusChange = async (expenseId: string, checked: boolean) => {
+    try {
+      const { error } = await supabase
+        .from('monthly_fixed_expense_status')
+        .upsert({
+          fixed_expense_id: expenseId,
+          year: year,
+          month: month,
+          completed: checked
+        });
+
+      if (error) throw error;
+
+      // Invalidate both fixed expenses and credit card queries to update task count
+      queryClient.invalidateQueries({ queryKey: ['fixed-expenses', year, month] });
+      // This will trigger the task count recalculation in MonthlyExpenses
+      await new Promise(resolve => setTimeout(resolve, 100)); // Small delay to ensure DB update
+      queryClient.invalidateQueries({ queryKey: ['credit-card-bill', year, month] });
+
+      toast({
+        description: `Task marked as ${checked ? 'completed' : 'pending'}`,
+      });
+    } catch (error) {
+      console.error('Error updating status:', error);
+      toast({
+        variant: "destructive",
+        description: "Failed to update status",
+      });
+    }
+  };
+
   if (isLoading) {
     return (
       <div className="space-y-3">
@@ -90,7 +120,7 @@ export const FixedExpensesList = ({ year, month }: Props) => {
                 <Checkbox
                   checked={expense.status?.[0]?.completed}
                   onCheckedChange={(checked) => 
-                    updateStatus({ id: expense.id, completed: checked as boolean })
+                    handleStatusChange(expense.id, checked as boolean)
                   }
                 />
               ) : (

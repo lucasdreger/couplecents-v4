@@ -61,6 +61,36 @@ export const DefaultIncomeManagement = () => {
     }
   })
 
+  const formatValue = (value: number | null): string => {
+    if (value === null) return '';
+    return value.toFixed(2).replace('.', ',');
+  };
+
+  const parseValue = (value: string): number => {
+    // Remove currency symbol and any spaces
+    const cleanValue = value.replace(/[€\s]/g, '').replace(',', '.');
+    const number = parseFloat(cleanValue);
+    return isNaN(number) ? 0 : Number(number.toFixed(2));
+  };
+
+  const handleInputChange = (field: DefaultIncomeField) => (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    const numericValue = parseValue(value);
+
+    // Update the field with formatted value
+    updateIncome({
+      ...defaultIncome,
+      [field]: numericValue
+    });
+  };
+
+  const handleInputBlur = (e: React.FocusEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    const numericValue = parseValue(value);
+    // Format to always show two decimal places
+    e.target.value = formatValue(numericValue);
+  };
+
   return (
     <Card>
       <CardHeader>
@@ -72,31 +102,31 @@ export const DefaultIncomeManagement = () => {
             <h3 className="font-medium">Lucas</h3>
             <div className="space-y-2">
               <FormLabel>Main Income</FormLabel>
-              <Input
-                type="number"
-                placeholder="Main Income Lucas"
-                value={defaultIncome?.lucas_main_income || ''}
-                onChange={(e) => {
-                  const value = parseFloat(e.target.value)
-                  if (!isNaN(value)) {
-                    updateIncome({ lucas_main_income: value })
-                  }
-                }}
-              />
+              <div className="relative">
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">€</span>
+                <Input
+                  type="text"
+                  defaultValue={formatValue(defaultIncome?.lucas_main_income || 0)}
+                  onChange={handleInputChange('lucas_main_income')}
+                  onBlur={handleInputBlur}
+                  className="pl-7 text-right"
+                  placeholder="0,00"
+                />
+              </div>
             </div>
             <div className="space-y-2">
               <FormLabel>Other Income</FormLabel>
-              <Input
-                type="number"
-                placeholder="Other Income Lucas"
-                value={defaultIncome?.lucas_other_income || ''}
-                onChange={(e) => {
-                  const value = parseFloat(e.target.value)
-                  if (!isNaN(value)) {
-                    updateIncome({ lucas_other_income: value })
-                  }
-                }}
-              />
+              <div className="relative">
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">€</span>
+                <Input
+                  type="text"
+                  defaultValue={formatValue(defaultIncome?.lucas_other_income || 0)}
+                  onChange={handleInputChange('lucas_other_income')}
+                  onBlur={handleInputBlur}
+                  className="pl-7 text-right"
+                  placeholder="0,00"
+                />
+              </div>
             </div>
           </div>
           
@@ -104,31 +134,31 @@ export const DefaultIncomeManagement = () => {
             <h3 className="font-medium">Camila</h3>
             <div className="space-y-2">
               <FormLabel>Main Income</FormLabel>
-              <Input
-                type="number"
-                placeholder="Main Income Camila"
-                value={defaultIncome?.camila_main_income || ''}
-                onChange={(e) => {
-                  const value = parseFloat(e.target.value)
-                  if (!isNaN(value)) {
-                    updateIncome({ camila_main_income: value })
-                  }
-                }}
-              />
+              <div className="relative">
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">€</span>
+                <Input
+                  type="text"
+                  defaultValue={formatValue(defaultIncome?.camila_main_income || 0)}
+                  onChange={handleInputChange('camila_main_income')}
+                  onBlur={handleInputBlur}
+                  className="pl-7 text-right"
+                  placeholder="0,00"
+                />
+              </div>
             </div>
             <div className="space-y-2">
               <FormLabel>Other Income</FormLabel>
-              <Input
-                type="number"
-                placeholder="Other Income Camila"
-                value={defaultIncome?.camila_other_income || ''}
-                onChange={(e) => {
-                  const value = parseFloat(e.target.value)
-                  if (!isNaN(value)) {
-                    updateIncome({ camila_other_income: value })
-                  }
-                }}
-              />
+              <div className="relative">
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">€</span>
+                <Input
+                  type="text"
+                  defaultValue={formatValue(defaultIncome?.camila_other_income || 0)}
+                  onChange={handleInputChange('camila_other_income')}
+                  onBlur={handleInputBlur}
+                  className="pl-7 text-right"
+                  placeholder="0,00"
+                />
+              </div>
             </div>
           </div>
         </div>
