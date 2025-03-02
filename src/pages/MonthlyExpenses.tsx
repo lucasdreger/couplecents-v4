@@ -1,16 +1,18 @@
-
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { FixedExpensesList } from "@/components/expenses/FixedExpensesList";
 import { VariableExpensesList } from "@/components/expenses/VariableExpensesList";
 import { MonthlyIncome } from "@/components/expenses/MonthlyIncome";
+import { CreditCardBill } from "@/components/expenses/CreditCardBill";
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { queryKeys } from '@/lib/queries';
-import { getMonthlyExpenses, addVariableExpense } from '@/lib/supabase';
+import { getMonthlyExpenses, addVariableExpense, supabase } from '@/lib/supabase';
 import { ErrorBoundary } from 'react-error-boundary';
 import { ExpenseForm } from "@/components/expenses/ExpenseForm";
 import { toast } from "@/hooks/use-toast";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { AlertCircle } from "lucide-react";
 import type { VariableExpense } from '@/types/database.types';
 
 // Error fallback component
@@ -39,6 +41,7 @@ export function MonthlyExpenses() {
   
   const [selectedYear, setSelectedYear] = useState(defaultYear);
   const [selectedMonth, setSelectedMonth] = useState(currentMonth);
+  const [uncheckedTasksCount, setUncheckedTasksCount] = useState(0);
   
   // Get monthly expenses data
   const { data: expenses } = useQuery({
@@ -46,9 +49,92 @@ export function MonthlyExpenses() {
     queryFn: () => getMonthlyExpenses(selectedYear, selectedMonth)
   });
   
-  // Calculate totals
+  // Get monthly income data
+  const { data: income } = useQuery({
+    queryKey: ['income', selectedYear, selectedMonth],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from('monthly_income')
+        .select('*')
+        .eq('year', selectedYear)
+        .eq('month', selectedMonth)
+        .single();
+      return data;
+    }
+  });
+  
+  // Get fixed expenses data
+  const { data: fixedExpenses } = useQuery({
+    queryKey: ['fixed-expenses', selectedYear, selectedMonth],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from('fixed_expenses')
+        .select(`
+          *,
+          status:monthly_fixed_expense_status(completed)
+        `)
+        .eq('status.year', selectedYear)
+        .eq('status.month', selectedMonth);
+      return data;
+    }
+  });
+  
+  // Get credit card bill status
+  const { data: creditCardBill } = useQuery({
+    queryKey: ['credit-card-bill', selectedYear, selectedMonth],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from('monthly_credit_card')
+        .select('*')
+        .eq('year', selectedYear)
+        .eq('month', selectedMonth)
+        .maybeSingle();
+      return data;
+    }
+  });
+  
+  // Calculate total income (salaries)
+  const totalIncome = income ? (
+    (income.lucas_main_income || 0) + 
+    (income.lucas_other_income || 0) + 
+    (income.camila_main_income || 0) + 
+    (income.camila_other_income || 0)
+  ) : 0;
+  
+  // Calculate total variable expenses
   const totalVariableExpenses = expenses?.data?.reduce((sum, expense) => sum + Number(expense.amount), 0) || 0;
-  const totalExpenses = totalVariableExpenses; // Add fixed expenses if needed
+  
+  // Calculate total fixed expenses
+  const totalFixedExpenses = fixedExpenses?.reduce((sum, expense) => sum + Number(expense.amount), 0) || 0;
+  
+  // Calculate total expenses
+  const totalExpenses = totalVariableExpenses + totalFixedExpenses;
+  
+  // Calculate balance
+  const balance = totalIncome - totalExpenses;
+  
+  // Check for uncompleted tasks
+  useEffect(() => {
+    let count = 0;
+    
+    // Check fixed expenses with uncompleted status
+    if (fixedExpenses) {
+      count += fixedExpenses.filter(expense => 
+        expense.status_required && !expense.status?.completed
+      ).length;
+    }
+    
+    // Check credit card bill transfer if needed
+    if (creditCardBill) {
+      const needsTransfer = creditCardBill.transfer_completed === false && 
+        creditCardBill.amount > 0;
+      if (needsTransfer) {
+        count += 1;
+      }
+    }
+    
+    setUncheckedTasksCount(count);
+  }, [fixedExpenses, creditCardBill]);
   
   // Generate years for dropdown (from 2025 to current year + 2)
   // Ensure 2025 is included in the range
@@ -69,7 +155,7 @@ export function MonthlyExpenses() {
   const handleMonthChange = (value: string) => {
     setSelectedMonth(parseInt(value));
   };
-
+  
   const handleAddExpense = async (expenseData: Omit<VariableExpense, 'id' | 'created_at'>) => {
     try {
       await addVariableExpense(expenseData);
@@ -133,6 +219,15 @@ export function MonthlyExpenses() {
         </div>
       </div>
       
+      {uncheckedTasksCount > 0 && (
+        <Alert variant="destructive" className="mb-6">
+          <AlertCircle className="h-4 w-4" />
+          <AlertDescription>
+            There are {uncheckedTasksCount} tasks still open that need your attention.
+          </AlertDescription>
+        </Alert>
+      )}
+      
       <div className="grid gap-6 mb-6">
         <ErrorBoundary FallbackComponent={ErrorFallback}>
           <Card>
@@ -141,6 +236,20 @@ export function MonthlyExpenses() {
             </CardHeader>
             <CardContent>
               <MonthlyIncome
+                year={selectedYear}
+                month={selectedMonth}
+              />
+            </CardContent>
+          </Card>
+        </ErrorBoundary>
+        
+        <ErrorBoundary FallbackComponent={ErrorFallback}>
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle>Credit Card Bill</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <CreditCardBill
                 year={selectedYear}
                 month={selectedMonth}
               />
@@ -187,12 +296,26 @@ export function MonthlyExpenses() {
       <div className="mt-6">
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle>Monthly Summary</CardTitle>
+            <CardTitle>Total Budget</CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-lg">
-              Total Expenses: <span className="font-bold">${totalExpenses.toFixed(2)}</span>
-            </p>
+            <div className="grid gap-2">
+              <div className="flex justify-between items-center">
+                <p className="text-muted-foreground">Total Income:</p>
+                <p className="font-medium">€{totalIncome.toFixed(2)}</p>
+              </div>
+              <div className="flex justify-between items-center">
+                <p className="text-muted-foreground">Total Expenses:</p>
+                <p className="font-medium">€{totalExpenses.toFixed(2)}</p>
+              </div>
+              <div className="h-px bg-border my-1"></div>
+              <div className="flex justify-between items-center">
+                <p className="font-semibold">Balance:</p>
+                <p className={`font-bold ${balance >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                  €{balance.toFixed(2)}
+                </p>
+              </div>
+            </div>
           </CardContent>
         </Card>
       </div>

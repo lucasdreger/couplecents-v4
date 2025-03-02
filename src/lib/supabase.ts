@@ -99,7 +99,12 @@ export const getMonthlyIncome = async (year: number, month: number) => {
 export const updateMonthlyIncome = async (
   year: number,
   month: number,
-  data: { lucas_income?: number; camila_income?: number; other_income?: number }
+  data: { 
+    lucas_main_income?: number; 
+    lucas_other_income?: number; 
+    camila_main_income?: number; 
+    camila_other_income?: number;
+  }
 ) => {
   return await supabase
     .from('monthly_income')

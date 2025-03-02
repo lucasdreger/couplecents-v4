@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { supabase } from '@/lib/supabaseClient'
 import { useToast } from "@/components/ui/use-toast"
+import { FormLabel } from "@/components/ui/form"
 
 export const DefaultIncomeManagement = () => {
   const { toast } = useToast()
@@ -22,9 +23,10 @@ export const DefaultIncomeManagement = () => {
 
   const { mutate: updateIncome } = useMutation({
     mutationFn: async (values: {
-      lucas_income?: number;
-      camila_income?: number;
-      other_income?: number;
+      lucas_main_income?: number;
+      lucas_other_income?: number;
+      camila_main_income?: number;
+      camila_other_income?: number;
     }) => {
       // If no default income exists, create it
       if (!defaultIncome?.id) {
@@ -32,9 +34,10 @@ export const DefaultIncomeManagement = () => {
           .from('default_income')
           .insert({
             ...values,
-            lucas_income: values.lucas_income || 0,
-            camila_income: values.camila_income || 0,
-            other_income: values.other_income || 0
+            lucas_main_income: values.lucas_main_income || 0,
+            lucas_other_income: values.lucas_other_income || 0,
+            camila_main_income: values.camila_main_income || 0,
+            camila_other_income: values.camila_other_income || 0
           })
         if (error) throw error
       } else {
@@ -63,41 +66,71 @@ export const DefaultIncomeManagement = () => {
       <CardHeader>
         <CardTitle>Default Income Settings</CardTitle>
       </CardHeader>
-      <CardContent className="space-y-4">
-        <div className="grid gap-4">
-          <Input
-            type="number"
-            placeholder="Lucas Income"
-            value={defaultIncome?.lucas_income || ''}
-            onChange={(e) => {
-              const value = parseFloat(e.target.value)
-              if (!isNaN(value)) {
-                updateIncome({ lucas_income: value })
-              }
-            }}
-          />
-          <Input
-            type="number"
-            placeholder="Camila Income"
-            value={defaultIncome?.camila_income || ''}
-            onChange={(e) => {
-              const value = parseFloat(e.target.value)
-              if (!isNaN(value)) {
-                updateIncome({ camila_income: value })
-              }
-            }}
-          />
-          <Input
-            type="number"
-            placeholder="Other Income"
-            value={defaultIncome?.other_income || ''}
-            onChange={(e) => {
-              const value = parseFloat(e.target.value)
-              if (!isNaN(value)) {
-                updateIncome({ other_income: value })
-              }
-            }}
-          />
+      <CardContent className="space-y-6">
+        <div className="grid gap-6 md:grid-cols-2">
+          <div className="space-y-4">
+            <h3 className="font-medium">Lucas</h3>
+            <div className="space-y-2">
+              <FormLabel>Main Income</FormLabel>
+              <Input
+                type="number"
+                placeholder="Main Income Lucas"
+                value={defaultIncome?.lucas_main_income || ''}
+                onChange={(e) => {
+                  const value = parseFloat(e.target.value)
+                  if (!isNaN(value)) {
+                    updateIncome({ lucas_main_income: value })
+                  }
+                }}
+              />
+            </div>
+            <div className="space-y-2">
+              <FormLabel>Other Income</FormLabel>
+              <Input
+                type="number"
+                placeholder="Other Income Lucas"
+                value={defaultIncome?.lucas_other_income || ''}
+                onChange={(e) => {
+                  const value = parseFloat(e.target.value)
+                  if (!isNaN(value)) {
+                    updateIncome({ lucas_other_income: value })
+                  }
+                }}
+              />
+            </div>
+          </div>
+          
+          <div className="space-y-4">
+            <h3 className="font-medium">Camila</h3>
+            <div className="space-y-2">
+              <FormLabel>Main Income</FormLabel>
+              <Input
+                type="number"
+                placeholder="Main Income Camila"
+                value={defaultIncome?.camila_main_income || ''}
+                onChange={(e) => {
+                  const value = parseFloat(e.target.value)
+                  if (!isNaN(value)) {
+                    updateIncome({ camila_main_income: value })
+                  }
+                }}
+              />
+            </div>
+            <div className="space-y-2">
+              <FormLabel>Other Income</FormLabel>
+              <Input
+                type="number"
+                placeholder="Other Income Camila"
+                value={defaultIncome?.camila_other_income || ''}
+                onChange={(e) => {
+                  const value = parseFloat(e.target.value)
+                  if (!isNaN(value)) {
+                    updateIncome({ camila_other_income: value })
+                  }
+                }}
+              />
+            </div>
+          </div>
         </div>
       </CardContent>
     </Card>

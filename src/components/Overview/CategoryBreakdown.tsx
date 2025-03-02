@@ -1,4 +1,3 @@
-
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabaseClient';
 import {
@@ -22,6 +21,28 @@ interface VariableExpenseRow {
   category: { name: string } | null;
   amount: number;
 }
+
+// Custom label that only shows percentage inside the pie slice
+const renderCustomizedLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, percent }: any) => {
+  const RADIAN = Math.PI / 180;
+  const radius = innerRadius + (outerRadius - innerRadius) * 0.6;
+  const x = cx + radius * Math.cos(-midAngle * RADIAN);
+  const y = cy + radius * Math.sin(-midAngle * RADIAN);
+
+  return (
+    <text 
+      x={x} 
+      y={y} 
+      fill="white" 
+      textAnchor="middle" 
+      dominantBaseline="central"
+      fontSize="12"
+      fontWeight="bold"
+    >
+      {`${(percent * 100).toFixed(0)}%`}
+    </text>
+  );
+};
 
 export const CategoryBreakdown = () => {
   const { data: categoryData, isLoading } = useQuery({
@@ -99,15 +120,14 @@ export const CategoryBreakdown = () => {
             cx="50%"
             cy="50%"
             outerRadius={100}
-            label={({ name, percent }) => 
-              `${name}: ${(percent * 100).toFixed(0)}%`
-            }
+            labelLine={false} 
+            label={renderCustomizedLabel}
           >
             {categoryData.map((_entry, index) => (
               <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
             ))}
           </Pie>
-          <Tooltip formatter={(value: number) => `$${Number(value).toFixed(2)}`} />
+          <Tooltip formatter={(value: number) => `€${Number(value).toFixed(2)}`} />
           <Legend />
         </PieChart>
       </ResponsiveContainer>
