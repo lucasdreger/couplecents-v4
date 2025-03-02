@@ -1,10 +1,11 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { getFixedExpenses, updateFixedExpenseStatus } from '@/lib/supabase/queries'
+import { useQuery } from '@tanstack/react-query'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Checkbox } from "@/components/ui/checkbox"
 import { useToast } from "@/components/ui/use-toast"
 import type { PostgrestError } from '@supabase/supabase-js'
 import { Skeleton } from '@/components/ui/skeleton'
+import { supabase } from '@/lib/supabaseClient'
+import { useQueryClient } from '@tanstack/react-query'
 
 interface Props {
   year: number
@@ -22,8 +23,8 @@ interface FixedExpense {
 }
 
 export const FixedExpensesList = ({ year, month }: Props) => {
-  const queryClient = useQueryClient()
   const { toast } = useToast()
+  const queryClient = useQueryClient()
 
   const { data: fixedExpenses, isLoading, isError } = useQuery<FixedExpense[], PostgrestError>({
     queryKey: ['fixed-expenses', year, month],
@@ -32,27 +33,23 @@ export const FixedExpensesList = ({ year, month }: Props) => {
         .from('fixed_expenses')
         .select(`
           *,
-          category:categories(name),
-          status:monthly_fixed_expense_status!inner(completed)
+          categories (name),
+          status:monthly_fixed_expense_status!left (
+            completed
+          )
         `)
-        .eq('monthly_fixed_expense_status.year', year)
-        .eq('monthly_fixed_expense_status.month', month);
+        .eq('status.year', year)
+        .eq('status.month', month)
+        .order('description');
 
       if (error) throw error;
-      return data || [];
-    }
-  })
 
-  const { mutate: updateStatus } = useMutation({
-    mutationFn: async ({ id, completed }: { id: string; completed: boolean }) => {
-      const { error } = await updateFixedExpenseStatus(id, completed)
-      if (error) throw error
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['fixed-expenses'] })
-      toast({ description: "Status updated successfully" })
+      return data?.map(expense => ({
+        ...expense,
+        status: expense.status || []
+      })) || [];
     }
-  })
+  });
 
   const handleStatusChange = async (expenseId: string, checked: boolean) => {
     try {
@@ -63,11 +60,13 @@ export const FixedExpensesList = ({ year, month }: Props) => {
           year,
           month,
           completed: checked
+        }, {
+          onConflict: 'fixed_expense_id,year,month'
         });
 
       if (error) throw error;
 
-      // Invalidate queries to refresh the list and task count
+      // Invalidate the query to refresh the data
       queryClient.invalidateQueries({ queryKey: ['fixed-expenses', year, month] });
 
       toast({
@@ -113,7 +112,7 @@ export const FixedExpensesList = ({ year, month }: Props) => {
         </TableRow>
       </TableHeader>
       <TableBody>
-        {fixedExpenses?.map((expense) => (
+        {fixedExpenses.map((expense: FixedExpense) => (
           <TableRow key={expense.id}>
             <TableCell>{expense.description}</TableCell>
             <TableCell>{expense.category?.name}</TableCell>
@@ -125,8 +124,8 @@ export const FixedExpensesList = ({ year, month }: Props) => {
               {expense.status_required ? (
                 <Checkbox
                   checked={expense.status?.[0]?.completed}
-                  onCheckedChange={(checked) => 
-                    handleStatusChange(expense.id, checked as boolean)
+                  onCheckedChange={(checked: boolean) => 
+                    handleStatusChange(expense.id, checked)
                   }
                 />
               ) : (

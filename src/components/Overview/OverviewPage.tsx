@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { LayoutDashboard, CalendarIcon } from "lucide-react";
 import {
   Card,
   CardContent,
@@ -12,7 +13,6 @@ import { ReservesTile } from './ReservesTile';
 import { MonthlyChart } from './MonthlyChart';
 import { CategoryBreakdown } from './CategoryBreakdown';
 import { useAuth } from '@/context/AuthContext';
-import { CalendarIcon, LayoutDashboard } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { InvestmentDistribution } from './InvestmentDistribution';
 

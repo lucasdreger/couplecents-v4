@@ -48,34 +48,47 @@ export const deleteVariableExpense = async (id: string) => {
 };
 
 // Fixed Expenses
-export const getFixedExpenses = async (year?: number, month?: number): Promise<PostgrestResponse<any>> => {
-  const query = supabase
+export const getFixedExpenses = async (year: number, month: number) => {
+  const { data, error } = await supabase
     .from('fixed_expenses')
     .select(`
       *,
-      category:categories(name),
-      status:monthly_fixed_expense_status(completed)
+      categories (name),
+      monthly_fixed_expense_status!left (
+        completed,
+        year,
+        month
+      )
     `)
-    .order('description', { ascending: true });
+    .order('description');
 
-  if (year && month) {
-    return query
-      .eq('status.year', year)
-      .eq('status.month', month);
-  }
+  // Filter status for current year/month
+  const processedData = data?.map(expense => ({
+    ...expense,
+    status: expense.monthly_fixed_expense_status?.filter(
+      status => status.year === year && status.month === month
+    ) || []
+  }));
 
-  return query;
+  return { data: processedData, error };
 };
 
-export const updateFixedExpenseStatus = async (id: string, completed: boolean): Promise<PostgrestResponse<any>> => {
-  return supabase
+export const updateFixedExpenseStatus = async (
+  fixed_expense_id: string,
+  year: number,
+  month: number,
+  completed: boolean
+) => {
+  return await supabase
     .from('monthly_fixed_expense_status')
     .upsert({
-      fixed_expense_id: id,
-      completed,
-      completed_at: completed ? new Date().toISOString() : null,
-    })
-    .select();
+      fixed_expense_id,
+      year,
+      month,
+      completed
+    }, {
+      onConflict: 'fixed_expense_id,year,month'
+    });
 };
 
 export const addFixedExpense = async (expense: Omit<FixedExpense, 'id' | 'created_at'>) => {

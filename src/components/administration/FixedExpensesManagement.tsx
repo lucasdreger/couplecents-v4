@@ -34,6 +34,11 @@ interface FixedExpense {
   };
 }
 
+interface Category {
+  id: string;
+  name: string;
+}
+
 export const FixedExpensesManagement = () => {
   const [expense, setExpense] = useState({
     id: '',
@@ -235,6 +240,18 @@ export const FixedExpensesManagement = () => {
     resetForm()
     setIsEditing(false)
   }
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setExpense(prev => ({ ...prev, description: e.target.value }));
+  };
+
+  const handleAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setExpense(prev => ({ ...prev, amount: e.target.value }));
+  };
+
+  const handleDueDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setExpense(prev => ({ ...prev, due_date: e.target.value }));
+  };
   
   return (
     <Card>
@@ -246,11 +263,11 @@ export const FixedExpensesManagement = () => {
           <Input 
             placeholder="Description"
             value={expense.description}
-            onChange={(e) => setExpense(prev => ({ ...prev, description: e.target.value }))}
+            onChange={handleInputChange}
             required
           />
           
-          <FormLabel>Amount</FormLabel>
+          <Label>Amount</Label>
           <div className="relative">
             <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">€</span>
             <Input
@@ -258,27 +275,30 @@ export const FixedExpensesManagement = () => {
               className="pl-7 text-right"
               placeholder="0,00"
               value={expense.amount}
-              onChange={(e) => setExpense(prev => ({ ...prev, amount: e.target.value }))}
+              onChange={handleAmountChange}
               required
             />
           </div>
           
-          <Select 
-            value={expense.category_id}
-            onValueChange={(value) => setExpense(prev => ({ ...prev, category_id: value }))}
-            required
-          >
-            <SelectTrigger>
-              <SelectValue placeholder="Select category" />
-            </SelectTrigger>
-            <SelectContent>
-              {categories?.map((category) => (
-                <SelectItem key={category.id} value={category.id}>
-                  {category.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          <div className="space-y-2">
+            <Label>Category</Label>
+            <Select 
+              value={expense.category_id}
+              onValueChange={(value) => setExpense(prev => ({ ...prev, category_id: value }))}
+              required
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Select category" />
+              </SelectTrigger>
+              <SelectContent>
+                {categories?.map((category) => (
+                  <SelectItem key={category.id} value={category.id}>
+                    {category.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
           
           <Select
             value={expense.owner}
@@ -297,7 +317,7 @@ export const FixedExpensesManagement = () => {
             type="text"
             placeholder="Due Date (e.g., 15th or Last day)"
             value={expense.due_date}
-            onChange={(e) => setExpense(prev => ({ ...prev, due_date: e.target.value }))}
+            onChange={handleDueDateChange}
           />
           
           <div className="flex items-center space-x-2">
