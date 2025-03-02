@@ -11,6 +11,7 @@ import { InvestmentsTile } from './InvestmentsTile';
 import { ReservesTile } from './ReservesTile';
 import { MonthlyChart } from './MonthlyChart';
 import { CategoryBreakdown } from './CategoryBreakdown';
+import { InvestmentDistribution } from './InvestmentDistribution';
 import { useAuth } from '@/context/AuthContext';
 import { Button } from '@/components/ui/button';
 import { useInvestments } from '@/hooks/useInvestments';
@@ -162,8 +163,52 @@ export const OverviewPage: React.FC = () => {
 
       {/* Investments and Reserves Row */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <InvestmentsTile />
-        <ReservesTile />
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle>Investments</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <InvestmentsTile />
+          </CardContent>
+        </Card>
+        
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle>Reserves</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <ReservesTile />
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Charts Row */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {/* Category Breakdown */}
+        <ErrorBoundary fallback={<ErrorFallback message="Error loading categories" />}>
+          <Card className="shadow-sm border-primary/10">
+            <CardHeader className="border-b border-border/40 pb-2">
+              <CardTitle>Category Breakdown</CardTitle>
+              <CardDescription>Expenses by category</CardDescription>
+            </CardHeader>
+            <CardContent className="pt-4">
+              <CategoryBreakdown />
+            </CardContent>
+          </Card>
+        </ErrorBoundary>
+
+        {/* Investment Distribution */}
+        <ErrorBoundary fallback={<ErrorFallback message="Error loading investment distribution" />}>
+          <Card className="shadow-sm border-primary/10">
+            <CardHeader className="border-b border-border/40 pb-2">
+              <CardTitle>Investment Distribution</CardTitle>
+              <CardDescription>Distribution by investment type</CardDescription>
+            </CardHeader>
+            <CardContent className="pt-4">
+              <InvestmentDistribution />
+            </CardContent>
+          </Card>
+        </ErrorBoundary>
       </div>
 
       {/* Monthly Chart */}
@@ -175,19 +220,6 @@ export const OverviewPage: React.FC = () => {
           </CardHeader>
           <CardContent className="pt-4">
             <MonthlyChart />
-          </CardContent>
-        </Card>
-      </ErrorBoundary>
-
-      {/* Category Breakdown */}
-      <ErrorBoundary fallback={<ErrorFallback message="Error loading categories" />}>
-        <Card className="shadow-sm border-primary/10">
-          <CardHeader className="border-b border-border/40 pb-2">
-            <CardTitle>Category Breakdown</CardTitle>
-            <CardDescription>Expenses by category</CardDescription>
-          </CardHeader>
-          <CardContent className="pt-4">
-            <CategoryBreakdown />
           </CardContent>
         </Card>
       </ErrorBoundary>

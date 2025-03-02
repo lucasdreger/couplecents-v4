@@ -51,8 +51,7 @@ export const FixedExpensesList = ({ year, month }: Props) => {
           )
         `)
         .eq('status.year', year)
-        .eq('status.month', month)
-        .order('description');
+        .eq('status.month', month);
 
       if (error) throw error;
 
