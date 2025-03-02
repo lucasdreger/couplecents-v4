@@ -102,10 +102,12 @@ export function MonthlyExpenses() {
   ) : 0;
   
   // Calculate total variable expenses
-  const totalVariableExpenses = expenses?.data?.reduce((sum, expense) => sum + Number(expense.amount), 0) || 0;
+  const totalVariableExpenses = expenses?.data?.reduce((sum: number, expense: { amount: number }) => 
+    sum + Number(expense.amount), 0) || 0;
   
   // Calculate total fixed expenses
-  const totalFixedExpenses = fixedExpenses?.reduce((sum, expense) => sum + Number(expense.amount), 0) || 0;
+  const totalFixedExpenses = fixedExpenses?.reduce((sum: number, expense: { estimated_amount: number }) => 
+    sum + Number(expense.estimated_amount), 0) || 0;
   
   // Calculate total expenses
   const totalExpenses = totalVariableExpenses + totalFixedExpenses;
@@ -119,8 +121,8 @@ export function MonthlyExpenses() {
     
     // Check fixed expenses with uncompleted status
     if (fixedExpenses) {
-      count += fixedExpenses.filter(expense => 
-        expense.status_required && !expense.status?.completed
+      count += fixedExpenses.filter((expense: { status_required: boolean; status?: Array<{ completed: boolean }> }) => 
+        expense.status_required && (!expense.status?.[0]?.completed)
       ).length;
     }
     

@@ -14,7 +14,6 @@ import { MonthlyChart } from './MonthlyChart';
 import { CategoryBreakdown } from './CategoryBreakdown';
 import { useAuth } from '@/context/AuthContext';
 import { Button } from '@/components/ui/button';
-import { InvestmentDistribution } from './InvestmentDistribution';
 
 // Create a reusable error fallback component
 const ErrorFallback = ({ message }: { message: string }) => (
@@ -80,14 +79,14 @@ export const OverviewPage: React.FC = () => {
       {/* Total Budget Card */}
       <Card className="w-full">
         <CardHeader className="pb-2">
-          <CardTitle>Total Budget</CardTitle>
+          <CardTitle>Summary</CardTitle>
         </CardHeader>
         <CardContent>
           <BudgetTile />
         </CardContent>
       </Card>
 
-      {/* Investments and Reserves Row */}
+      {/* Category Breakdown and Charts Row */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <ErrorBoundary fallback={<ErrorFallback message="Error loading investments" />}>
           <div className="bg-card rounded-lg border shadow-sm">
@@ -102,32 +101,17 @@ export const OverviewPage: React.FC = () => {
         </ErrorBoundary>
       </div>
 
-      {/* Category and Investment Distribution Row */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <ErrorBoundary fallback={<ErrorFallback message="Error loading categories" />}>
-          <Card className="shadow-sm border-primary/10">
-            <CardHeader className="border-b border-border/40 pb-2">
-              <CardTitle>Category Breakdown</CardTitle>
-              <CardDescription>Expenses by category</CardDescription>
-            </CardHeader>
-            <CardContent className="pt-4">
-              <CategoryBreakdown />
-            </CardContent>
-          </Card>
-        </ErrorBoundary>
-
-        <ErrorBoundary fallback={<ErrorFallback message="Error loading investment distribution" />}>
-          <Card className="shadow-sm border-primary/10">
-            <CardHeader className="border-b border-border/40 pb-2">
-              <CardTitle>Investment Distribution</CardTitle>
-              <CardDescription>Distribution by investment type</CardDescription>
-            </CardHeader>
-            <CardContent className="pt-4">
-              <InvestmentDistribution />
-            </CardContent>
-          </Card>
-        </ErrorBoundary>
-      </div>
+      <ErrorBoundary fallback={<ErrorFallback message="Error loading categories" />}>
+        <Card className="shadow-sm border-primary/10">
+          <CardHeader className="border-b border-border/40 pb-2">
+            <CardTitle>Category Breakdown</CardTitle>
+            <CardDescription>Expenses by category</CardDescription>
+          </CardHeader>
+          <CardContent className="pt-4">
+            <CategoryBreakdown />
+          </CardContent>
+        </Card>
+      </ErrorBoundary>
 
       {/* Monthly Chart */}
       <ErrorBoundary fallback={<ErrorFallback message="Error loading monthly data" />}>

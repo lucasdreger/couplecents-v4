@@ -1,26 +1,41 @@
 import { useState } from 'react'
-import { Edit, Trash } from 'lucide-react'
+import { Edit, Trash, ArrowUpDown } from 'lucide-react'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Button } from "@/components/ui/button"
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog"
 import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { getMonthlyExpenses, updateVariableExpense, deleteVariableExpense } from '@/lib/supabase'
+import { getMonthlyExpenses, deleteVariableExpense } from '@/lib/supabase'
 import { queryKeys } from '@/lib/queries'
 import { toast } from '@/hooks/use-toast'
-import type { VariableExpense } from '@/types/database.types'
+import { 
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
 
-interface Props {
-  expenses?: VariableExpense[]
-  year?: number
-  month?: number
-  onEdit?: (expense: VariableExpense) => void
-  onDelete?: (expense: VariableExpense) => void
+interface VariableExpense {
+  id: string;
+  description: string;
+  amount: number;
+  date: string;
+  category: { name: string } | null;
 }
 
-export const VariableExpensesList = ({ year, month, onEdit, onDelete }: Props) => {
+interface Props {
+  expenses?: VariableExpense[];
+  year?: number;
+  month?: number;
+  onEdit?: (expense: VariableExpense) => void;
+}
+
+export const VariableExpensesList = ({ year, month, onEdit }: Props) => {
   const queryClient = useQueryClient()
   const [expenseToDelete, setExpenseToDelete] = useState<VariableExpense | null>(null)
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
+  const [sortBy, setSortBy] = useState<'date' | 'amount' | 'category'>('date');
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
 
   // Fetch expenses if year and month are provided
   const { data: expenses, isLoading } = useQuery({
@@ -58,6 +73,33 @@ export const VariableExpensesList = ({ year, month, onEdit, onDelete }: Props) =
       })
     }
   }
+
+  const sortExpenses = (expenses: VariableExpense[]) => {
+    return [...expenses].sort((a, b) => {
+      if (sortBy === 'date') {
+        return sortOrder === 'asc' 
+          ? new Date(a.date).getTime() - new Date(b.date).getTime()
+          : new Date(b.date).getTime() - new Date(a.date).getTime();
+      }
+      if (sortBy === 'amount') {
+        return sortOrder === 'asc' 
+          ? a.amount - b.amount
+          : b.amount - a.amount;
+      }
+      if (sortBy === 'category') {
+        const catA = a.category?.name || '';
+        const catB = b.category?.name || '';
+        return sortOrder === 'asc'
+          ? catA.localeCompare(catB)
+          : catB.localeCompare(catA);
+      }
+      return 0;
+    });
+  };
+
+  const toggleSortOrder = () => {
+    setSortOrder(current => current === 'asc' ? 'desc' : 'asc');
+  };
   
   if (isLoading) {
     return <div className="text-center py-4">Loading expenses...</div>
@@ -68,19 +110,35 @@ export const VariableExpensesList = ({ year, month, onEdit, onDelete }: Props) =
   }
 
   return (
-    <>
+    <div className="space-y-4">
+      <div className="flex items-center gap-2">
+        <Select value={sortBy} onValueChange={(value: 'date' | 'amount' | 'category') => setSortBy(value)}>
+          <SelectTrigger className="w-[180px]">
+            <SelectValue placeholder="Sort by..." />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="date">Date</SelectItem>
+            <SelectItem value="amount">Amount</SelectItem>
+            <SelectItem value="category">Category</SelectItem>
+          </SelectContent>
+        </Select>
+        <Button variant="outline" size="icon" onClick={toggleSortOrder}>
+          <ArrowUpDown className="h-4 w-4" />
+        </Button>
+      </div>
+
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead>Date</TableHead>
             <TableHead>Description</TableHead>
             <TableHead>Category</TableHead>
+            <TableHead>Date</TableHead>
             <TableHead className="text-right">Amount</TableHead>
-            <TableHead>Actions</TableHead>
+            <TableHead className="text-right">Actions</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
-          {expenses.data.map((expense) => (
+          {sortExpenses(expenses.data).map((expense) => (
             <TableRow key={expense.id}>
               <TableCell>{new Date(expense.date).toLocaleDateString()}</TableCell>
               <TableCell>{expense.description}</TableCell>
@@ -124,6 +182,6 @@ export const VariableExpensesList = ({ year, month, onEdit, onDelete }: Props) =
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-    </>
+    </div>
   )
 }
