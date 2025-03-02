@@ -28,15 +28,7 @@ export type Database = {
           id?: string
           name?: string
         }
-        Relationships: [
-          {
-            foreignKeyName: "categories_household_id_fkey"
-            columns: ["household_id"]
-            isOneToOne: false
-            referencedRelation: "households"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
       default_income: {
         Row: {
@@ -78,15 +70,7 @@ export type Database = {
           lucas_other_income?: number | null
           other_income?: number
         }
-        Relationships: [
-          {
-            foreignKeyName: "default_income_household_id_fkey"
-            columns: ["household_id"]
-            isOneToOne: false
-            referencedRelation: "households"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
       fixed_expenses: {
         Row: {
@@ -127,32 +111,7 @@ export type Database = {
             referencedRelation: "categories"
             referencedColumns: ["id"]
           },
-          {
-            foreignKeyName: "fixed_expenses_household_id_fkey"
-            columns: ["household_id"]
-            isOneToOne: false
-            referencedRelation: "households"
-            referencedColumns: ["id"]
-          },
         ]
-      }
-      households: {
-        Row: {
-          created_at: string | null
-          id: string
-          name: string
-        }
-        Insert: {
-          created_at?: string | null
-          id?: string
-          name: string
-        }
-        Update: {
-          created_at?: string | null
-          id?: string
-          name?: string
-        }
-        Relationships: []
       }
       investment_history: {
         Row: {
@@ -532,24 +491,12 @@ export type Database = {
           created_at: string
         }[]
       }
-      get_or_create_household:
-        | {
-            Args: {
-              p_name: string
-            }
-            Returns: string
-          }
-        | {
-            Args: {
-              p_name: string
-              user_id: string
-            }
-            Returns: {
-              created_at: string | null
-              id: string
-              name: string
-            }
-          }
+      get_or_create_household: {
+        Args: {
+          p_name: string
+        }
+        Returns: string
+      }
       get_or_create_monthly_credit_card: {
         Args: {
           p_year: number
@@ -592,16 +539,6 @@ export type Database = {
           camila_income: number
           other_income: number
           created_at: string
-        }[]
-      }
-      get_user_household: {
-        Args: {
-          user_id: string
-        }
-        Returns: {
-          created_at: string | null
-          id: string
-          name: string
         }[]
       }
       initialize_monthly_fixed_expenses: {
