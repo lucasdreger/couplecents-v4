@@ -14,6 +14,7 @@ import { toast } from "@/hooks/use-toast";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AlertCircle } from "lucide-react";
 import type { VariableExpense } from '@/types/database.types';
+import { MonthlySummary } from "@/components/expenses/MonthlySummary";
 
 // Error fallback component
 const ErrorFallback = ({ error, resetErrorBoundary }: { error: any, resetErrorBoundary: any }) => {
@@ -231,37 +232,10 @@ export function MonthlyExpenses() {
       )}
       
       <div className="grid gap-6 mb-6">
-        {/* Total Budget Card - Moved to top */}
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle>Total Budget</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid gap-2">
-              <div className="flex justify-between items-center">
-                <p className="text-muted-foreground">Total Income:</p>
-                <p className="font-medium">
-                  {totalIncome.toLocaleString('de-DE', { style: 'currency', currency: 'EUR' })}
-                </p>
-              </div>
-              <div className="flex justify-between items-center">
-                <p className="text-muted-foreground">Total Expenses:</p>
-                <p className="font-medium">
-                  {totalExpenses.toLocaleString('de-DE', { style: 'currency', currency: 'EUR' })}
-                </p>
-              </div>
-              <div className="h-px bg-border my-1"></div>
-              <div className="flex justify-between items-center">
-                <p className="font-semibold">Balance:</p>
-                <p className={`font-bold ${balance >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                  {balance.toLocaleString('de-DE', { style: 'currency', currency: 'EUR' })}
-                </p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+        <ErrorBoundary FallbackComponent={ErrorFallback}>
+          <MonthlySummary year={selectedYear} month={selectedMonth} />
+        </ErrorBoundary>
 
-        {/* Monthly Income Card */}
         <ErrorBoundary FallbackComponent={ErrorFallback}>
           <Card>
             <CardHeader className="pb-2">

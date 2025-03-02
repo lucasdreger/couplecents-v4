@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { LayoutDashboard, CalendarIcon } from "lucide-react";
 import {
@@ -8,7 +7,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { BudgetTile } from './BudgetTile';
 import { InvestmentsTile } from './InvestmentsTile';
 import { ReservesTile } from './ReservesTile';
 import { MonthlyChart } from './MonthlyChart';
@@ -161,16 +159,6 @@ export const OverviewPage: React.FC = () => {
       <ErrorBoundary fallback={<ErrorFallback message="Error loading assets data" />}>
         <TotalAssetsSummary />
       </ErrorBoundary>
-
-      {/* Total Budget Card */}
-      <Card className="w-full">
-        <CardHeader className="pb-2">
-          <CardTitle>Summary</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <BudgetTile />
-        </CardContent>
-      </Card>
 
       {/* Investments and Reserves Row */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
