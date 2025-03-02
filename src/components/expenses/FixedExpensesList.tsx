@@ -28,9 +28,18 @@ export const FixedExpensesList = ({ year, month }: Props) => {
   const { data: fixedExpenses, isLoading, isError } = useQuery<FixedExpense[], PostgrestError>({
     queryKey: ['fixed-expenses', year, month],
     queryFn: async () => {
-      const { data, error } = await getFixedExpenses(year, month)
-      if (error) throw error
-      return data || []
+      const { data, error } = await supabase
+        .from('fixed_expenses')
+        .select(`
+          *,
+          category:categories(name),
+          status:monthly_fixed_expense_status!inner(completed)
+        `)
+        .eq('monthly_fixed_expense_status.year', year)
+        .eq('monthly_fixed_expense_status.month', month);
+
+      if (error) throw error;
+      return data || [];
     }
   })
 
@@ -51,18 +60,15 @@ export const FixedExpensesList = ({ year, month }: Props) => {
         .from('monthly_fixed_expense_status')
         .upsert({
           fixed_expense_id: expenseId,
-          year: year,
-          month: month,
+          year,
+          month,
           completed: checked
         });
 
       if (error) throw error;
 
-      // Invalidate both fixed expenses and credit card queries to update task count
+      // Invalidate queries to refresh the list and task count
       queryClient.invalidateQueries({ queryKey: ['fixed-expenses', year, month] });
-      // This will trigger the task count recalculation in MonthlyExpenses
-      await new Promise(resolve => setTimeout(resolve, 100)); // Small delay to ensure DB update
-      queryClient.invalidateQueries({ queryKey: ['credit-card-bill', year, month] });
 
       toast({
         description: `Task marked as ${checked ? 'completed' : 'pending'}`,
@@ -112,7 +118,7 @@ export const FixedExpensesList = ({ year, month }: Props) => {
             <TableCell>{expense.description}</TableCell>
             <TableCell>{expense.category?.name}</TableCell>
             <TableCell className="text-right">
-              ${(expense.estimated_amount ?? 0).toFixed(2)}
+              {expense.estimated_amount.toLocaleString('de-DE', { style: 'currency', currency: 'EUR' })}
             </TableCell>
             <TableCell>{expense.due_date}</TableCell>
             <TableCell>

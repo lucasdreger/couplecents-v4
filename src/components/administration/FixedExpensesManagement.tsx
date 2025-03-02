@@ -1,4 +1,3 @@
-
 import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -251,13 +250,18 @@ export const FixedExpensesManagement = () => {
             required
           />
           
-          <Input 
-            type="number"
-            placeholder="Amount"
-            value={expense.amount}
-            onChange={(e) => setExpense(prev => ({ ...prev, amount: e.target.value }))}
-            required
-          />
+          <FormLabel>Amount</FormLabel>
+          <div className="relative">
+            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">€</span>
+            <Input
+              type="text"
+              className="pl-7 text-right"
+              placeholder="0,00"
+              value={expense.amount}
+              onChange={(e) => setExpense(prev => ({ ...prev, amount: e.target.value }))}
+              required
+            />
+          </div>
           
           <Select 
             value={expense.category_id}

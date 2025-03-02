@@ -8,9 +8,6 @@ import Login from '@/pages/Login';
 import DashboardLayout from '@/layouts/DashboardLayout';
 import { Dashboard } from '@/pages/Dashboard';
 import { MonthlyExpenses } from '@/pages/MonthlyExpenses';
-import { Investments } from '@/pages/Investments';
-import { Reserves } from '@/pages/Reserves';
-import { Income } from '@/pages/Income';
 import Administration from '@/pages/Administration';
 import FinancialAnalytics from '@/pages/FinancialAnalytics';
 import NotFound from '@/pages/NotFound';
@@ -49,18 +46,6 @@ const router = createBrowserRouter([
           {
             path: "/analytics",
             element: <FinancialAnalytics />
-          },
-          {
-            path: "/investments",
-            element: <Investments />
-          },
-          {
-            path: "/income",
-            element: <Income />
-          },
-          {
-            path: "/reserves",
-            element: <Reserves />
           },
           {
             path: "/administration",

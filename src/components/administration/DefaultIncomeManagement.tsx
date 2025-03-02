@@ -106,8 +106,8 @@ export const DefaultIncomeManagement = () => {
                 <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">€</span>
                 <Input
                   type="text"
-                  defaultValue={formatValue(defaultIncome?.lucas_main_income || 0)}
-                  onChange={handleInputChange('lucas_main_income')}
+                  value={defaultIncome?.lucas_main_income}
+                  onChange={(e) => handleInputChange('lucas_main_income')(e)}
                   onBlur={handleInputBlur}
                   className="pl-7 text-right"
                   placeholder="0,00"
@@ -120,8 +120,8 @@ export const DefaultIncomeManagement = () => {
                 <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">€</span>
                 <Input
                   type="text"
-                  defaultValue={formatValue(defaultIncome?.lucas_other_income || 0)}
-                  onChange={handleInputChange('lucas_other_income')}
+                  value={defaultIncome?.lucas_other_income}
+                  onChange={(e) => handleInputChange('lucas_other_income')(e)}
                   onBlur={handleInputBlur}
                   className="pl-7 text-right"
                   placeholder="0,00"
@@ -138,8 +138,8 @@ export const DefaultIncomeManagement = () => {
                 <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">€</span>
                 <Input
                   type="text"
-                  defaultValue={formatValue(defaultIncome?.camila_main_income || 0)}
-                  onChange={handleInputChange('camila_main_income')}
+                  value={defaultIncome?.camila_main_income}
+                  onChange={(e) => handleInputChange('camila_main_income')(e)}
                   onBlur={handleInputBlur}
                   className="pl-7 text-right"
                   placeholder="0,00"
@@ -152,8 +152,8 @@ export const DefaultIncomeManagement = () => {
                 <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">€</span>
                 <Input
                   type="text"
-                  defaultValue={formatValue(defaultIncome?.camila_other_income || 0)}
-                  onChange={handleInputChange('camila_other_income')}
+                  value={defaultIncome?.camila_other_income}
+                  onChange={(e) => handleInputChange('camila_other_income')(e)}
                   onBlur={handleInputBlur}
                   className="pl-7 text-right"
                   placeholder="0,00"

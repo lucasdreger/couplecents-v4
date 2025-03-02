@@ -30,21 +30,6 @@ const sidebarLinks = [
     icon: LineChart
   },
   {
-    title: "Income",
-    href: "/income",
-    icon: Banknote
-  },
-  {
-    title: "Investments",
-    href: "/investments",
-    icon: TrendingUp
-  },
-  {
-    title: "Reserves",
-    href: "/reserves",
-    icon: Vault
-  },
-  {
     title: "Administration",
     href: "/administration",
     icon: Settings
