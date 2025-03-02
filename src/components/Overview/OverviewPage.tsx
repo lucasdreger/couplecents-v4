@@ -13,9 +13,11 @@ import { InvestmentsTile } from './InvestmentsTile';
 import { ReservesTile } from './ReservesTile';
 import { MonthlyChart } from './MonthlyChart';
 import { CategoryBreakdown } from './CategoryBreakdown';
-import { InvestmentDistribution } from './InvestmentDistribution';
 import { useAuth } from '@/context/AuthContext';
 import { Button } from '@/components/ui/button';
+import { useInvestments } from '@/hooks/useInvestments';
+import { useReserves } from '@/hooks/useReserves';
+import { Skeleton } from '@/components/ui/skeleton';
 
 // Create a reusable error fallback component
 const ErrorFallback = ({ message }: { message: string }) => (
@@ -23,6 +25,83 @@ const ErrorFallback = ({ message }: { message: string }) => (
     {message}
   </div>
 );
+
+// New component for displaying the Total Assets Summary
+const TotalAssetsSummary = () => {
+  const { investments, isLoading: investmentsLoading } = useInvestments();
+  const { reserves, loading: reservesLoading } = useReserves();
+  
+  const isLoading = investmentsLoading || reservesLoading;
+  
+  // Calculate total investments
+  const totalInvestments = Array.isArray(investments) 
+    ? investments.reduce((sum, inv) => sum + (inv.current_value || 0), 0) 
+    : 0;
+  
+  // Calculate total reserves
+  const totalReserves = Array.isArray(reserves) 
+    ? reserves.reduce((sum, res) => sum + (res.current_value || 0), 0) 
+    : 0;
+  
+  // Calculate total assets
+  const totalAssets = totalInvestments + totalReserves;
+  
+  if (isLoading) {
+    return (
+      <Card className="bg-white/50 backdrop-blur-sm border-primary/5">
+        <CardHeader className="pb-2">
+          <CardTitle className="flex items-center justify-between">
+            <span>Total Assets</span>
+            <Skeleton className="h-6 w-24" />
+          </CardTitle>
+          <CardDescription>Sum of all investments and reserves</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-2">
+            <div className="flex justify-between">
+              <span className="text-muted-foreground">Investments</span>
+              <Skeleton className="h-4 w-20" />
+            </div>
+            <div className="flex justify-between">
+              <span className="text-muted-foreground">Reserves</span>
+              <Skeleton className="h-4 w-20" />
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+  
+  return (
+    <Card className="bg-white/50 backdrop-blur-sm border-primary/5">
+      <CardHeader className="pb-2">
+        <CardTitle className="flex items-center justify-between">
+          <span>Total Assets</span>
+          <span className="text-xl font-bold text-primary">
+            {totalAssets.toLocaleString('de-DE', { style: 'currency', currency: 'EUR' })}
+          </span>
+        </CardTitle>
+        <CardDescription>Sum of all investments and reserves</CardDescription>
+      </CardHeader>
+      <CardContent>
+        <div className="space-y-2">
+          <div className="flex justify-between">
+            <span className="text-muted-foreground">Investments</span>
+            <span className="font-medium">
+              {totalInvestments.toLocaleString('de-DE', { style: 'currency', currency: 'EUR' })}
+            </span>
+          </div>
+          <div className="flex justify-between">
+            <span className="text-muted-foreground">Reserves</span>
+            <span className="font-medium">
+              {totalReserves.toLocaleString('de-DE', { style: 'currency', currency: 'EUR' })}
+            </span>
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  );
+};
 
 export const OverviewPage: React.FC = () => {
   const { user } = useAuth();
@@ -78,6 +157,11 @@ export const OverviewPage: React.FC = () => {
         </div>
       </div>
 
+      {/* Total Assets Summary */}
+      <ErrorBoundary fallback={<ErrorFallback message="Error loading assets data" />}>
+        <TotalAssetsSummary />
+      </ErrorBoundary>
+
       {/* Total Budget Card */}
       <Card className="w-full">
         <CardHeader className="pb-2">
@@ -94,33 +178,6 @@ export const OverviewPage: React.FC = () => {
         <ReservesTile />
       </div>
 
-      {/* Category and Investment Distribution Row */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <ErrorBoundary fallback={<ErrorFallback message="Error loading categories" />}>
-          <Card className="shadow-sm border-primary/10">
-            <CardHeader className="border-b border-border/40 pb-2">
-              <CardTitle>Category Breakdown</CardTitle>
-              <CardDescription>Expenses by category</CardDescription>
-            </CardHeader>
-            <CardContent className="pt-4">
-              <CategoryBreakdown />
-            </CardContent>
-          </Card>
-        </ErrorBoundary>
-
-        <ErrorBoundary fallback={<ErrorFallback message="Error loading investment distribution" />}>
-          <Card className="shadow-sm border-primary/10">
-            <CardHeader className="border-b border-border/40 pb-2">
-              <CardTitle>Investment Distribution</CardTitle>
-              <CardDescription>Distribution by investment type</CardDescription>
-            </CardHeader>
-            <CardContent className="pt-4">
-              <InvestmentDistribution />
-            </CardContent>
-          </Card>
-        </ErrorBoundary>
-      </div>
-
       {/* Monthly Chart */}
       <ErrorBoundary fallback={<ErrorFallback message="Error loading monthly data" />}>
         <Card className="shadow-sm border-primary/10">
@@ -130,6 +187,19 @@ export const OverviewPage: React.FC = () => {
           </CardHeader>
           <CardContent className="pt-4">
             <MonthlyChart />
+          </CardContent>
+        </Card>
+      </ErrorBoundary>
+
+      {/* Category Breakdown */}
+      <ErrorBoundary fallback={<ErrorFallback message="Error loading categories" />}>
+        <Card className="shadow-sm border-primary/10">
+          <CardHeader className="border-b border-border/40 pb-2">
+            <CardTitle>Category Breakdown</CardTitle>
+            <CardDescription>Expenses by category</CardDescription>
+          </CardHeader>
+          <CardContent className="pt-4">
+            <CategoryBreakdown />
           </CardContent>
         </Card>
       </ErrorBoundary>
