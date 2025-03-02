@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { LayoutDashboard, CalendarIcon } from "lucide-react";
 import {
@@ -89,23 +90,8 @@ export const OverviewPage: React.FC = () => {
 
       {/* Investments and Reserves Row */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle>Investments</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <InvestmentsTile />
-          </CardContent>
-        </Card>
-        
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle>Reserves</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <ReservesTile />
-          </CardContent>
-        </Card>
+        <InvestmentsTile />
+        <ReservesTile />
       </div>
 
       {/* Category and Investment Distribution Row */}

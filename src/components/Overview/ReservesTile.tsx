@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -5,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Progress } from "@/components/ui/progress";
 import { useReserves } from "@/hooks/useReserves";
 import { useAuth } from "@/context/AuthContext";
-import { PencilIcon, CheckIcon, XIcon, ArrowUpIcon, ArrowDownIcon } from "lucide-react";
+import { PencilIcon, CheckIcon, XIcon } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
 
