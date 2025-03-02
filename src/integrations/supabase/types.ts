@@ -77,6 +77,7 @@ export type Database = {
           category_id: string
           created_at: string
           description: string
+          due_date: string | null
           estimated_amount: number
           household_id: string | null
           id: string
@@ -87,6 +88,7 @@ export type Database = {
           category_id: string
           created_at?: string
           description: string
+          due_date?: string | null
           estimated_amount: number
           household_id?: string | null
           id?: string
@@ -97,6 +99,7 @@ export type Database = {
           category_id?: string
           created_at?: string
           description?: string
+          due_date?: string | null
           estimated_amount?: number
           household_id?: string | null
           id?: string

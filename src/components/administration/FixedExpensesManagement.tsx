@@ -329,7 +329,7 @@ export const FixedExpensesManagement = () => {
               <div>
                 <p className="font-medium">{expense.description}</p>
                 <p className="text-sm text-muted-foreground">
-                  ${expense.estimated_amount} • {expense.categories?.name} • {expense.owner}
+                  €{expense.estimated_amount.toFixed(2)} • {expense.categories?.name} • {expense.owner}
                   {expense.due_date && ` • Due: ${expense.due_date}`}
                 </p>
               </div>
