@@ -115,7 +115,9 @@ export const InvestmentsTile = () => {
           <CardHeader>
             <CardTitle className="flex items-center justify-between">
               <span>Investments</span>
-              <span className="text-lg font-medium">€{totalInvestments.toFixed(2)}</span>
+              <span className="text-lg font-medium">
+                {totalInvestments.toLocaleString('de-DE', { style: 'currency', currency: 'EUR' })}
+              </span>
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -143,10 +145,11 @@ export const InvestmentsTile = () => {
                         {editingId === investment.id ? (
                           <div className="flex items-center space-x-2">
                             <Input
-                              type="number"
+                              type="text"
                               value={editValue}
                               onChange={(e) => setEditValue(e.target.value)}
-                              className="w-24"
+                              className="w-24 text-right"
+                              placeholder="0,00"
                             />
                             <Button 
                               size="icon" 
@@ -168,7 +171,9 @@ export const InvestmentsTile = () => {
                         ) : (
                           <div className="flex items-center space-x-2">
                             <div className="text-right">
-                              <p className="font-bold">€{investment.current_value.toFixed(2)}</p>
+                              <p className="font-bold">
+                                {investment.current_value.toLocaleString('de-DE', { style: 'currency', currency: 'EUR' })}
+                              </p>
                               {investment.change_percentage !== undefined && (
                                 <div className={`flex items-center text-xs ${investment.change_percentage >= 0 ? 'text-green-500' : 'text-red-500'}`}>
                                   {investment.change_percentage >= 0 ? (
@@ -231,8 +236,12 @@ export const InvestmentsTile = () => {
                       <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                     ))}
                   </Pie>
-                  <Tooltip formatter={(value) => `€${Number(value).toFixed(2)}`} />
-                  <Legend />
+                  <Tooltip 
+                    formatter={(value: number) => [
+                      value.toLocaleString('de-DE', { style: 'currency', currency: 'EUR' }),
+                      'Value'
+                    ]}
+                  />
                 </PieChart>
               </ResponsiveContainer>
             )}

@@ -127,8 +127,12 @@ export const CategoryBreakdown = () => {
               <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
             ))}
           </Pie>
-          <Tooltip formatter={(value: number) => `€${Number(value).toFixed(2)}`} />
-          <Legend />
+          <Tooltip 
+            formatter={(value: number) => `€${value.toLocaleString('de-DE', {
+              minimumFractionDigits: 2,
+              maximumFractionDigits: 2
+            })}`} 
+          />
         </PieChart>
       </ResponsiveContainer>
     </div>

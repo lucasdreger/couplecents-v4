@@ -59,7 +59,9 @@ export const ReservesTile = () => {
       <CardHeader>
         <CardTitle className="flex justify-between items-center">
           <span>Reserves</span>
-          <span className="text-lg font-medium">€{totalReserves.toFixed(2)}</span>
+          <span className="text-lg font-medium">
+            {totalReserves.toLocaleString('de-DE', { style: 'currency', currency: 'EUR' })}
+          </span>
         </CardTitle>
       </CardHeader>
       <CardContent>
@@ -87,10 +89,11 @@ export const ReservesTile = () => {
                       {editingId === reserve.id ? (
                         <div className="flex items-center space-x-2">
                           <Input
-                            type="number"
+                            type="text"
                             value={editValue}
                             onChange={(e) => setEditValue(e.target.value)}
-                            className="w-24"
+                            className="w-24 text-right"
+                            placeholder="0,00"
                           />
                           <Button 
                             size="icon" 
@@ -112,10 +115,12 @@ export const ReservesTile = () => {
                       ) : (
                         <div className="flex items-center space-x-2">
                           <div className="text-right">
-                            <p className="font-bold">€{reserve.current_value.toFixed(2)}</p>
+                            <p className="font-bold">
+                              {reserve.current_value.toLocaleString('de-DE', { style: 'currency', currency: 'EUR' })}
+                            </p>
                             {reserve.target_value && (
                               <p className="text-xs text-muted-foreground">
-                                Target: €{reserve.target_value.toFixed(2)}
+                                Target: {reserve.target_value.toLocaleString('de-DE', { style: 'currency', currency: 'EUR' })}
                               </p>
                             )}
                           </div>

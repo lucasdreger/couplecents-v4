@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import {
   Card,
@@ -98,19 +97,21 @@ export const OverviewPage: React.FC = () => {
         </TabsList>
         
         <TabsContent value="overview" className="space-y-6">
-          {/* Budget Overview */}
-          <ErrorBoundary fallback={<ErrorFallback message="Error loading budget" />}>
-            <Card className="border shadow-sm">
-              <BudgetTile />
-            </Card>
-          </ErrorBoundary>
-          
-          {/* Investments Section */}
-          <ErrorBoundary fallback={<ErrorFallback message="Error loading investments" />}>
-            <div className="bg-card rounded-lg border shadow-sm">
-              <InvestmentsTile />
-            </div>
-          </ErrorBoundary>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {/* Total Budget - Now in a grid */}
+            <ErrorBoundary fallback={<ErrorFallback message="Error loading budget" />}>
+              <Card className="border shadow-sm md:col-span-1">
+                <BudgetTile />
+              </Card>
+            </ErrorBoundary>
+
+            {/* Investments Section */}
+            <ErrorBoundary fallback={<ErrorFallback message="Error loading investments" />}>
+              <div className="bg-card rounded-lg border shadow-sm md:col-span-2">
+                <InvestmentsTile />
+              </div>
+            </ErrorBoundary>
+          </div>
           
           {/* Reserves and Categories */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

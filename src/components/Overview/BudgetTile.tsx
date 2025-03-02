@@ -1,4 +1,3 @@
-
 /**
  * Budget Summary Tile Component
  * 
@@ -13,27 +12,61 @@ import { supabase } from '@/lib/supabaseClient';
 import { Skeleton } from "@/components/ui/skeleton";
 
 interface BudgetData {
-  total_income: number;
-  total_expenses: number;
+  totalIncome: number;
+  totalExpenses: number;
 }
 
 export const BudgetTile = () => {
   const { data: budgetData, isLoading, isError } = useQuery({
     queryKey: ['totalBudget'],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from('monthly_details')
-        .select('total_income, total_expenses')
-        .single();
+      // First get the latest month's income
+      const { data: incomeData, error: incomeError } = await supabase
+        .from('monthly_income')
+        .select('lucas_main_income, lucas_other_income, camila_main_income, camila_other_income')
+        .order('year', { ascending: false })
+        .order('month', { ascending: false })
+        .limit(1);
       
-      if (error) throw error;
-      return data as BudgetData;
+      if (incomeError) throw incomeError;
+
+      // Get expenses from the monthly details
+      const { data: expensesData, error: expensesError } = await supabase
+        .from('monthly_details')
+        .select('planned_amount')
+        .order('year', { ascending: false })
+        .order('month', { ascending: false })
+        .limit(1);
+
+      if (expensesError) throw expensesError;
+      
+      const income = incomeData && incomeData.length > 0 ? 
+        (incomeData[0].lucas_main_income || 0) + 
+        (incomeData[0].lucas_other_income || 0) + 
+        (incomeData[0].camila_main_income || 0) + 
+        (incomeData[0].camila_other_income || 0) : 0;
+      
+      const expenses = expensesData && expensesData.length > 0 ? 
+        expensesData[0].planned_amount || 0 : 0;
+
+      return {
+        totalIncome: income,
+        totalExpenses: expenses
+      };
     },
   });
 
-  const totalIncome = budgetData?.total_income || 0;
-  const totalExpenses = budgetData?.total_expenses || 0;
+  const totalIncome = budgetData?.totalIncome || 0;
+  const totalExpenses = budgetData?.totalExpenses || 0;
   const balance = totalIncome - totalExpenses;
+
+  // Format number as European currency (Euro)
+  const formatEuro = (value: number) => {
+    return '€' + value.toLocaleString('de-DE', {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2
+    });
+  };
 
   return (
     <>
@@ -52,13 +85,13 @@ export const BudgetTile = () => {
         ) : (
           <div className="space-y-2">
             <p className="text-3xl font-bold text-primary">
-              ${totalIncome.toFixed(2)}
+              {formatEuro(totalIncome)}
             </p>
             <p className="text-sm text-muted-foreground">
-              Expenses: ${totalExpenses.toFixed(2)}
+              Expenses: {formatEuro(totalExpenses)}
             </p>
             <p className={`text-sm ${balance >= 0 ? 'text-green-500' : 'text-red-500'} font-medium`}>
-              Balance: ${balance.toFixed(2)}
+              Balance: {formatEuro(balance)}
             </p>
           </div>
         )}

@@ -1,6 +1,6 @@
-
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabaseClient';
+import { formatEuro } from '@/lib/utils';
 import {
   BarChart,
   Bar,
@@ -98,11 +98,11 @@ export const MonthlyChart = () => {
           <YAxis 
             axisLine={false}
             tickLine={false}
-            tickFormatter={(value) => `$${value}`}
+            tickFormatter={(value) => value.toLocaleString('de-DE', { style: 'currency', currency: 'EUR' })}
           />
           <Tooltip 
-            formatter={(value: number) => [`$${value.toFixed(2)}`, undefined]}
-            labelFormatter={(label) => `Month: ${label}`}
+            formatter={(value: number) => [value.toLocaleString('de-DE', { style: 'currency', currency: 'EUR' }), undefined]}
+            labelFormatter={(label) => label}
             contentStyle={{
               borderRadius: '8px',
               border: '1px solid #e2e8f0',

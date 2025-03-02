@@ -22,6 +22,29 @@ export function formatCurrency(value: number, currency: string = "USD"): string 
 }
 
 /**
+ * Formats a number as a Euro currency string
+ * @param value The value to format
+ */
+export function formatEuro(value: number): string {
+  return value.toLocaleString('de-DE', {
+    style: 'currency',
+    currency: 'EUR'
+  });
+}
+
+/**
+ * Parses a Euro currency input string to a number
+ * @param value The value to parse
+ */
+export function parseEuroInput(value: string): number {
+  // Remove all non-numeric characters except comma and period
+  const cleaned = value.replace(/[^0-9,.]/, '');
+  // Replace comma with period for parsing
+  const normalized = cleaned.replace(',', '.');
+  return parseFloat(normalized);
+}
+
+/**
  * Formats a date as a localized string
  * @param date The date to format
  * @param options Intl.DateTimeFormatOptions

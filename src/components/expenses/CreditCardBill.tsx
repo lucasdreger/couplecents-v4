@@ -138,16 +138,16 @@ export const CreditCardBill = ({ year, month }: Props) => {
   }, [creditCardBill, lucasFinancials])
   
   const handleAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value
-    setAmount(value)
+    const value = e.target.value.replace(/[^0-9,]/g, '').replace(',', '.');
+    setAmount(value);
     
-    // Update the database with the new amount
-    const numericValue = parseFloat(value)
+    // Only update if we have a valid number
+    const numericValue = parseFloat(value);
     if (!isNaN(numericValue)) {
-      updateCreditCardBill({ amount: numericValue })
+      updateCreditCardBill({ amount: numericValue });
     }
   }
-  
+
   const handleTransferStatusChange = (checked: boolean) => {
     setTransferCompleted(checked)
     
@@ -163,11 +163,42 @@ export const CreditCardBill = ({ year, month }: Props) => {
   
   return (
     <div className="space-y-4">
+      <div className="flex flex-col space-y-2">
+        <div className="space-y-2">
+          <FormLabel>Credit Card Bill Amount</FormLabel>
+          <div className="relative">
+            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">€</span>
+            <Input
+              type="text"
+              value={amount}
+              onChange={handleAmountChange}
+              className="text-right pl-7"
+              placeholder="0,00"
+            />
+          </div>
+        </div>
+      </div>
+
+      {/* Always show transfer status */}
+      <div className="flex items-center space-x-2 pt-2">
+        <Checkbox 
+          id="transfer-completed" 
+          checked={transferCompleted}
+          onCheckedChange={handleTransferStatusChange}
+        />
+        <label
+          htmlFor="transfer-completed"
+          className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+        >
+          Credit card bill paid
+        </label>
+      </div>
+
       {/* Transfer message */}
       {transferNeeded && transferAmount && !transferCompleted && (
         <Alert className="bg-amber-50 border-amber-200">
           <AlertDescription className="text-amber-800">
-            Camila needs to transfer <strong>€{transferAmount.toFixed(2)}</strong> to Lucas.
+            Camila needs to transfer {transferAmount.toLocaleString('de-DE', { style: 'currency', currency: 'EUR' })} to Lucas.
           </AlertDescription>
         </Alert>
       )}
@@ -175,7 +206,7 @@ export const CreditCardBill = ({ year, month }: Props) => {
       {transferNeeded && transferAmount && transferCompleted && transferDate && (
         <Alert className="bg-green-50 border-green-200">
           <AlertDescription className="text-green-800">
-            Transfer of <strong>€{transferAmount.toFixed(2)}</strong> done on {new Date(transferDate).toLocaleDateString()}.
+            Transfer of {transferAmount.toLocaleString('de-DE', { style: 'currency', currency: 'EUR' })} done on {new Date(transferDate).toLocaleDateString('de-DE')}.
           </AlertDescription>
         </Alert>
       )}
@@ -187,37 +218,6 @@ export const CreditCardBill = ({ year, month }: Props) => {
           </AlertDescription>
         </Alert>
       )}
-      
-      <div className="flex flex-col space-y-2">
-        <div className="space-y-2">
-          <FormLabel>Credit Card Bill Amount</FormLabel>
-          <div className="relative">
-            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">€</span>
-            <Input
-              type="text"
-              value={amount}
-              onChange={handleAmountChange}
-              className="text-right pl-7"
-            />
-          </div>
-        </div>
-        
-        {transferNeeded && !transferCompleted && (
-          <div className="flex items-center space-x-2 pt-2">
-            <Checkbox 
-              id="transfer-completed" 
-              checked={transferCompleted}
-              onCheckedChange={handleTransferStatusChange}
-            />
-            <label
-              htmlFor="transfer-completed"
-              className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-            >
-              Mark transfer as completed
-            </label>
-          </div>
-        )}
-      </div>
     </div>
-  )
+  );
 }

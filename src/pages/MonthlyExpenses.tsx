@@ -302,17 +302,21 @@ export function MonthlyExpenses() {
             <div className="grid gap-2">
               <div className="flex justify-between items-center">
                 <p className="text-muted-foreground">Total Income:</p>
-                <p className="font-medium">€{totalIncome.toFixed(2)}</p>
+                <p className="font-medium">
+                  {totalIncome.toLocaleString('de-DE', { style: 'currency', currency: 'EUR' })}
+                </p>
               </div>
               <div className="flex justify-between items-center">
                 <p className="text-muted-foreground">Total Expenses:</p>
-                <p className="font-medium">€{totalExpenses.toFixed(2)}</p>
+                <p className="font-medium">
+                  {totalExpenses.toLocaleString('de-DE', { style: 'currency', currency: 'EUR' })}
+                </p>
               </div>
               <div className="h-px bg-border my-1"></div>
               <div className="flex justify-between items-center">
                 <p className="font-semibold">Balance:</p>
                 <p className={`font-bold ${balance >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                  €{balance.toFixed(2)}
+                  {balance.toLocaleString('de-DE', { style: 'currency', currency: 'EUR' })}
                 </p>
               </div>
             </div>

@@ -1,4 +1,3 @@
-
 import { useState } from 'react'
 import { Edit, Trash } from 'lucide-react'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
@@ -86,7 +85,9 @@ export const VariableExpensesList = ({ year, month, onEdit, onDelete }: Props) =
               <TableCell>{new Date(expense.date).toLocaleDateString()}</TableCell>
               <TableCell>{expense.description}</TableCell>
               <TableCell>{expense.category?.name}</TableCell>
-              <TableCell className="text-right">${expense.amount.toFixed(2)}</TableCell>
+              <TableCell className="text-right">
+                {expense.amount.toLocaleString('de-DE', { style: 'currency', currency: 'EUR' })}
+              </TableCell>
               <TableCell>
                 <div className="flex gap-2">
                   <Button variant="ghost" size="icon" onClick={() => onEdit?.(expense)}>
