@@ -119,8 +119,8 @@ export const CategoryBreakdown = () => {
             nameKey="name"
             cx="50%"
             cy="50%"
-            outerRadius={100}
-            labelLine={false} 
+            outerRadius={80}
+            labelLine={false}
             label={renderCustomizedLabel}
           >
             {categoryData.map((_entry, index) => (
@@ -128,10 +128,15 @@ export const CategoryBreakdown = () => {
             ))}
           </Pie>
           <Tooltip 
-            formatter={(value: number) => `€${value.toLocaleString('de-DE', {
-              minimumFractionDigits: 2,
-              maximumFractionDigits: 2
-            })}`} 
+            formatter={(value: number) => value.toLocaleString('de-DE', { 
+              style: 'currency', 
+              currency: 'EUR' 
+            })}
+          />
+          <Legend 
+            layout="horizontal"
+            verticalAlign="bottom"
+            align="center"
           />
         </PieChart>
       </ResponsiveContainer>

@@ -230,6 +230,7 @@ export const InvestmentsTile = () => {
                     cx="50%"
                     cy="50%"
                     outerRadius={80}
+                    labelLine={false}
                     label={renderCustomizedLabel}
                   >
                     {pieData?.map((_, index) => (
@@ -238,9 +239,19 @@ export const InvestmentsTile = () => {
                   </Pie>
                   <Tooltip 
                     formatter={(value: number) => [
-                      value.toLocaleString('de-DE', { style: 'currency', currency: 'EUR' }),
+                      value.toLocaleString('de-DE', { 
+                        style: 'currency', 
+                        currency: 'EUR',
+                        minimumFractionDigits: 2,
+                        maximumFractionDigits: 2
+                      }),
                       'Value'
                     ]}
+                  />
+                  <Legend 
+                    layout="horizontal"
+                    verticalAlign="bottom"
+                    align="center"
                   />
                 </PieChart>
               </ResponsiveContainer>

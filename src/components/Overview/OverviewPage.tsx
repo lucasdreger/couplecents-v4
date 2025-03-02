@@ -11,7 +11,6 @@ import { InvestmentsTile } from './InvestmentsTile';
 import { ReservesTile } from './ReservesTile';
 import { MonthlyChart } from './MonthlyChart';
 import { CategoryBreakdown } from './CategoryBreakdown';
-import { FinancialAnalytics } from './FinancialAnalytics';
 import { useAuth } from '@/context/AuthContext';
 import { CalendarIcon, LayoutDashboard } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -91,14 +90,12 @@ export const OverviewPage: React.FC = () => {
       </div>
       
       <Tabs defaultValue="overview" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-2">
+        <TabsList className="grid w-full grid-cols-1">
           <TabsTrigger value="overview">Overview</TabsTrigger>
-          <TabsTrigger value="analytics">Financial Analytics</TabsTrigger>
         </TabsList>
         
         <TabsContent value="overview" className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {/* Total Budget - Now in a grid */}
             <ErrorBoundary fallback={<ErrorFallback message="Error loading budget" />}>
               <Card className="border shadow-sm md:col-span-1">
                 <BudgetTile />
@@ -145,12 +142,6 @@ export const OverviewPage: React.FC = () => {
                 <MonthlyChart />
               </CardContent>
             </Card>
-          </ErrorBoundary>
-        </TabsContent>
-        
-        <TabsContent value="analytics">
-          <ErrorBoundary fallback={<ErrorFallback message="Error loading analytics" />}>
-            <FinancialAnalytics />
           </ErrorBoundary>
         </TabsContent>
       </Tabs>

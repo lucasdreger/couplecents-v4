@@ -114,29 +114,34 @@ export const CreditCardBill = ({ year, month }: Props) => {
     }
   })
   
+  // Update local state when data changes
+  useEffect(() => {
+    if (creditCardBill) {
+      setAmount(creditCardBill.amount?.toString() || '');
+      setTransferCompleted(creditCardBill.transfer_completed || false);
+      setTransferDate(creditCardBill.transfer_completed_at);
+    }
+  }, [creditCardBill]);
+
   // Calculate transfer amount when data changes
   useEffect(() => {
     if (creditCardBill && lucasFinancials) {
-      const totalLucasIncome = lucasFinancials.income.main + lucasFinancials.income.other
-      const totalLucasExpenses = lucasFinancials.expenses.reduce((sum, expense) => sum + Number(expense.amount), 0)
-      const billAmount = creditCardBill.amount || 0
+      const totalLucasIncome = lucasFinancials.income.main + lucasFinancials.income.other;
+      const totalLucasExpenses = lucasFinancials.expenses.reduce((sum, expense) => sum + Number(expense.amount), 0);
+      const billAmount = Number(amount) || 0;
       
-      const remainingAmount = totalLucasIncome - totalLucasExpenses - billAmount
+      const remainingAmount = totalLucasIncome - totalLucasExpenses - billAmount;
       
       if (remainingAmount < 300) {
-        setTransferNeeded(true)
-        setTransferAmount(Math.ceil(300 - remainingAmount))
+        setTransferNeeded(true);
+        setTransferAmount(Math.ceil(300 - remainingAmount));
       } else {
-        setTransferNeeded(false)
-        setTransferAmount(null)
+        setTransferNeeded(false);
+        setTransferAmount(null);
       }
-      
-      setAmount(billAmount.toString())
-      setTransferCompleted(creditCardBill.transfer_completed || false)
-      setTransferDate(creditCardBill.transfer_completed_at)
     }
-  }, [creditCardBill, lucasFinancials])
-  
+  }, [creditCardBill, lucasFinancials, amount]);
+
   const handleAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value.replace(/[^0-9,]/g, '').replace(',', '.');
     setAmount(value);

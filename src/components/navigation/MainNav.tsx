@@ -1,34 +1,54 @@
 import { Link } from "react-router-dom"
+import { LayoutDashboard, Wallet, LineChart, Banknote, TrendingUp, Vault, Settings } from "some-icon-library"
 
-const navigationItems = [
+const mainNavItems = [
   {
-    name: "Dashboard",
-    path: "/dashboard"
+    title: "Overview",
+    href: "/",
+    icon: LayoutDashboard
   },
   {
-    name: "Investments",
-    path: "/investments"
+    title: "Monthly Expenses",
+    href: "/expenses",
+    icon: Wallet
   },
   {
-    name: "Reserves",
-    path: "/reserves"
+    title: "Financial Analytics",
+    href: "/analytics",
+    icon: LineChart
   },
   {
-    name: "Administration",
-    path: "/administration"
+    title: "Income",
+    href: "/income",
+    icon: Banknote
+  },
+  {
+    title: "Investments",
+    href: "/investments",
+    icon: TrendingUp
+  },
+  {
+    title: "Reserves",
+    href: "/reserves",
+    icon: Vault
+  },
+  {
+    title: "Administration",
+    href: "/admin",
+    icon: Settings
   }
 ]
 
 export function MainNav() {
   return (
     <nav className="flex items-center space-x-4 lg:space-x-6">
-      {navigationItems.map((item) => (
+      {mainNavItems.map((item) => (
         <Link
-          key={item.path}
-          to={item.path}
+          key={item.href}
+          to={item.href}
           className="text-sm font-medium text-muted-foreground transition-colors hover:text-primary"
         >
-          {item.name}
+          {item.title}
         </Link>
       ))}
     </nav>

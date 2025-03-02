@@ -229,6 +229,37 @@ export function MonthlyExpenses() {
       )}
       
       <div className="grid gap-6 mb-6">
+        {/* Total Budget Card - Moved to top */}
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle>Total Budget</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid gap-2">
+              <div className="flex justify-between items-center">
+                <p className="text-muted-foreground">Total Income:</p>
+                <p className="font-medium">
+                  {totalIncome.toLocaleString('de-DE', { style: 'currency', currency: 'EUR' })}
+                </p>
+              </div>
+              <div className="flex justify-between items-center">
+                <p className="text-muted-foreground">Total Expenses:</p>
+                <p className="font-medium">
+                  {totalExpenses.toLocaleString('de-DE', { style: 'currency', currency: 'EUR' })}
+                </p>
+              </div>
+              <div className="h-px bg-border my-1"></div>
+              <div className="flex justify-between items-center">
+                <p className="font-semibold">Balance:</p>
+                <p className={`font-bold ${balance >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                  {balance.toLocaleString('de-DE', { style: 'currency', currency: 'EUR' })}
+                </p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Monthly Income Card */}
         <ErrorBoundary FallbackComponent={ErrorFallback}>
           <Card>
             <CardHeader className="pb-2">
@@ -291,37 +322,6 @@ export function MonthlyExpenses() {
             </CardContent>
           </Card>
         </ErrorBoundary>
-      </div>
-      
-      <div className="mt-6">
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle>Total Budget</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid gap-2">
-              <div className="flex justify-between items-center">
-                <p className="text-muted-foreground">Total Income:</p>
-                <p className="font-medium">
-                  {totalIncome.toLocaleString('de-DE', { style: 'currency', currency: 'EUR' })}
-                </p>
-              </div>
-              <div className="flex justify-between items-center">
-                <p className="text-muted-foreground">Total Expenses:</p>
-                <p className="font-medium">
-                  {totalExpenses.toLocaleString('de-DE', { style: 'currency', currency: 'EUR' })}
-                </p>
-              </div>
-              <div className="h-px bg-border my-1"></div>
-              <div className="flex justify-between items-center">
-                <p className="font-semibold">Balance:</p>
-                <p className={`font-bold ${balance >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                  {balance.toLocaleString('de-DE', { style: 'currency', currency: 'EUR' })}
-                </p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
       </div>
     </div>
   );

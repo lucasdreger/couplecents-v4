@@ -131,89 +131,101 @@ export const MonthlyIncome = ({ year, month }: Props) => {
   const camilaTotal = (parseFloat(camilaMainInput) || 0) + (parseFloat(camilaOtherInput) || 0);
 
   return (
-    <div className="space-y-4">
-      <div className="flex justify-between items-center">
-        <h3 className="text-sm font-medium text-muted-foreground">Monthly Income</h3>
-        <p className="text-lg font-semibold">Total: €{totalIncome.toFixed(2)}</p>
-      </div>
-      
-      <div className="grid gap-6 md:grid-cols-2">
-        <div className="space-y-4">
-          <div className="flex justify-between items-center">
-            <h3 className="font-medium">Lucas</h3>
-            <p className="text-sm">Total: €{lucasTotal.toFixed(2)}</p>
-          </div>
-          
+    <div className="space-y-6">
+      {/* Lucas's Income */}
+      <div className="space-y-4">
+        <div className="flex items-center justify-between">
+          <h3 className="font-medium text-lg">Lucas's Income</h3>
+          <span className="text-sm font-medium bg-primary/10 text-primary px-2 py-1 rounded">
+            Total: {((parseFloat(lucasMainInput) || 0) + (parseFloat(lucasOtherInput) || 0)).toLocaleString('de-DE', { style: 'currency', currency: 'EUR' })}
+          </span>
+        </div>
+        <div className="grid gap-4">
           <div className="space-y-2">
             <FormLabel>Main Income</FormLabel>
             <div className="relative">
               <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">€</span>
               <Input
                 type="text"
-                placeholder="Main Income"
                 value={lucasMainInput}
                 onChange={(e) => setLucasMainInput(e.target.value)}
                 onBlur={(e) => handleSaveValue('lucas_main_income', e.target.value)}
-                onKeyDown={(e) => handleKeyDown(e, 'lucas_main_income', lucasMainInput)}
+                onKeyDown={(e) => handleKeyDown(e, 'lucas_main_income', e.currentTarget.value)}
                 className="text-right pl-7"
+                placeholder="0,00"
               />
             </div>
           </div>
-          
           <div className="space-y-2">
             <FormLabel>Other Income</FormLabel>
             <div className="relative">
               <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">€</span>
               <Input
                 type="text"
-                placeholder="Other Income"
                 value={lucasOtherInput}
                 onChange={(e) => setLucasOtherInput(e.target.value)}
                 onBlur={(e) => handleSaveValue('lucas_other_income', e.target.value)}
-                onKeyDown={(e) => handleKeyDown(e, 'lucas_other_income', lucasOtherInput)}
+                onKeyDown={(e) => handleKeyDown(e, 'lucas_other_income', e.currentTarget.value)}
                 className="text-right pl-7"
+                placeholder="0,00"
               />
             </div>
           </div>
         </div>
-        
-        <div className="space-y-4">
-          <div className="flex justify-between items-center">
-            <h3 className="font-medium">Camila</h3>
-            <p className="text-sm">Total: €{camilaTotal.toFixed(2)}</p>
-          </div>
-          
+      </div>
+
+      {/* Divider */}
+      <div className="h-px bg-border" />
+
+      {/* Camila's Income */}
+      <div className="space-y-4">
+        <div className="flex items-center justify-between">
+          <h3 className="font-medium text-lg">Camila's Income</h3>
+          <span className="text-sm font-medium bg-primary/10 text-primary px-2 py-1 rounded">
+            Total: {((parseFloat(camilaMainInput) || 0) + (parseFloat(camilaOtherInput) || 0)).toLocaleString('de-DE', { style: 'currency', currency: 'EUR' })}
+          </span>
+        </div>
+        <div className="grid gap-4">
           <div className="space-y-2">
             <FormLabel>Main Income</FormLabel>
             <div className="relative">
               <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">€</span>
               <Input
                 type="text"
-                placeholder="Main Income"
                 value={camilaMainInput}
                 onChange={(e) => setCamilaMainInput(e.target.value)}
                 onBlur={(e) => handleSaveValue('camila_main_income', e.target.value)}
-                onKeyDown={(e) => handleKeyDown(e, 'camila_main_income', camilaMainInput)}
+                onKeyDown={(e) => handleKeyDown(e, 'camila_main_income', e.currentTarget.value)}
                 className="text-right pl-7"
+                placeholder="0,00"
               />
             </div>
           </div>
-          
           <div className="space-y-2">
             <FormLabel>Other Income</FormLabel>
             <div className="relative">
               <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">€</span>
               <Input
                 type="text"
-                placeholder="Other Income"
                 value={camilaOtherInput}
                 onChange={(e) => setCamilaOtherInput(e.target.value)}
                 onBlur={(e) => handleSaveValue('camila_other_income', e.target.value)}
-                onKeyDown={(e) => handleKeyDown(e, 'camila_other_income', camilaOtherInput)}
+                onKeyDown={(e) => handleKeyDown(e, 'camila_other_income', e.currentTarget.value)}
                 className="text-right pl-7"
+                placeholder="0,00"
               />
             </div>
           </div>
+        </div>
+      </div>
+
+      {/* Total Monthly Income Summary */}
+      <div className="mt-6 p-4 bg-muted/30 rounded-lg">
+        <div className="flex items-center justify-between">
+          <h3 className="font-semibold text-lg">Total Monthly Income</h3>
+          <span className="text-lg font-bold text-primary">
+            {totalIncome.toLocaleString('de-DE', { style: 'currency', currency: 'EUR' })}
+          </span>
         </div>
       </div>
     </div>

@@ -12,13 +12,25 @@ export function cn(...inputs: ClassValue[]) {
 /**
  * Formats a number as a currency string
  * @param value The value to format
- * @param currency The currency code (defaults to USD)
  */
-export function formatCurrency(value: number, currency: string = "USD"): string {
-  return new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency,
-  }).format(value);
+export function formatCurrency(value: number): string {
+  return value.toLocaleString('de-DE', {
+    style: 'currency',
+    currency: 'EUR',
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2
+  })
+}
+
+/**
+ * Parses a number input string to a number
+ * @param value The value to parse
+ */
+export function parseNumberInput(value: string): number {
+  // Remove currency symbol and convert German format to standard decimal
+  const sanitized = value.replace(/[€\s]/g, '').replace(',', '.')
+  const number = parseFloat(sanitized)
+  return isNaN(number) ? 0 : number
 }
 
 /**

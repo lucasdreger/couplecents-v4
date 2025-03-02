@@ -223,7 +223,7 @@ export const FinancialAnalytics = () => {
                       <CartesianGrid strokeDasharray="3 3" />
                       <XAxis dataKey="name" />
                       <YAxis />
-                      <Tooltip formatter={(value) => `$${Number(value).toFixed(2)}`} />
+                      <Tooltip formatter={(value) => value.toLocaleString('de-DE', { style: 'currency', currency: 'EUR' })} />
                       <Legend />
                       <Line type="monotone" dataKey="Lucas" stroke="#8884d8" />
                       <Line type="monotone" dataKey="Camila" stroke="#82ca9d" />
@@ -254,7 +254,9 @@ export const FinancialAnalytics = () => {
                       <XAxis dataKey="name" />
                       <YAxis />
                       <Tooltip formatter={(value, name) => [
-                        name === "SavingsRate" ? `${Number(value).toFixed(2)}%` : `$${Number(value).toFixed(2)}`,
+                        name === "SavingsRate" 
+                          ? `${value.toLocaleString('de-DE', { maximumFractionDigits: 2 })}%` 
+                          : value.toLocaleString('de-DE', { style: 'currency', currency: 'EUR' }),
                         name
                       ]}/>
                       <Legend />
