@@ -1,3 +1,4 @@
+
 import React from 'react';
 import {
   Card,
@@ -8,14 +9,16 @@ import {
 } from "@/components/ui/card";
 import { InvestmentsTile } from './InvestmentsTile';
 import { ReservesTile } from './ReservesTile';
-import { MonthlyChart } from './MonthlyChart';
 import { CategoryBreakdown } from './CategoryBreakdown';
 import { useAuth } from '@/context/AuthContext';
-import { CalendarIcon, LayoutDashboard } from 'lucide-react';
+import { CalendarIcon, LayoutDashboard, TrendingUp } from 'lucide-react';
 import { InvestmentDistribution } from './InvestmentDistribution';
 import { useInvestments } from '@/hooks/useInvestments';
 import { useReserves } from '@/hooks/useReserves';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Sparkles } from '@/components/ui/sparkles';
+import { ProgressiveBlur } from '@/components/ui/progressive-blur';
+import { useTheme } from '@/context/ThemeContext';
 
 // Create a reusable error fallback component
 const ErrorFallback = ({ message }: { message: string }) => (
@@ -28,6 +31,7 @@ const ErrorFallback = ({ message }: { message: string }) => (
 const TotalAssets = () => {
   const { investments, isLoading: isInvestmentsLoading } = useInvestments();
   const { reserves, isLoading: isReservesLoading } = useReserves();
+  const { theme } = useTheme();
   
   const isLoading = isInvestmentsLoading || isReservesLoading;
   
@@ -40,27 +44,39 @@ const TotalAssets = () => {
   }
   
   return (
-    <div className="flex flex-col space-y-4">
-      <div className="text-center">
-        <h3 className="text-3xl font-bold text-primary">
+    <div className="flex flex-col space-y-6 relative">
+      <div className="text-center z-10">
+        <h3 className="text-4xl font-bold bg-gradient-to-r from-purple-500 to-blue-500 bg-clip-text text-transparent">
           {totalAssets.toLocaleString('de-DE', { style: 'currency', currency: 'EUR' })}
         </h3>
         <p className="text-muted-foreground">Total Assets Value</p>
       </div>
       
-      <div className="flex justify-between text-center">
-        <div className="flex-1">
+      <div className="flex justify-between text-center z-10">
+        <div className="flex-1 p-4 rounded-lg glass">
           <p className="text-lg font-semibold">
             {totalInvestments.toLocaleString('de-DE', { style: 'currency', currency: 'EUR' })}
           </p>
           <p className="text-sm text-muted-foreground">Investments</p>
         </div>
-        <div className="flex-1">
+        <div className="w-6"></div>
+        <div className="flex-1 p-4 rounded-lg glass">
           <p className="text-lg font-semibold">
             {totalReserves.toLocaleString('de-DE', { style: 'currency', currency: 'EUR' })}
           </p>
           <p className="text-sm text-muted-foreground">Reserves</p>
         </div>
+      </div>
+
+      <div className="absolute inset-0 -z-10">
+        <Sparkles 
+          className="h-full w-full" 
+          color={theme === "dark" ? "var(--sparkles-color)" : "#8350e8"}
+          size={2}
+          density={60}
+          speed={0.5}
+          opacity={0.3}
+        />
       </div>
     </div>
   );
@@ -68,6 +84,7 @@ const TotalAssets = () => {
 
 export const OverviewPage: React.FC = () => {
   const { user } = useAuth();
+  const { theme } = useTheme();
   
   const today = new Date();
   const formattedDate = today.toLocaleDateString('en-GB', {
@@ -83,8 +100,8 @@ export const OverviewPage: React.FC = () => {
   return (
     <div className="container mx-auto p-6 space-y-6">
       {/* Header with greeting and date */}
-      <div className="bg-gradient-to-r from-primary/10 to-primary/5 rounded-lg p-6 shadow-sm">
-        <div className="flex justify-between items-center">
+      <div className="bg-gradient-to-r from-primary/10 to-primary/5 rounded-lg p-6 shadow-sm relative overflow-hidden">
+        <div className="flex justify-between items-center z-10 relative">
           <div>
             <h2 className="text-3xl font-bold tracking-tight flex items-center gap-2">
               <LayoutDashboard className="h-7 w-7 text-primary" />
@@ -94,11 +111,26 @@ export const OverviewPage: React.FC = () => {
               <CalendarIcon className="h-3 w-3" /> {formattedDate}
             </p>
           </div>
+          <div className="hidden md:flex items-center gap-2 bg-gradient-to-r from-purple-500/10 to-blue-500/10 p-2 rounded-lg">
+            <TrendingUp className="h-5 w-5 text-purple-500" />
+            <span className="text-sm font-medium">Financial Health</span>
+          </div>
+        </div>
+        
+        <div className="absolute -z-0 bottom-0 right-0 w-full h-[150%]">
+          <Sparkles 
+            className="h-full w-full" 
+            color={theme === "dark" ? "var(--sparkles-color)" : "#8350e8"}
+            size={1.5}
+            density={40}
+            speed={0.3}
+            opacity={0.15}
+          />
         </div>
       </div>
 
       {/* Total Assets Card */}
-      <Card className="w-full">
+      <Card className="w-full overflow-hidden">
         <CardHeader className="pb-2">
           <CardTitle>Total Assets</CardTitle>
           <CardDescription>Combined value of investments and reserves</CardDescription>
@@ -122,42 +154,37 @@ export const OverviewPage: React.FC = () => {
       {/* Category Breakdown and Investment Distribution Row */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <ErrorBoundary fallback={<ErrorFallback message="Error loading categories" />}>
-          <Card className="shadow-sm border-primary/10">
+          <Card className="shadow-sm border-primary/10 overflow-hidden">
             <CardHeader className="border-b border-border/40 pb-2">
               <CardTitle>Category Breakdown</CardTitle>
               <CardDescription>Expenses by category</CardDescription>
             </CardHeader>
-            <CardContent className="pt-4">
+            <CardContent className="pt-4 relative">
               <CategoryBreakdown timeRange={12} />
             </CardContent>
           </Card>
         </ErrorBoundary>
 
         <ErrorBoundary fallback={<ErrorFallback message="Error loading investment distribution" />}>
-          <Card className="shadow-sm border-primary/10">
-            <CardHeader className="border-b border-border/40 pb-2">
+          <Card className="shadow-sm border-primary/10 relative overflow-hidden">
+            <CardHeader className="border-b border-border/40 pb-2 relative z-10">
               <CardTitle>Investment Distribution</CardTitle>
               <CardDescription>Distribution by investment type</CardDescription>
             </CardHeader>
-            <CardContent className="pt-4">
+            <CardContent className="pt-4 relative z-10">
               <InvestmentDistribution />
             </CardContent>
+            <div className="absolute inset-0 -z-0">
+              <ProgressiveBlur 
+                direction="right" 
+                blurLayers={6} 
+                blurIntensity={0.1} 
+                className="h-full w-full opacity-50"
+              />
+            </div>
           </Card>
         </ErrorBoundary>
       </div>
-
-      {/* Monthly Chart */}
-      <ErrorBoundary fallback={<ErrorFallback message="Error loading monthly data" />}>
-        <Card className="shadow-sm border-primary/10">
-          <CardHeader className="border-b border-border/40 pb-2">
-            <CardTitle>Monthly Budget vs Actual</CardTitle>
-            <CardDescription>Compare planned versus actual spending for current year</CardDescription>
-          </CardHeader>
-          <CardContent className="pt-4">
-            <MonthlyChart months={12} />
-          </CardContent>
-        </Card>
-      </ErrorBoundary>
     </div>
   );
 };
