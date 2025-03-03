@@ -9,7 +9,7 @@ import {
 } from 'recharts';
 import { Skeleton } from "@/components/ui/skeleton";
 
-const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8'];
+const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8', '#4B0082', '#FF1493', '#008B8B', '#8B4513', '#808000'];
 
 // Custom label that only shows percentage inside the pie slice
 const renderCustomizedLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, percent }: any) => {
@@ -39,22 +39,27 @@ export const InvestmentDistribution = () => {
   const pieData = investments?.map(inv => ({
     name: inv.name,
     value: inv.current_value
-  }));
+  }))
+  .sort((a, b) => b.value - a.value); // Sort by value descending
 
   if (isLoading) {
-    return <div className="flex items-center justify-center h-[250px]">
-      <Skeleton className="h-40 w-40 rounded-full" />
-    </div>;
+    return (
+      <div className="flex items-center justify-center h-[300px]">
+        <Skeleton className="h-[250px] w-[250px] rounded-full" />
+      </div>
+    );
   }
 
   if (!investments?.length) {
-    return <div className="flex items-center justify-center h-[250px] text-muted-foreground">
-      No investment data available
-    </div>;
+    return (
+      <div className="flex items-center justify-center h-[300px] text-muted-foreground">
+        No investment data available. Add some investments to see your portfolio distribution.
+      </div>
+    );
   }
 
   return (
-    <div className="h-[250px]">
+    <div className="h-[300px]">
       <ResponsiveContainer width="100%" height="100%">
         <PieChart>
           <Pie
@@ -62,7 +67,7 @@ export const InvestmentDistribution = () => {
             dataKey="value"
             nameKey="name"
             cx="50%"
-            cy="45%" // Adjusted to move chart a bit higher to make room for legend at bottom
+            cy="50%"
             outerRadius={80}
             labelLine={false}
             label={renderCustomizedLabel}
@@ -83,10 +88,6 @@ export const InvestmentDistribution = () => {
             layout="horizontal"
             verticalAlign="bottom"
             align="center"
-            wrapperStyle={{
-              paddingTop: '10px',
-              fontSize: '12px'
-            }}
           />
         </PieChart>
       </ResponsiveContainer>

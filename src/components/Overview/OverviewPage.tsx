@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import {
   Card,
   CardContent,
@@ -6,15 +6,16 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { BudgetTile } from './BudgetTile';
 import { InvestmentsTile } from './InvestmentsTile';
 import { ReservesTile } from './ReservesTile';
 import { MonthlyChart } from './MonthlyChart';
 import { CategoryBreakdown } from './CategoryBreakdown';
 import { useAuth } from '@/context/AuthContext';
 import { CalendarIcon, LayoutDashboard } from 'lucide-react';
-import { Button } from '@/components/ui/button';
 import { InvestmentDistribution } from './InvestmentDistribution';
+import { useInvestments } from '@/hooks/useInvestments';
+import { useReserves } from '@/hooks/useReserves';
+import { Skeleton } from '@/components/ui/skeleton';
 
 // Create a reusable error fallback component
 const ErrorFallback = ({ message }: { message: string }) => (
@@ -23,13 +24,50 @@ const ErrorFallback = ({ message }: { message: string }) => (
   </div>
 );
 
+// Total Assets component
+const TotalAssets = () => {
+  const { investments, isLoading: isInvestmentsLoading } = useInvestments();
+  const { reserves, isLoading: isReservesLoading } = useReserves();
+  
+  const isLoading = isInvestmentsLoading || isReservesLoading;
+  
+  const totalInvestments = investments?.reduce((sum, inv) => sum + inv.current_value, 0) || 0;
+  const totalReserves = reserves?.reduce((sum, reserve) => sum + reserve.current_amount, 0) || 0;
+  const totalAssets = totalInvestments + totalReserves;
+  
+  if (isLoading) {
+    return <Skeleton className="h-16 w-full" />;
+  }
+  
+  return (
+    <div className="flex flex-col space-y-4">
+      <div className="text-center">
+        <h3 className="text-3xl font-bold text-primary">
+          {totalAssets.toLocaleString('de-DE', { style: 'currency', currency: 'EUR' })}
+        </h3>
+        <p className="text-muted-foreground">Total Assets Value</p>
+      </div>
+      
+      <div className="flex justify-between text-center">
+        <div className="flex-1">
+          <p className="text-lg font-semibold">
+            {totalInvestments.toLocaleString('de-DE', { style: 'currency', currency: 'EUR' })}
+          </p>
+          <p className="text-sm text-muted-foreground">Investments</p>
+        </div>
+        <div className="flex-1">
+          <p className="text-lg font-semibold">
+            {totalReserves.toLocaleString('de-DE', { style: 'currency', currency: 'EUR' })}
+          </p>
+          <p className="text-sm text-muted-foreground">Reserves</p>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 export const OverviewPage: React.FC = () => {
   const { user } = useAuth();
-  const [selectedTimeRange, setSelectedTimeRange] = useState('month');
-  const [timeRangeParams, setTimeRangeParams] = useState({
-    months: 1,
-    label: 'Last Month'
-  });
   
   const today = new Date();
   const formattedDate = today.toLocaleDateString('en-GB', {
@@ -37,35 +75,6 @@ export const OverviewPage: React.FC = () => {
     month: 'long',
     year: 'numeric'
   });
-  
-  // Update time range parameters when selection changes
-  useEffect(() => {
-    switch (selectedTimeRange) {
-      case 'month':
-        setTimeRangeParams({
-          months: 1,
-          label: 'Last Month'
-        });
-        break;
-      case 'quarter':
-        setTimeRangeParams({
-          months: 3,
-          label: 'Last Quarter'
-        });
-        break;
-      case 'year':
-        setTimeRangeParams({
-          months: 12,
-          label: 'Last Year'
-        });
-        break;
-      default:
-        setTimeRangeParams({
-          months: 1,
-          label: 'Last Month'
-        });
-    }
-  }, [selectedTimeRange]);
   
   if (!user) {
     return <ErrorFallback message="Please log in to view this page" />;
@@ -85,40 +94,17 @@ export const OverviewPage: React.FC = () => {
               <CalendarIcon className="h-3 w-3" /> {formattedDate}
             </p>
           </div>
-          <div className="flex gap-2">
-            <Button 
-              size="sm" 
-              variant={selectedTimeRange === 'month' ? "default" : "outline"}
-              onClick={() => setSelectedTimeRange('month')}
-            >
-              Month
-            </Button>
-            <Button 
-              size="sm" 
-              variant={selectedTimeRange === 'quarter' ? "default" : "outline"}
-              onClick={() => setSelectedTimeRange('quarter')}
-            >
-              Quarter
-            </Button>
-            <Button 
-              size="sm" 
-              variant={selectedTimeRange === 'year' ? "default" : "outline"}
-              onClick={() => setSelectedTimeRange('year')}
-            >
-              Year
-            </Button>
-          </div>
         </div>
       </div>
 
-      {/* Total Budget Card */}
+      {/* Total Assets Card */}
       <Card className="w-full">
         <CardHeader className="pb-2">
-          <CardTitle>Total Budget</CardTitle>
-          <CardDescription>Data for {timeRangeParams.label}</CardDescription>
+          <CardTitle>Total Assets</CardTitle>
+          <CardDescription>Combined value of investments and reserves</CardDescription>
         </CardHeader>
         <CardContent>
-          <BudgetTile timeRange={timeRangeParams.months} />
+          <TotalAssets />
         </CardContent>
       </Card>
 
@@ -139,10 +125,10 @@ export const OverviewPage: React.FC = () => {
           <Card className="shadow-sm border-primary/10">
             <CardHeader className="border-b border-border/40 pb-2">
               <CardTitle>Category Breakdown</CardTitle>
-              <CardDescription>Expenses by category for {timeRangeParams.label}</CardDescription>
+              <CardDescription>Expenses by category</CardDescription>
             </CardHeader>
             <CardContent className="pt-4">
-              <CategoryBreakdown timeRange={timeRangeParams.months} />
+              <CategoryBreakdown timeRange={12} />
             </CardContent>
           </Card>
         </ErrorBoundary>
@@ -165,10 +151,10 @@ export const OverviewPage: React.FC = () => {
         <Card className="shadow-sm border-primary/10">
           <CardHeader className="border-b border-border/40 pb-2">
             <CardTitle>Monthly Budget vs Actual</CardTitle>
-            <CardDescription>Compare planned versus actual spending for {timeRangeParams.label}</CardDescription>
+            <CardDescription>Compare planned versus actual spending for current year</CardDescription>
           </CardHeader>
           <CardContent className="pt-4">
-            <MonthlyChart months={timeRangeParams.months} />
+            <MonthlyChart months={12} />
           </CardContent>
         </Card>
       </ErrorBoundary>
