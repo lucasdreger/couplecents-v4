@@ -1,4 +1,3 @@
-
 import React from 'react';
 import {
   Card,
@@ -9,6 +8,7 @@ import {
 } from "@/components/ui/card";
 import { InvestmentsTile } from './InvestmentsTile';
 import { ReservesTile } from './ReservesTile';
+import { MonthlyChart } from './MonthlyChart';
 import { CategoryBreakdown } from './CategoryBreakdown';
 import { useAuth } from '@/context/AuthContext';
 import { CalendarIcon, LayoutDashboard, TrendingUp } from 'lucide-react';
@@ -185,6 +185,27 @@ export const OverviewPage: React.FC = () => {
           </Card>
         </ErrorBoundary>
       </div>
+      
+      {/* Monthly Budget vs Actual Chart */}
+      <ErrorBoundary fallback={<ErrorFallback message="Error loading monthly data" />}>
+        <Card className="shadow-sm border-primary/10 relative overflow-hidden">
+          <CardHeader className="border-b border-border/40 pb-2">
+            <CardTitle>Monthly Budget vs Actual</CardTitle>
+            <CardDescription>Compare planned versus actual spending for current year</CardDescription>
+          </CardHeader>
+          <CardContent className="pt-4">
+            <MonthlyChart months={12} />
+          </CardContent>
+          <div className="absolute inset-0 -z-0">
+            <ProgressiveBlur 
+              direction="top" 
+              blurLayers={6} 
+              blurIntensity={0.1} 
+              className="h-full w-full opacity-50"
+            />
+          </div>
+        </Card>
+      </ErrorBoundary>
     </div>
   );
 };
