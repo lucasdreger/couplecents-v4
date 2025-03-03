@@ -49,28 +49,35 @@ export const deleteVariableExpense = async (id: string) => {
 
 // Fixed Expenses
 export const getFixedExpenses = async (year: number, month: number) => {
+  // Get all fixed expenses without filtering by status
   const { data, error } = await supabase
     .from('fixed_expenses')
     .select(`
       *,
-      categories (name),
-      monthly_fixed_expense_status!left (
-        completed,
-        year,
-        month
-      )
+      categories (name)
     `)
     .order('description');
 
-  // Filter status for current year/month
-  const processedData = data?.map(expense => ({
+  if (error) return { data: null, error };
+
+  // Get status records for the current month/year in a separate query
+  const { data: statusData, error: statusError } = await supabase
+    .from('monthly_fixed_expense_status')
+    .select('*')
+    .eq('year', year)
+    .eq('month', month);
+    
+  if (statusError) return { data: null, error: statusError };
+  
+  // Merge status data with expenses
+  const processedData = data.map(expense => ({
     ...expense,
-    status: expense.monthly_fixed_expense_status?.filter(
-      status => status.year === year && status.month === month
-    ) || []
+    status: statusData
+      ?.filter(status => status.fixed_expense_id === expense.id) 
+      || []
   }));
 
-  return { data: processedData, error };
+  return { data: processedData, error: null };
 };
 
 export const updateFixedExpenseStatus = async (

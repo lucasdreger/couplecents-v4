@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Card,
   CardContent,
@@ -26,12 +26,46 @@ const ErrorFallback = ({ message }: { message: string }) => (
 export const OverviewPage: React.FC = () => {
   const { user } = useAuth();
   const [selectedTimeRange, setSelectedTimeRange] = useState('month');
+  const [timeRangeParams, setTimeRangeParams] = useState({
+    months: 1,
+    label: 'Last Month'
+  });
+  
   const today = new Date();
   const formattedDate = today.toLocaleDateString('en-GB', {
     day: 'numeric',
     month: 'long',
     year: 'numeric'
   });
+  
+  // Update time range parameters when selection changes
+  useEffect(() => {
+    switch (selectedTimeRange) {
+      case 'month':
+        setTimeRangeParams({
+          months: 1,
+          label: 'Last Month'
+        });
+        break;
+      case 'quarter':
+        setTimeRangeParams({
+          months: 3,
+          label: 'Last Quarter'
+        });
+        break;
+      case 'year':
+        setTimeRangeParams({
+          months: 12,
+          label: 'Last Year'
+        });
+        break;
+      default:
+        setTimeRangeParams({
+          months: 1,
+          label: 'Last Month'
+        });
+    }
+  }, [selectedTimeRange]);
   
   if (!user) {
     return <ErrorFallback message="Please log in to view this page" />;
@@ -81,24 +115,21 @@ export const OverviewPage: React.FC = () => {
       <Card className="w-full">
         <CardHeader className="pb-2">
           <CardTitle>Total Budget</CardTitle>
+          <CardDescription>Data for {timeRangeParams.label}</CardDescription>
         </CardHeader>
         <CardContent>
-          <BudgetTile />
+          <BudgetTile timeRange={timeRangeParams.months} />
         </CardContent>
       </Card>
 
       {/* Investments and Reserves Row */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <ErrorBoundary fallback={<ErrorFallback message="Error loading investments" />}>
-          <div className="bg-card rounded-lg border shadow-sm">
-            <InvestmentsTile />
-          </div>
+          <InvestmentsTile />
         </ErrorBoundary>
         
         <ErrorBoundary fallback={<ErrorFallback message="Error loading reserves" />}>
-          <div className="bg-card rounded-lg border shadow-sm">
-            <ReservesTile />
-          </div>
+          <ReservesTile />
         </ErrorBoundary>
       </div>
 
@@ -108,10 +139,10 @@ export const OverviewPage: React.FC = () => {
           <Card className="shadow-sm border-primary/10">
             <CardHeader className="border-b border-border/40 pb-2">
               <CardTitle>Category Breakdown</CardTitle>
-              <CardDescription>Expenses by category</CardDescription>
+              <CardDescription>Expenses by category for {timeRangeParams.label}</CardDescription>
             </CardHeader>
             <CardContent className="pt-4">
-              <CategoryBreakdown />
+              <CategoryBreakdown timeRange={timeRangeParams.months} />
             </CardContent>
           </Card>
         </ErrorBoundary>
@@ -134,10 +165,10 @@ export const OverviewPage: React.FC = () => {
         <Card className="shadow-sm border-primary/10">
           <CardHeader className="border-b border-border/40 pb-2">
             <CardTitle>Monthly Budget vs Actual</CardTitle>
-            <CardDescription>Compare planned versus actual spending</CardDescription>
+            <CardDescription>Compare planned versus actual spending for {timeRangeParams.label}</CardDescription>
           </CardHeader>
           <CardContent className="pt-4">
-            <MonthlyChart />
+            <MonthlyChart months={timeRangeParams.months} />
           </CardContent>
         </Card>
       </ErrorBoundary>

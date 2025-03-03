@@ -22,6 +22,10 @@ interface VariableExpenseRow {
   amount: number;
 }
 
+interface Props {
+  timeRange?: number; // Number of months to include (default: 1)
+}
+
 // Custom label that only shows percentage inside the pie slice
 const renderCustomizedLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, percent }: any) => {
   const RADIAN = Math.PI / 180;
@@ -44,23 +48,41 @@ const renderCustomizedLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, per
   );
 };
 
-export const CategoryBreakdown = () => {
+export const CategoryBreakdown = ({ timeRange = 1 }: Props) => {
   const { data: categoryData, isLoading } = useQuery({
-    queryKey: ['categoryBreakdown'],
+    queryKey: ['categoryBreakdown', timeRange],
     queryFn: async () => {
       // Get current date info
       const today = new Date();
       const currentYear = today.getFullYear();
       const currentMonth = today.getMonth() + 1;
       
-      // Query for the last 6 months of data instead of only current month
-      const { data, error } = await supabase
+      // Calculate the start date based on timeRange
+      const startDate = new Date();
+      startDate.setMonth(startDate.getMonth() - timeRange + 1);
+      const startYear = startDate.getFullYear();
+      const startMonth = startDate.getMonth() + 1;
+      
+      let query = supabase
         .from('variable_expenses')
         .select(`
           category:categories (name),
           amount
-        `)
-        .or(`year.gt.${currentYear-1}, and(year.eq.${currentYear-1}, month.gte.${currentMonth})`); // Past 12 months
+        `);
+      
+      // Filter based on the time range
+      if (startYear === currentYear) {
+        // Same year, just filter by months
+        query = query.eq('year', currentYear).gte('month', startMonth);
+      } else {
+        // Multiple years
+        query = query.or(`year.gt.${startYear}, and(year.eq.${startYear}, month.gte.${startMonth})`);
+      }
+      
+      // Add current year/month upper limit
+      query = query.lte('year', currentYear).lte('month', currentMonth);
+      
+      const { data, error } = await query;
       
       if (error) {
         console.error("Error fetching category data:", error);

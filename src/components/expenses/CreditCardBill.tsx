@@ -71,19 +71,30 @@ export const CreditCardBill = ({ year, month }: Props) => {
       if (incomeError) throw incomeError
       
       // Get Lucas fixed expenses
-      const { data: expensesData, error: expensesError } = await supabase
+      const { data: fixedExpensesData, error: fixedExpensesError } = await supabase
         .from('fixed_expenses')
-        .select('amount, owner')
+        .select('estimated_amount, owner')
         .eq('owner', 'Lucas')
       
-      if (expensesError) throw expensesError
+      if (fixedExpensesError) throw fixedExpensesError
+
+      // Get Lucas variable expenses
+      const { data: variableExpensesData, error: variableExpensesError } = await supabase
+        .from('variable_expenses')
+        .select('amount')
+        .eq('year', year)
+        .eq('month', month)
+        .eq('created_by', 'Lucas')
+      
+      if (variableExpensesError) throw variableExpensesError
       
       return {
         income: incomeData ? {
           main: incomeData.lucas_main_income || 0,
           other: incomeData.lucas_other_income || 0
         } : { main: 0, other: 0 },
-        expenses: expensesData || []
+        fixedExpenses: fixedExpensesData || [],
+        variableExpenses: variableExpensesData || []
       }
     }
   })
@@ -114,45 +125,93 @@ export const CreditCardBill = ({ year, month }: Props) => {
     }
   })
   
+  // Format number to string with comma as decimal separator
+  const formatValue = (value: number | null): string => {
+    if (value === null || value === undefined) return '0,00';
+    return value.toFixed(2).replace('.', ',');
+  };
+  
+  // Parse string value to number
+  const parseValue = (value: string): number => {
+    const cleanValue = value.replace(/[€\s]/g, '').replace(',', '.');
+    const number = parseFloat(cleanValue);
+    return isNaN(number) ? 0 : Number(number.toFixed(2));
+  };
+  
   // Update local state when data changes
   useEffect(() => {
     if (creditCardBill) {
-      setAmount(creditCardBill.amount?.toString() || '');
+      setAmount(formatValue(creditCardBill.amount));
       setTransferCompleted(creditCardBill.transfer_completed || false);
       setTransferDate(creditCardBill.transfer_completed_at);
     }
   }, [creditCardBill]);
-
+  
   // Calculate transfer amount when data changes
   useEffect(() => {
     if (creditCardBill && lucasFinancials) {
+      // Calculate Lucas's total income
       const totalLucasIncome = lucasFinancials.income.main + lucasFinancials.income.other;
-      const totalLucasExpenses = lucasFinancials.expenses.reduce((sum, expense) => sum + Number(expense.amount), 0);
-      const billAmount = Number(amount) || 0;
       
+      // Calculate Lucas's total fixed expenses
+      const totalLucasFixedExpenses = lucasFinancials.fixedExpenses.reduce(
+        (sum, expense) => sum + Number(expense.estimated_amount || 0), 0
+      );
+      
+      // Calculate Lucas's total variable expenses
+      const totalLucasVariableExpenses = lucasFinancials.variableExpenses.reduce(
+        (sum, expense) => sum + Number(expense.amount || 0), 0
+      );
+      
+      // Parse bill amount from string to number
+      const billAmount = parseValue(amount);
+      
+      // Calculate remaining amount after all expenses including credit card bill
+      const totalLucasExpenses = totalLucasFixedExpenses + totalLucasVariableExpenses;
       const remainingAmount = totalLucasIncome - totalLucasExpenses - billAmount;
       
-      if (remainingAmount < 300) {
+      // Set minimum threshold (300 EUR)
+      const minimumThreshold = 300;
+      
+      if (remainingAmount < minimumThreshold) {
+        // Transfer needed
         setTransferNeeded(true);
-        setTransferAmount(Math.ceil(300 - remainingAmount));
+        setTransferAmount(Math.ceil(minimumThreshold - remainingAmount));
       } else {
+        // No transfer needed
         setTransferNeeded(false);
         setTransferAmount(null);
       }
+      
+      console.log({
+        income: totalLucasIncome,
+        fixedExpenses: totalLucasFixedExpenses,
+        variableExpenses: totalLucasVariableExpenses,
+        billAmount,
+        remainingAmount,
+        transferNeeded: remainingAmount < minimumThreshold,
+        transferAmount: Math.ceil(minimumThreshold - remainingAmount),
+      });
     }
   }, [creditCardBill, lucasFinancials, amount]);
-
+  
   const handleAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value.replace(/[^0-9,]/g, '').replace(',', '.');
+    // Only allow numbers and comma
+    const value = e.target.value.replace(/[^0-9,]/g, '');
     setAmount(value);
-    
-    // Only update if we have a valid number
-    const numericValue = parseFloat(value);
-    if (!isNaN(numericValue)) {
-      updateCreditCardBill({ amount: numericValue });
-    }
   }
-
+  
+  const handleAmountBlur = (e: React.FocusEvent<HTMLInputElement>) => {
+    // Format value on blur
+    const numericValue = parseValue(e.target.value);
+    
+    // Update formatted value
+    setAmount(formatValue(numericValue));
+    
+    // Save to database
+    updateCreditCardBill({ amount: numericValue });
+  }
+  
   const handleTransferStatusChange = (checked: boolean) => {
     setTransferCompleted(checked)
     
@@ -177,6 +236,7 @@ export const CreditCardBill = ({ year, month }: Props) => {
               type="text"
               value={amount}
               onChange={handleAmountChange}
+              onBlur={handleAmountBlur}
               className="text-right pl-7"
               placeholder="0,00"
             />

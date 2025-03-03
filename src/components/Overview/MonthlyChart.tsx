@@ -1,83 +1,112 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabaseClient';
-import { formatEuro } from '@/lib/utils';
-import {
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  ResponsiveContainer,
-  Tooltip,
-  Legend,
-  ReferenceLine,
+import { 
+  BarChart, 
+  Bar, 
+  XAxis, 
+  YAxis, 
+  CartesianGrid, 
+  Tooltip, 
+  Legend, 
+  ResponsiveContainer 
 } from 'recharts';
-import { Skeleton } from '@/components/ui/skeleton';
+import { Skeleton } from "@/components/ui/skeleton";
 
-interface ChartData {
-  name: string;
-  planned: number;
-  actual: number;
-  month: number;
-  year: number;
+interface Props {
+  months?: number; // Number of months to display (default: 6)
 }
 
-export const MonthlyChart = () => {
-  const { data: monthlyData, isLoading, isError } = useQuery({
-    queryKey: ['monthlyExpenses'],
-    queryFn: async (): Promise<ChartData[]> => {
-      const { data, error } = await supabase
-        .from('monthly_details')
-        .select('year, month, planned_amount, actual_amount')
-        .order('year, month');
+export const MonthlyChart = ({ months = 6 }: Props) => {
+  const { data: monthlyData, isLoading } = useQuery({
+    queryKey: ['monthly-expenses-chart', months],
+    queryFn: async () => {
+      // Get current date
+      const today = new Date();
+      const currentYear = today.getFullYear();
+      const currentMonth = today.getMonth() + 1;
       
-      if (error) {
-        console.error('Error fetching monthly details:', error);
-        throw error;
+      // Calculate start date based on months parameter
+      const startDate = new Date();
+      startDate.setMonth(startDate.getMonth() - months + 1);
+      const startYear = startDate.getFullYear();
+      const startMonth = startDate.getMonth() + 1;
+      
+      // Get monthly expenses data
+      let query = supabase
+        .from('monthly_expenses')
+        .select('*');
+      
+      // Filter based on the time range
+      if (startYear === currentYear) {
+        // Same year, just filter by months
+        query = query.eq('year', currentYear).gte('month', startMonth);
+      } else {
+        // Multiple years
+        query = query.or(`year.gt.${startYear}, and(year.eq.${startYear}, month.gte.${startMonth})`);
       }
-
-      if (!data || data.length === 0) {
-        return [];
+      
+      // Add current year/month upper limit
+      query = query.lte('year', currentYear).lte('month', currentMonth);
+      
+      const { data: expensesData, error: expensesError } = await query.order('year').order('month');
+      
+      if (expensesError) throw expensesError;
+      
+      // Get monthly income data with same filters
+      let incomeQuery = supabase
+        .from('monthly_income')
+        .select('*');
+      
+      if (startYear === currentYear) {
+        incomeQuery = incomeQuery.eq('year', currentYear).gte('month', startMonth);
+      } else {
+        incomeQuery = incomeQuery.or(`year.gt.${startYear}, and(year.eq.${startYear}, month.gte.${startMonth})`);
       }
-
-      // Transform data for the chart
-      return data.map(item => {
-        const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-        const monthIndex = (item.month || 1) - 1; // Ensure it's within bounds
-        const monthName = monthNames[monthIndex >= 0 && monthIndex < 12 ? monthIndex : 0];
+      
+      incomeQuery = incomeQuery.lte('year', currentYear).lte('month', currentMonth);
+      
+      const { data: incomeData, error: incomeError } = await incomeQuery.order('year').order('month');
+      
+      if (incomeError) throw incomeError;
+      
+      // Combine and format the data
+      return incomeData?.map(incomeItem => {
+        // Find matching expense record
+        const matchingExpense = expensesData?.find(exp => 
+          exp.year === incomeItem.year && exp.month === incomeItem.month
+        );
+        
+        const totalIncome = Number(incomeItem.lucas_main_income || 0) + 
+                            Number(incomeItem.lucas_other_income || 0) + 
+                            Number(incomeItem.camila_main_income || 0) + 
+                            Number(incomeItem.camila_other_income || 0);
+        
+        const totalExpense = Number(matchingExpense?.total_expenses || 0);
+        const savings = totalIncome - totalExpense;
         
         return {
-          name: `${monthName} ${item.year}`,
-          planned: Number(item.planned_amount || 0),
-          actual: Number(item.actual_amount || 0),
-          month: item.month,
-          year: item.year
+          name: `${incomeItem.month}/${incomeItem.year}`,
+          Income: totalIncome,
+          Expenses: totalExpense,
+          Savings: savings,
+          SavingsRate: totalIncome > 0 ? (savings / totalIncome) * 100 : 0
         };
-      });
+      }) || [];
     }
   });
 
   if (isLoading) {
     return (
-      <div className="h-[300px] flex items-center justify-center">
-        <Skeleton className="h-60 w-full" />
-      </div>
-    );
-  }
-
-  if (isError) {
-    return (
-      <div className="h-[300px] flex items-center justify-center text-red-500">
-        Error loading chart data. Please try again later.
+      <div className="w-full h-[300px] flex items-center justify-center">
+        <Skeleton className="h-[250px] w-full" />
       </div>
     );
   }
 
   if (!monthlyData?.length) {
     return (
-      <div className="h-[300px] flex flex-col items-center justify-center text-muted-foreground">
-        <p>No monthly data available</p>
-        <p className="text-sm mt-2">Add monthly budgets to see comparisons</p>
+      <div className="flex items-center justify-center h-[300px] text-muted-foreground">
+        No monthly data available.
       </div>
     );
   }
@@ -85,44 +114,21 @@ export const MonthlyChart = () => {
   return (
     <div className="h-[300px]">
       <ResponsiveContainer width="100%" height="100%">
-        <BarChart 
-          data={monthlyData}
-          margin={{ top: 10, right: 30, left: 20, bottom: 5 }}
-        >
-          <CartesianGrid strokeDasharray="3 3" vertical={false} opacity={0.5} />
-          <XAxis 
-            dataKey="name" 
-            axisLine={false}
-            tickLine={false}
-          />
-          <YAxis 
-            axisLine={false}
-            tickLine={false}
-            tickFormatter={(value) => value.toLocaleString('de-DE', { style: 'currency', currency: 'EUR' })}
-          />
+        <BarChart data={monthlyData}>
+          <CartesianGrid strokeDasharray="3 3" />
+          <XAxis dataKey="name" />
+          <YAxis />
           <Tooltip 
-            formatter={(value: number) => [value.toLocaleString('de-DE', { style: 'currency', currency: 'EUR' }), undefined]}
-            labelFormatter={(label) => label}
-            contentStyle={{
-              borderRadius: '8px',
-              border: '1px solid #e2e8f0',
-              boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
+            formatter={(value: number, name: string) => {
+              if (name === "SavingsRate") {
+                return [`${value.toFixed(1)}%`, name];
+              }
+              return [value.toLocaleString('de-DE', { style: 'currency', currency: 'EUR' }), name];
             }}
           />
-          <Legend wrapperStyle={{ paddingTop: '10px' }} />
-          <ReferenceLine y={0} stroke="#e2e8f0" />
-          <Bar 
-            dataKey="planned" 
-            name="Planned" 
-            fill="#8884d8" 
-            radius={[4, 4, 0, 0]}
-          />
-          <Bar 
-            dataKey="actual" 
-            name="Actual" 
-            fill="#82ca9d" 
-            radius={[4, 4, 0, 0]}
-          />
+          <Legend />
+          <Bar dataKey="Income" fill="#8884d8" />
+          <Bar dataKey="Expenses" fill="#82ca9d" />
         </BarChart>
       </ResponsiveContainer>
     </div>

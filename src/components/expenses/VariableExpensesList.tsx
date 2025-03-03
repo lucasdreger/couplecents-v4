@@ -1,10 +1,10 @@
 import { useState } from 'react'
-import { Edit, Trash } from 'lucide-react'
+import { Edit, Trash, ArrowUp, ArrowDown } from 'lucide-react'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Button } from "@/components/ui/button"
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog"
 import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { getMonthlyExpenses, updateVariableExpense, deleteVariableExpense } from '@/lib/supabase'
+import { getMonthlyExpenses, deleteVariableExpense } from '@/lib/supabase'
 import { queryKeys } from '@/lib/queries'
 import { toast } from '@/hooks/use-toast'
 import type { VariableExpense } from '@/types/database.types'
@@ -17,17 +17,25 @@ interface Props {
   onDelete?: (expense: VariableExpense) => void
 }
 
+type SortField = 'date' | 'amount' | 'category' | 'description';
+type SortOrder = 'asc' | 'desc';
+
 export const VariableExpensesList = ({ year, month, onEdit, onDelete }: Props) => {
   const queryClient = useQueryClient()
   const [expenseToDelete, setExpenseToDelete] = useState<VariableExpense | null>(null)
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
+  const [sortBy, setSortBy] = useState<SortField>('date');
+  const [sortOrder, setSortOrder] = useState<SortOrder>('desc');
 
   // Fetch expenses if year and month are provided
-  const { data: expenses, isLoading } = useQuery({
+  const { data: expensesResponse, isLoading } = useQuery({
     queryKey: queryKeys.expenses(year || 0, month || 0),
     queryFn: () => getMonthlyExpenses(year || 0, month || 0),
     enabled: !!year && !!month,
-  })
+  });
+
+  // Extract expenses from the response
+  const expenses = expensesResponse?.data || [];
 
   // Handle delete confirmation
   const handleDelete = async () => {
@@ -58,12 +66,59 @@ export const VariableExpensesList = ({ year, month, onEdit, onDelete }: Props) =
       })
     }
   }
+
+  const sortExpenses = (expenses: VariableExpense[]) => {
+    return [...expenses].sort((a, b) => {
+      if (sortBy === 'date') {
+        return sortOrder === 'asc' 
+          ? new Date(a.date).getTime() - new Date(b.date).getTime()
+          : new Date(b.date).getTime() - new Date(a.date).getTime();
+      }
+      if (sortBy === 'amount') {
+        return sortOrder === 'asc' 
+          ? a.amount - b.amount
+          : b.amount - a.amount;
+      }
+      if (sortBy === 'category') {
+        const catA = a.category?.name || '';
+        const catB = b.category?.name || '';
+        return sortOrder === 'asc'
+          ? catA.localeCompare(catB)
+          : catB.localeCompare(catA);
+      }
+      if (sortBy === 'description') {
+        return sortOrder === 'asc'
+          ? a.description.localeCompare(b.description)
+          : b.description.localeCompare(a.description);
+      }
+      return 0;
+    });
+  };
+
+  const handleSortChange = (field: SortField) => {
+    if (field === sortBy) {
+      // Toggle order if clicking the same field
+      setSortOrder(current => current === 'asc' ? 'desc' : 'asc');
+    } else {
+      // Set new field and default to descending order
+      setSortBy(field);
+      setSortOrder('desc');
+    }
+  };
+  
+  // Get the appropriate sort icon for a column
+  const getSortIcon = (field: SortField) => {
+    if (field === sortBy) {
+      return sortOrder === 'asc' ? <ArrowUp className="ml-2 h-4 w-4" /> : <ArrowDown className="ml-2 h-4 w-4" />;
+    }
+    return null;
+  };
   
   if (isLoading) {
     return <div className="text-center py-4">Loading expenses...</div>
   }
   
-  if (!expenses?.data?.length) {
+  if (!expenses.length) {
     return <div className="text-center py-4 text-muted-foreground">No expenses found for this month.</div>
   }
 
@@ -72,15 +127,31 @@ export const VariableExpensesList = ({ year, month, onEdit, onDelete }: Props) =
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead>Date</TableHead>
-            <TableHead>Description</TableHead>
-            <TableHead>Category</TableHead>
-            <TableHead className="text-right">Amount</TableHead>
-            <TableHead>Actions</TableHead>
+            <TableHead onClick={() => handleSortChange('date')} className="cursor-pointer">
+              <div className="flex items-center">
+                Date {getSortIcon('date')}
+              </div>
+            </TableHead>
+            <TableHead onClick={() => handleSortChange('description')} className="cursor-pointer">
+              <div className="flex items-center">
+                Description {getSortIcon('description')}
+              </div>
+            </TableHead>
+            <TableHead onClick={() => handleSortChange('category')} className="cursor-pointer">
+              <div className="flex items-center">
+                Category {getSortIcon('category')}
+              </div>
+            </TableHead>
+            <TableHead onClick={() => handleSortChange('amount')} className="cursor-pointer text-right">
+              <div className="flex items-center justify-end">
+                Amount {getSortIcon('amount')}
+              </div>
+            </TableHead>
+            <TableHead className="text-right">Actions</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
-          {expenses.data.map((expense) => (
+          {sortExpenses(expenses).map((expense) => (
             <TableRow key={expense.id}>
               <TableCell>{new Date(expense.date).toLocaleDateString()}</TableCell>
               <TableCell>{expense.description}</TableCell>
