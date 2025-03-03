@@ -24,6 +24,7 @@ export const ReservesTile = () => {
   const { reserves, loading, updateValue } = useReserves();
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editValue, setEditValue] = useState<string>('');
+  const [hoveredId, setHoveredId] = useState<string | null>(null);
   
   // Format date as DD/MM/YYYY
   const formatDate = (dateString: string) => {
@@ -72,7 +73,9 @@ export const ReservesTile = () => {
             {reservesArray.map(reserve => (
               <Card 
                 key={reserve.id} 
-                className="border bg-card/50 hover:bg-accent/10 transition-all duration-200 group"
+                className={`border bg-card/50 transition-all duration-200 group ${hoveredId === reserve.id ? 'bg-accent/10 shadow-sm' : ''}`}
+                onMouseEnter={() => setHoveredId(reserve.id)}
+                onMouseLeave={() => setHoveredId(null)}
               >
                 <CardContent className="p-3">
                   <div className="space-y-2">
@@ -86,13 +89,17 @@ export const ReservesTile = () => {
                       
                       {editingId === reserve.id ? (
                         <div className="flex items-center space-x-2">
-                          <Input
-                            type="text"
-                            value={editValue}
-                            onChange={(e) => setEditValue(e.target.value)}
-                            className="w-24 text-right"
-                            placeholder="0,00"
-                          />
+                          <div className="relative">
+                            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">€</span>
+                            <Input
+                              type="text"
+                              value={editValue}
+                              onChange={(e) => setEditValue(e.target.value)}
+                              className="w-32 text-right pl-7"
+                              placeholder="0,00"
+                              autoFocus
+                            />
+                          </div>
                           <Button 
                             size="icon" 
                             variant="ghost" 

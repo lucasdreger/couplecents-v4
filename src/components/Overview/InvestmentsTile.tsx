@@ -30,6 +30,7 @@ export const InvestmentsTile = () => {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editValue, setEditValue] = useState<string>('');
   const [currentInvestment, setCurrentInvestment] = useState<Investment | null>(null);
+  const [hoveredId, setHoveredId] = useState<string | null>(null);
   
   const handleEdit = (investment: Investment) => {
     setEditingId(investment.id);
@@ -87,7 +88,9 @@ export const InvestmentsTile = () => {
             {investments.map((investment: Investment) => (
               <Card 
                 key={investment.id} 
-                className="border bg-card/50 hover:bg-accent/10 transition-all duration-200 group"
+                className={`border bg-card/50 transition-all duration-200 group ${hoveredId === investment.id ? 'bg-accent/10 shadow-sm' : ''}`}
+                onMouseEnter={() => setHoveredId(investment.id)}
+                onMouseLeave={() => setHoveredId(null)}
               >
                 <CardContent className="p-3">
                   <div className="flex items-center justify-between">
@@ -100,13 +103,17 @@ export const InvestmentsTile = () => {
                     
                     {editingId === investment.id ? (
                       <div className="flex items-center space-x-2">
-                        <Input
-                          type="text"
-                          value={editValue}
-                          onChange={(e) => setEditValue(e.target.value)}
-                          className="w-24 text-right"
-                          placeholder="0,00"
-                        />
+                        <div className="relative">
+                          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">€</span>
+                          <Input
+                            type="text"
+                            value={editValue}
+                            onChange={(e) => setEditValue(e.target.value)}
+                            className="w-32 text-right pl-7"
+                            placeholder="0,00"
+                            autoFocus
+                          />
+                        </div>
                         <Button 
                           size="icon" 
                           variant="ghost" 

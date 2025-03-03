@@ -85,7 +85,9 @@ export const CreditCardBill = ({ year, month }: Props) => {
         } : { main: 0, other: 0 },
         fixedExpenses: fixedExpensesData || []
       }
-    }
+    },
+    // Enable refetching when the data is stale
+    staleTime: 1000, // 1 second
   })
   
   // Update credit card bill
@@ -135,6 +137,30 @@ export const CreditCardBill = ({ year, month }: Props) => {
       setTransferDate(creditCardBill.transfer_completed_at);
     }
   }, [creditCardBill]);
+  
+  // Add a subscription to invalidate lucas-financials query when income is updated
+  useEffect(() => {
+    const incomeSubscription = supabase
+      .channel('monthly_income_changes')
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'monthly_income',
+          filter: `year=eq.${year} AND month=eq.${month}`
+        },
+        () => {
+          // Invalidate the lucas-financials query to trigger a refetch
+          queryClient.invalidateQueries({ queryKey: ['lucas-financials', year, month] });
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(incomeSubscription);
+    };
+  }, [year, month, queryClient]);
   
   // Calculate transfer amount when data changes
   useEffect(() => {
@@ -230,7 +256,6 @@ export const CreditCardBill = ({ year, month }: Props) => {
           </div>
         </div>
       </div>
-
       {/* Always show transfer status */}
       <div className="flex items-center space-x-2 pt-2">
         <Checkbox 
@@ -245,7 +270,6 @@ export const CreditCardBill = ({ year, month }: Props) => {
           Credit card bill paid
         </label>
       </div>
-
       {/* Transfer messages */}
       {transferNeeded && transferAmount && !transferCompleted && (
         <Alert className="bg-amber-50 border-amber-200">
