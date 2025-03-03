@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import { LayoutDashboard, CalendarIcon } from "lucide-react";
 import {
   Card,
   CardContent,
@@ -7,16 +6,15 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { BudgetTile } from './BudgetTile';
 import { InvestmentsTile } from './InvestmentsTile';
 import { ReservesTile } from './ReservesTile';
 import { MonthlyChart } from './MonthlyChart';
 import { CategoryBreakdown } from './CategoryBreakdown';
-import { InvestmentDistribution } from './InvestmentDistribution';
 import { useAuth } from '@/context/AuthContext';
+import { CalendarIcon, LayoutDashboard } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { useInvestments } from '@/hooks/useInvestments';
-import { useReserves } from '@/hooks/useReserves';
-import { Skeleton } from '@/components/ui/skeleton';
+import { InvestmentDistribution } from './InvestmentDistribution';
 
 // Create a reusable error fallback component
 const ErrorFallback = ({ message }: { message: string }) => (
@@ -24,83 +22,6 @@ const ErrorFallback = ({ message }: { message: string }) => (
     {message}
   </div>
 );
-
-// New component for displaying the Total Assets Summary
-const TotalAssetsSummary = () => {
-  const { investments, isLoading: investmentsLoading } = useInvestments();
-  const { reserves, loading: reservesLoading } = useReserves();
-  
-  const isLoading = investmentsLoading || reservesLoading;
-  
-  // Calculate total investments
-  const totalInvestments = Array.isArray(investments) 
-    ? investments.reduce((sum, inv) => sum + (inv.current_value || 0), 0) 
-    : 0;
-  
-  // Calculate total reserves
-  const totalReserves = Array.isArray(reserves) 
-    ? reserves.reduce((sum, res) => sum + (res.current_value || 0), 0) 
-    : 0;
-  
-  // Calculate total assets
-  const totalAssets = totalInvestments + totalReserves;
-  
-  if (isLoading) {
-    return (
-      <Card className="bg-white/50 backdrop-blur-sm border-primary/5">
-        <CardHeader className="pb-2">
-          <CardTitle className="flex items-center justify-between">
-            <span>Total Assets</span>
-            <Skeleton className="h-6 w-24" />
-          </CardTitle>
-          <CardDescription>Sum of all investments and reserves</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-2">
-            <div className="flex justify-between">
-              <span className="text-muted-foreground">Investments</span>
-              <Skeleton className="h-4 w-20" />
-            </div>
-            <div className="flex justify-between">
-              <span className="text-muted-foreground">Reserves</span>
-              <Skeleton className="h-4 w-20" />
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-    );
-  }
-  
-  return (
-    <Card className="bg-white/50 backdrop-blur-sm border-primary/5">
-      <CardHeader className="pb-2">
-        <CardTitle className="flex items-center justify-between">
-          <span>Total Assets</span>
-          <span className="text-xl font-bold text-primary">
-            {totalAssets.toLocaleString('de-DE', { style: 'currency', currency: 'EUR' })}
-          </span>
-        </CardTitle>
-        <CardDescription>Sum of all investments and reserves</CardDescription>
-      </CardHeader>
-      <CardContent>
-        <div className="space-y-2">
-          <div className="flex justify-between">
-            <span className="text-muted-foreground">Investments</span>
-            <span className="font-medium">
-              {totalInvestments.toLocaleString('de-DE', { style: 'currency', currency: 'EUR' })}
-            </span>
-          </div>
-          <div className="flex justify-between">
-            <span className="text-muted-foreground">Reserves</span>
-            <span className="font-medium">
-              {totalReserves.toLocaleString('de-DE', { style: 'currency', currency: 'EUR' })}
-            </span>
-          </div>
-        </div>
-      </CardContent>
-    </Card>
-  );
-};
 
 export const OverviewPage: React.FC = () => {
   const { user } = useAuth();
@@ -156,35 +77,33 @@ export const OverviewPage: React.FC = () => {
         </div>
       </div>
 
-      {/* Total Assets Summary */}
-      <ErrorBoundary fallback={<ErrorFallback message="Error loading assets data" />}>
-        <TotalAssetsSummary />
-      </ErrorBoundary>
+      {/* Total Budget Card */}
+      <Card className="w-full">
+        <CardHeader className="pb-2">
+          <CardTitle>Total Budget</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <BudgetTile />
+        </CardContent>
+      </Card>
 
       {/* Investments and Reserves Row */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle>Investments</CardTitle>
-          </CardHeader>
-          <CardContent>
+        <ErrorBoundary fallback={<ErrorFallback message="Error loading investments" />}>
+          <div className="bg-card rounded-lg border shadow-sm">
             <InvestmentsTile />
-          </CardContent>
-        </Card>
+          </div>
+        </ErrorBoundary>
         
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle>Reserves</CardTitle>
-          </CardHeader>
-          <CardContent>
+        <ErrorBoundary fallback={<ErrorFallback message="Error loading reserves" />}>
+          <div className="bg-card rounded-lg border shadow-sm">
             <ReservesTile />
-          </CardContent>
-        </Card>
+          </div>
+        </ErrorBoundary>
       </div>
 
-      {/* Charts Row */}
+      {/* Category and Investment Distribution Row */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {/* Category Breakdown */}
         <ErrorBoundary fallback={<ErrorFallback message="Error loading categories" />}>
           <Card className="shadow-sm border-primary/10">
             <CardHeader className="border-b border-border/40 pb-2">
@@ -197,7 +116,6 @@ export const OverviewPage: React.FC = () => {
           </Card>
         </ErrorBoundary>
 
-        {/* Investment Distribution */}
         <ErrorBoundary fallback={<ErrorFallback message="Error loading investment distribution" />}>
           <Card className="shadow-sm border-primary/10">
             <CardHeader className="border-b border-border/40 pb-2">

@@ -280,25 +280,22 @@ export const FixedExpensesManagement = () => {
             />
           </div>
           
-          <div className="space-y-2">
-            <Label>Category</Label>
-            <Select 
-              value={expense.category_id}
-              onValueChange={(value) => setExpense(prev => ({ ...prev, category_id: value }))}
-              required
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Select category" />
-              </SelectTrigger>
-              <SelectContent>
-                {categories?.map((category) => (
-                  <SelectItem key={category.id} value={category.id}>
-                    {category.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
+          <Select 
+            value={expense.category_id}
+            onValueChange={(value) => setExpense(prev => ({ ...prev, category_id: value }))}
+            required
+          >
+            <SelectTrigger>
+              <SelectValue placeholder="Select category" />
+            </SelectTrigger>
+            <SelectContent>
+              {categories?.map((category) => (
+                <SelectItem key={category.id} value={category.id}>
+                  {category.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
           
           <Select
             value={expense.owner}

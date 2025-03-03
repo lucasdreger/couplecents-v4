@@ -7,14 +7,13 @@ import { MonthlyIncome } from "@/components/expenses/MonthlyIncome";
 import { CreditCardBill } from "@/components/expenses/CreditCardBill";
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { queryKeys } from '@/lib/queries';
-import { addVariableExpense, supabase } from '@/lib/supabase';
+import { getMonthlyExpenses, addVariableExpense, supabase } from '@/lib/supabase';
 import { ErrorBoundary } from 'react-error-boundary';
 import { ExpenseForm } from "@/components/expenses/ExpenseForm";
 import { toast } from "@/hooks/use-toast";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AlertCircle } from "lucide-react";
 import type { VariableExpense } from '@/types/database.types';
-import { MonthlySummary } from "@/components/expenses/MonthlySummary";
 
 // Error fallback component
 const ErrorFallback = ({ error, resetErrorBoundary }: { error: any, resetErrorBoundary: any }) => {
@@ -44,7 +43,27 @@ export function MonthlyExpenses() {
   const [selectedMonth, setSelectedMonth] = useState(currentMonth);
   const [uncheckedTasksCount, setUncheckedTasksCount] = useState(0);
   
-  // Get fixed expenses data for task count
+  // Get monthly expenses data
+  const { data: expenses } = useQuery({
+    queryKey: queryKeys.expenses(selectedYear, selectedMonth),
+    queryFn: () => getMonthlyExpenses(selectedYear, selectedMonth)
+  });
+  
+  // Get monthly income data
+  const { data: income } = useQuery({
+    queryKey: ['income', selectedYear, selectedMonth],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from('monthly_income')
+        .select('*')
+        .eq('year', selectedYear)
+        .eq('month', selectedMonth)
+        .single();
+      return data;
+    }
+  });
+  
+  // Get fixed expenses data
   const { data: fixedExpenses } = useQuery({
     queryKey: ['fixed-expenses', selectedYear, selectedMonth],
     queryFn: async () => {
@@ -60,7 +79,7 @@ export function MonthlyExpenses() {
     }
   });
   
-  // Get credit card bill status for task count
+  // Get credit card bill status
   const { data: creditCardBill } = useQuery({
     queryKey: ['credit-card-bill', selectedYear, selectedMonth],
     queryFn: async () => {
@@ -74,14 +93,34 @@ export function MonthlyExpenses() {
     }
   });
   
+  // Calculate total income (salaries)
+  const totalIncome = income ? (
+    (income.lucas_main_income || 0) + 
+    (income.lucas_other_income || 0) + 
+    (income.camila_main_income || 0) + 
+    (income.camila_other_income || 0)
+  ) : 0;
+  
+  // Calculate total variable expenses
+  const totalVariableExpenses = expenses?.data?.reduce((sum, expense) => sum + Number(expense.amount), 0) || 0;
+  
+  // Calculate total fixed expenses
+  const totalFixedExpenses = fixedExpenses?.reduce((sum, expense) => sum + Number(expense.amount), 0) || 0;
+  
+  // Calculate total expenses
+  const totalExpenses = totalVariableExpenses + totalFixedExpenses;
+  
+  // Calculate balance
+  const balance = totalIncome - totalExpenses;
+  
   // Check for uncompleted tasks
   useEffect(() => {
     let count = 0;
     
-    // Check fixed expenses with uncompleted status - ensure we're working with an array
-    if (Array.isArray(fixedExpenses)) {
-      count += fixedExpenses.filter((expense: { status_required: boolean; status?: Array<{ completed: boolean }> }) => 
-        expense.status_required && (!expense.status?.[0]?.completed)
+    // Check fixed expenses with uncompleted status
+    if (fixedExpenses) {
+      count += fixedExpenses.filter(expense => 
+        expense.status_required && !expense.status?.completed
       ).length;
     }
     
@@ -190,10 +229,37 @@ export function MonthlyExpenses() {
       )}
       
       <div className="grid gap-6 mb-6">
-        <ErrorBoundary FallbackComponent={ErrorFallback}>
-          <MonthlySummary year={selectedYear} month={selectedMonth} />
-        </ErrorBoundary>
+        {/* Total Budget Card - Moved to top */}
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle>Total Budget</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid gap-2">
+              <div className="flex justify-between items-center">
+                <p className="text-muted-foreground">Total Income:</p>
+                <p className="font-medium">
+                  {totalIncome.toLocaleString('de-DE', { style: 'currency', currency: 'EUR' })}
+                </p>
+              </div>
+              <div className="flex justify-between items-center">
+                <p className="text-muted-foreground">Total Expenses:</p>
+                <p className="font-medium">
+                  {totalExpenses.toLocaleString('de-DE', { style: 'currency', currency: 'EUR' })}
+                </p>
+              </div>
+              <div className="h-px bg-border my-1"></div>
+              <div className="flex justify-between items-center">
+                <p className="font-semibold">Balance:</p>
+                <p className={`font-bold ${balance >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                  {balance.toLocaleString('de-DE', { style: 'currency', currency: 'EUR' })}
+                </p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
 
+        {/* Monthly Income Card */}
         <ErrorBoundary FallbackComponent={ErrorFallback}>
           <Card>
             <CardHeader className="pb-2">
