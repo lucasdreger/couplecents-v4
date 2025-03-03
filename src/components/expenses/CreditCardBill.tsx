@@ -77,24 +77,13 @@ export const CreditCardBill = ({ year, month }: Props) => {
         .eq('owner', 'Lucas')
       
       if (fixedExpensesError) throw fixedExpensesError
-
-      // Get Lucas variable expenses
-      const { data: variableExpensesData, error: variableExpensesError } = await supabase
-        .from('variable_expenses')
-        .select('amount')
-        .eq('year', year)
-        .eq('month', month)
-        .eq('created_by', 'Lucas')
-      
-      if (variableExpensesError) throw variableExpensesError
       
       return {
         income: incomeData ? {
           main: incomeData.lucas_main_income || 0,
           other: incomeData.lucas_other_income || 0
         } : { main: 0, other: 0 },
-        fixedExpenses: fixedExpensesData || [],
-        variableExpenses: variableExpensesData || []
+        fixedExpenses: fixedExpensesData || []
       }
     }
   })
@@ -151,46 +140,44 @@ export const CreditCardBill = ({ year, month }: Props) => {
   useEffect(() => {
     if (creditCardBill && lucasFinancials) {
       // Calculate Lucas's total income
-      const totalLucasIncome = lucasFinancials.income.main + lucasFinancials.income.other;
+      const totalLucasIncome = Number(lucasFinancials.income.main || 0) + 
+                               Number(lucasFinancials.income.other || 0);
       
       // Calculate Lucas's total fixed expenses
       const totalLucasFixedExpenses = lucasFinancials.fixedExpenses.reduce(
         (sum, expense) => sum + Number(expense.estimated_amount || 0), 0
       );
       
-      // Calculate Lucas's total variable expenses
-      const totalLucasVariableExpenses = lucasFinancials.variableExpenses.reduce(
-        (sum, expense) => sum + Number(expense.amount || 0), 0
-      );
+      // Parse bill amount
+      const creditCardBillAmount = parseValue(amount);
       
-      // Parse bill amount from string to number
-      const billAmount = parseValue(amount);
+      // Calculate remaining amount after fixed expenses and credit card bill
+      // Note: Variable expenses are intentionally excluded from this calculation
+      const remainingAfterExpenses = totalLucasIncome - totalLucasFixedExpenses - creditCardBillAmount;
       
-      // Calculate remaining amount after all expenses including credit card bill
-      const totalLucasExpenses = totalLucasFixedExpenses + totalLucasVariableExpenses;
-      const remainingAmount = totalLucasIncome - totalLucasExpenses - billAmount;
-      
-      // Set minimum threshold (300 EUR)
+      // Minimum Lucas should have left after all expenses
       const minimumThreshold = 300;
       
-      if (remainingAmount < minimumThreshold) {
-        // Transfer needed
+      // The transfer amount is whatever is needed to get Lucas back to the minimum
+      if (remainingAfterExpenses < minimumThreshold) {
         setTransferNeeded(true);
-        setTransferAmount(Math.ceil(minimumThreshold - remainingAmount));
+        // We need to transfer enough to get back to the minimum threshold
+        const neededTransfer = Math.ceil(minimumThreshold - remainingAfterExpenses);
+        setTransferAmount(neededTransfer);
       } else {
-        // No transfer needed
         setTransferNeeded(false);
         setTransferAmount(null);
       }
       
+      // Log the calculation for debugging
       console.log({
-        income: totalLucasIncome,
-        fixedExpenses: totalLucasFixedExpenses,
-        variableExpenses: totalLucasVariableExpenses,
-        billAmount,
-        remainingAmount,
-        transferNeeded: remainingAmount < minimumThreshold,
-        transferAmount: Math.ceil(minimumThreshold - remainingAmount),
+        lucasIncome: totalLucasIncome,
+        lucasFixedExpenses: totalLucasFixedExpenses,
+        creditCardBillAmount,
+        remainingAfterExpenses,
+        minimumThreshold,
+        transferNeeded: remainingAfterExpenses < minimumThreshold,
+        transferAmount: Math.ceil(minimumThreshold - remainingAfterExpenses)
       });
     }
   }, [creditCardBill, lucasFinancials, amount]);
@@ -259,7 +246,7 @@ export const CreditCardBill = ({ year, month }: Props) => {
         </label>
       </div>
 
-      {/* Transfer message */}
+      {/* Transfer messages */}
       {transferNeeded && transferAmount && !transferCompleted && (
         <Alert className="bg-amber-50 border-amber-200">
           <AlertDescription className="text-amber-800">

@@ -1,4 +1,3 @@
-
 /**
  * Expense Entry Form Component
  * 
@@ -10,14 +9,20 @@
  * - Type-safe form data handling
  * - Real-time category loading
  */
-import { useState, useRef } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { Plus } from 'lucide-react'
+import { Plus, PlusCircle, CalendarIcon } from 'lucide-react'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { Calendar } from '@/components/ui/calendar'
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
+import { cn } from '@/lib/utils'
+import { format } from 'date-fns'
 import { useQuery } from '@tanstack/react-query'
+import { queryKeys } from '@/lib/queries'
 import { getCategories } from '@/lib/supabase'
 import {
   Form,
@@ -54,9 +59,11 @@ interface ExpenseFormProps {
   onSubmit: (data: ExpenseFormData) => Promise<void>;
   year: number;
   month: number;
+  expense?: VariableExpense | null;
+  isEditing?: boolean;
 }
 
-export const ExpenseForm = ({ onSubmit, year, month }: ExpenseFormProps) => {
+export const ExpenseForm = ({ onSubmit, year, month, expense = null, isEditing = false }: ExpenseFormProps) => {
   const [open, setOpen] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const descriptionInputRef = useRef<HTMLInputElement>(null)
@@ -82,6 +89,16 @@ export const ExpenseForm = ({ onSubmit, year, month }: ExpenseFormProps) => {
       return data
     }
   });
+
+  // Set form data if we're editing an existing expense
+  useEffect(() => {
+    if (expense) {
+      form.setValue('description', expense.description)
+      form.setValue('amount', expense.amount)
+      form.setValue('date', new Date(expense.date).toISOString().split('T')[0])
+      form.setValue('category_id', expense.category_id)
+    }
+  }, [expense, form])
 
   const handleSubmit = async (values: ExpenseFormData, keepOpen: boolean) => {
     try {
@@ -139,6 +156,110 @@ export const ExpenseForm = ({ onSubmit, year, month }: ExpenseFormProps) => {
     }
   };
 
+  // If we're editing, just show the form directly
+  if (isEditing) {
+    return (
+      <form onSubmit={form.handleSubmit((values) => handleSubmit(values, false))} className="space-y-4">
+        <DialogHeader>
+          <DialogTitle>{isEditing ? 'Edit' : 'Add'} Expense</DialogTitle>
+        </DialogHeader>
+        
+        <div className="space-y-3">
+          <FormField
+            control={form.control}
+            name="description"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Description</FormLabel>
+                <FormControl>
+                  <Input 
+                    placeholder="Expense description" 
+                    {...field} 
+                    ref={descriptionInputRef}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          
+          <FormField
+            control={form.control}
+            name="amount"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Amount</FormLabel>
+                <FormControl>
+                  <Input 
+                    type="number" 
+                    step="0.01" 
+                    placeholder="0.00"
+                    prefix="$"
+                    {...field} 
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          
+          <FormField
+            control={form.control}
+            name="date"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Date</FormLabel>
+                <FormControl>
+                  <Input type="date" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          
+          <FormField
+            control={form.control}
+            name="category_id"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Category</FormLabel>
+                <Select 
+                  onValueChange={field.onChange} 
+                  value={field.value}
+                >
+                  <FormControl>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select a category" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    {isCategoriesLoading ? (
+                      <SelectItem disabled value="loading">Loading...</SelectItem>
+                    ) : categories && categories.length > 0 ? (
+                      categories.map(cat => (
+                        <SelectItem key={cat.id} value={cat.id}>
+                          {cat.name}
+                        </SelectItem>
+                      ))
+                    ) : (
+                      <SelectItem disabled value="none">No categories found</SelectItem>
+                    )}
+                  </SelectContent>
+                </Select>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
+        
+        <Button type="submit" disabled={isSubmitting} className="w-full">
+          {isSubmitting ? 'Saving...' : isEditing ? 'Save Changes' : 'Add Expense'}
+        </Button>
+      </form>
+    )
+  }
+
+  // Regular add expense dialog
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>

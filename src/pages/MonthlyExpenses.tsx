@@ -7,13 +7,14 @@ import { MonthlyIncome } from "@/components/expenses/MonthlyIncome";
 import { CreditCardBill } from "@/components/expenses/CreditCardBill";
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { queryKeys } from '@/lib/queries';
-import { getMonthlyExpenses, addVariableExpense, supabase } from '@/lib/supabase';
+import { getMonthlyExpenses, addVariableExpense, updateVariableExpense, supabase } from '@/lib/supabase';
 import { ErrorBoundary } from 'react-error-boundary';
 import { ExpenseForm } from "@/components/expenses/ExpenseForm";
 import { toast } from "@/hooks/use-toast";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AlertCircle } from "lucide-react";
 import type { VariableExpense } from '@/types/database.types';
+import { Dialog, DialogContent } from "@/components/ui/dialog";
 
 // Error fallback component
 const ErrorFallback = ({ error, resetErrorBoundary }: { error: any, resetErrorBoundary: any }) => {
@@ -42,6 +43,8 @@ export function MonthlyExpenses() {
   const [selectedYear, setSelectedYear] = useState(defaultYear);
   const [selectedMonth, setSelectedMonth] = useState(currentMonth);
   const [uncheckedTasksCount, setUncheckedTasksCount] = useState(0);
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [expenseToEdit, setExpenseToEdit] = useState<VariableExpense | null>(null);
   
   // Get monthly expenses data
   const { data: expenses } = useQuery({
@@ -67,15 +70,27 @@ export function MonthlyExpenses() {
   const { data: fixedExpenses } = useQuery({
     queryKey: ['fixed-expenses', selectedYear, selectedMonth],
     queryFn: async () => {
-      const { data } = await supabase
+      // First get all fixed expenses
+      const { data: allFixedExpenses, error: expensesError } = await supabase
         .from('fixed_expenses')
-        .select(`
-          *,
-          status:monthly_fixed_expense_status(completed)
-        `)
-        .eq('status.year', selectedYear)
-        .eq('status.month', selectedMonth);
-      return data;
+        .select('*, categories(name)');
+        
+      if (expensesError) throw expensesError;
+      
+      // Then get status for this month/year
+      const { data: statusData, error: statusError } = await supabase
+        .from('monthly_fixed_expense_status')
+        .select('*')
+        .eq('year', selectedYear)
+        .eq('month', selectedMonth);
+        
+      if (statusError) throw statusError;
+      
+      // Merge the data
+      return allFixedExpenses.map(expense => ({
+        ...expense,
+        status: statusData?.find(status => status.fixed_expense_id === expense.id)
+      }));
     }
   });
   
@@ -120,7 +135,7 @@ export function MonthlyExpenses() {
     // Check fixed expenses with uncompleted status
     if (fixedExpenses) {
       count += fixedExpenses.filter(expense => 
-        expense.status_required && !expense.status?.completed
+        expense.status_required && (!expense.status || !expense.status.completed)
       ).length;
     }
     
@@ -176,6 +191,42 @@ export function MonthlyExpenses() {
       toast({
         title: "Error",
         description: "Failed to add expense. Please try again.",
+        variant: "destructive"
+      });
+      return Promise.reject(error);
+    }
+  };
+
+  const handleEditExpense = (expense: VariableExpense) => {
+    setExpenseToEdit(expense);
+    setIsEditDialogOpen(true);
+  };
+  
+  const handleUpdateExpense = async (expenseData: Partial<VariableExpense>) => {
+    try {
+      if (!expenseToEdit) return Promise.reject("No expense to edit");
+      
+      await updateVariableExpense(expenseToEdit.id, expenseData);
+      
+      // Invalidate the expenses query to refresh the list
+      queryClient.invalidateQueries({ 
+        queryKey: queryKeys.expenses(selectedYear, selectedMonth) 
+      });
+      
+      setIsEditDialogOpen(false);
+      setExpenseToEdit(null);
+      
+      toast({
+        title: "Success",
+        description: "Expense updated successfully.",
+      });
+      
+      return Promise.resolve();
+    } catch (error) {
+      console.error("Error updating expense:", error);
+      toast({
+        title: "Error",
+        description: "Failed to update expense. Please try again.",
         variant: "destructive"
       });
       return Promise.reject(error);
@@ -320,11 +371,25 @@ export function MonthlyExpenses() {
               <VariableExpensesList
                 year={selectedYear}
                 month={selectedMonth}
+                onEdit={handleEditExpense}
               />
             </CardContent>
           </Card>
         </ErrorBoundary>
       </div>
+      
+      {/* Edit Expense Dialog */}
+      <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+        <DialogContent>
+          <ExpenseForm
+            expense={expenseToEdit}
+            onSubmit={handleUpdateExpense}
+            year={selectedYear}
+            month={selectedMonth}
+            isEditing={true}
+          />
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

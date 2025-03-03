@@ -133,7 +133,7 @@ export const OverviewPage: React.FC = () => {
         </ErrorBoundary>
       </div>
 
-      {/* Category and Investment Distribution Row */}
+      {/* Category Breakdown Row */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <ErrorBoundary fallback={<ErrorFallback message="Error loading categories" />}>
           <Card className="shadow-sm border-primary/10">
@@ -143,18 +143,6 @@ export const OverviewPage: React.FC = () => {
             </CardHeader>
             <CardContent className="pt-4">
               <CategoryBreakdown timeRange={timeRangeParams.months} />
-            </CardContent>
-          </Card>
-        </ErrorBoundary>
-
-        <ErrorBoundary fallback={<ErrorFallback message="Error loading investment distribution" />}>
-          <Card className="shadow-sm border-primary/10">
-            <CardHeader className="border-b border-border/40 pb-2">
-              <CardTitle>Investment Distribution</CardTitle>
-              <CardDescription>Distribution by investment type</CardDescription>
-            </CardHeader>
-            <CardContent className="pt-4">
-              <InvestmentDistribution />
             </CardContent>
           </Card>
         </ErrorBoundary>

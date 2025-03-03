@@ -31,67 +31,110 @@ export const MonthlyChart = ({ months = 6 }: Props) => {
       const startYear = startDate.getFullYear();
       const startMonth = startDate.getMonth() + 1;
       
-      // Get monthly expenses data
-      let query = supabase
-        .from('monthly_expenses')
-        .select('*');
+      // Create an array of month/year combinations we need data for
+      const periods = [];
+      let year = startYear;
+      let month = startMonth;
       
-      // Filter based on the time range
-      if (startYear === currentYear) {
-        // Same year, just filter by months
-        query = query.eq('year', currentYear).gte('month', startMonth);
-      } else {
-        // Multiple years
-        query = query.or(`year.gt.${startYear}, and(year.eq.${startYear}, month.gte.${startMonth})`);
+      for (let i = 0; i < months; i++) {
+        periods.push({ year, month });
+        
+        // Move to the next month
+        month++;
+        if (month > 12) {
+          month = 1;
+          year++;
+        }
+        
+        // Stop if we've reached beyond the current month
+        if (year > currentYear || (year === currentYear && month > currentMonth)) {
+          break;
+        }
       }
       
-      // Add current year/month upper limit
-      query = query.lte('year', currentYear).lte('month', currentMonth);
-      
-      const { data: expensesData, error: expensesError } = await query.order('year').order('month');
-      
-      if (expensesError) throw expensesError;
-      
-      // Get monthly income data with same filters
-      let incomeQuery = supabase
+      // Get all monthly income records for these periods
+      const { data: incomeData, error: incomeError } = await supabase
         .from('monthly_income')
-        .select('*');
-      
-      if (startYear === currentYear) {
-        incomeQuery = incomeQuery.eq('year', currentYear).gte('month', startMonth);
-      } else {
-        incomeQuery = incomeQuery.or(`year.gt.${startYear}, and(year.eq.${startYear}, month.gte.${startMonth})`);
-      }
-      
-      incomeQuery = incomeQuery.lte('year', currentYear).lte('month', currentMonth);
-      
-      const { data: incomeData, error: incomeError } = await incomeQuery.order('year').order('month');
+        .select('*')
+        .in('year', periods.map(p => p.year))
+        .in('month', periods.map(p => p.month))
+        .order('year')
+        .order('month');
       
       if (incomeError) throw incomeError;
       
-      // Combine and format the data
-      return incomeData?.map(incomeItem => {
-        // Find matching expense record
-        const matchingExpense = expensesData?.find(exp => 
-          exp.year === incomeItem.year && exp.month === incomeItem.month
-        );
-        
-        const totalIncome = Number(incomeItem.lucas_main_income || 0) + 
-                            Number(incomeItem.lucas_other_income || 0) + 
-                            Number(incomeItem.camila_main_income || 0) + 
-                            Number(incomeItem.camila_other_income || 0);
-        
-        const totalExpense = Number(matchingExpense?.total_expenses || 0);
-        const savings = totalIncome - totalExpense;
+      // Get all variable expenses for the same periods
+      const { data: variableExpensesData, error: variableExpensesError } = await supabase
+        .from('variable_expenses')
+        .select('amount, year, month')
+        .in('year', periods.map(p => p.year))
+        .in('month', periods.map(p => p.month));
+      
+      if (variableExpensesError) throw variableExpensesError;
+      
+      // Get all fixed expenses
+      const { data: fixedExpensesData, error: fixedExpensesError } = await supabase
+        .from('fixed_expenses')
+        .select('estimated_amount');
+      
+      if (fixedExpensesError) throw fixedExpensesError;
+      
+      // Calculate total fixed expenses (assuming consistent monthly amount)
+      const totalFixedExpenses = fixedExpensesData?.reduce(
+        (sum, expense) => sum + Number(expense.estimated_amount || 0),
+        0
+      ) || 0;
+      
+      // Group variable expenses by month/year
+      const expensesByPeriod = periods.map(period => {
+        const periodVariableExpenses = variableExpensesData
+          ?.filter(e => e.year === period.year && e.month === period.month)
+          .reduce((sum, expense) => sum + Number(expense.amount || 0), 0) || 0;
         
         return {
-          name: `${incomeItem.month}/${incomeItem.year}`,
-          Income: totalIncome,
-          Expenses: totalExpense,
-          Savings: savings,
-          SavingsRate: totalIncome > 0 ? (savings / totalIncome) * 100 : 0
+          year: period.year,
+          month: period.month,
+          variableExpenses: periodVariableExpenses,
+          fixedExpenses: totalFixedExpenses
         };
-      }) || [];
+      });
+      
+      // Create the final dataset
+      return periods.map(period => {
+        // Find income for this period
+        const income = incomeData?.find(
+          inc => inc.year === period.year && inc.month === period.month
+        );
+        
+        // Find expenses for this period
+        const expenses = expensesByPeriod.find(
+          exp => exp.year === period.year && exp.month === period.month
+        );
+        
+        // Calculate totals
+        const totalIncome = income
+          ? (Number(income.lucas_main_income || 0) +
+             Number(income.lucas_other_income || 0) +
+             Number(income.camila_main_income || 0) +
+             Number(income.camila_other_income || 0))
+          : 0;
+        
+        const totalExpenses = (expenses?.variableExpenses || 0) + (expenses?.fixedExpenses || 0);
+        const savings = totalIncome - totalExpenses;
+        const savingsRate = totalIncome > 0 ? (savings / totalIncome) * 100 : 0;
+        
+        // Format month name
+        const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+        const monthDisplay = monthNames[period.month - 1];
+        
+        return {
+          name: `${monthDisplay}/${period.year}`,
+          Income: totalIncome,
+          Expenses: totalExpenses,
+          Savings: savings,
+          SavingsRate: savingsRate
+        };
+      });
     }
   });
 
@@ -106,7 +149,7 @@ export const MonthlyChart = ({ months = 6 }: Props) => {
   if (!monthlyData?.length) {
     return (
       <div className="flex items-center justify-center h-[300px] text-muted-foreground">
-        No monthly data available.
+        No monthly data available. Please add income and expenses to see your budget trends.
       </div>
     );
   }
