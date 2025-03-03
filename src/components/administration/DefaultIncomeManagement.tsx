@@ -4,12 +4,21 @@ import { Input } from "@/components/ui/input"
 import { supabase } from '@/lib/supabaseClient'
 import { useToast } from "@/components/ui/use-toast"
 import { FormLabel } from "@/components/ui/form"
+import { useState } from 'react'
+
+type DefaultIncomeField = 'lucas_main_income' | 'lucas_other_income' | 'camila_main_income' | 'camila_other_income'
 
 export const DefaultIncomeManagement = () => {
   const { toast } = useToast()
   const queryClient = useQueryClient()
+  const [formValues, setFormValues] = useState({
+    lucas_main_income: '',
+    lucas_other_income: '',
+    camila_main_income: '',
+    camila_other_income: ''
+  })
   
-  const { data: defaultIncome } = useQuery({
+  const { data: defaultIncome, isLoading } = useQuery({
     queryKey: ['default-income'],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -18,9 +27,20 @@ export const DefaultIncomeManagement = () => {
         .single()
       if (error) throw error
       return data
+    },
+    onSuccess: (data) => {
+      if (data) {
+        // Format values when data is loaded
+        setFormValues({
+          lucas_main_income: formatValue(data.lucas_main_income),
+          lucas_other_income: formatValue(data.lucas_other_income),
+          camila_main_income: formatValue(data.camila_main_income),
+          camila_other_income: formatValue(data.camila_other_income)
+        })
+      }
     }
   })
-
+  
   const { mutate: updateIncome } = useMutation({
     mutationFn: async (values: {
       lucas_main_income?: number;
@@ -60,37 +80,63 @@ export const DefaultIncomeManagement = () => {
       })
     }
   })
-
-  const formatValue = (value: number | null): string => {
-    if (value === null) return '';
+  
+  // Format number to string with comma as decimal separator and two decimal places
+  const formatValue = (value: number | null | undefined): string => {
+    if (value === null || value === undefined) return '0,00';
     return value.toFixed(2).replace('.', ',');
   };
-
+  
+  // Parse string value to number, handling comma as decimal separator
   const parseValue = (value: string): number => {
-    // Remove currency symbol and any spaces
+    // Remove currency symbol, spaces, and replace comma with dot
     const cleanValue = value.replace(/[€\s]/g, '').replace(',', '.');
     const number = parseFloat(cleanValue);
     return isNaN(number) ? 0 : Number(number.toFixed(2));
   };
-
+  
   const handleInputChange = (field: DefaultIncomeField) => (e: React.ChangeEvent<HTMLInputElement>) => {
+    // Update the form values
+    setFormValues(prev => ({
+      ...prev,
+      [field]: e.target.value
+    }));
+  };
+  
+  const handleInputBlur = (field: DefaultIncomeField) => (e: React.FocusEvent<HTMLInputElement>) => {
     const value = e.target.value;
     const numericValue = parseValue(value);
-
-    // Update the field with formatted value
+    
+    // Format to always show two decimal places with comma
+    const formattedValue = formatValue(numericValue);
+    
+    // Update both the form value and the database
+    setFormValues(prev => ({
+      ...prev,
+      [field]: formattedValue
+    }));
+    
     updateIncome({
       ...defaultIncome,
       [field]: numericValue
     });
   };
-
-  const handleInputBlur = (e: React.FocusEvent<HTMLInputElement>) => {
-    const value = e.target.value;
-    const numericValue = parseValue(value);
-    // Format to always show two decimal places
-    e.target.value = formatValue(numericValue);
-  };
-
+  
+  if (isLoading) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle>Default Income Settings</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="flex justify-center items-center h-48">
+            <p className="text-muted-foreground">Loading income settings...</p>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+  
   return (
     <Card>
       <CardHeader>
@@ -106,9 +152,9 @@ export const DefaultIncomeManagement = () => {
                 <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">€</span>
                 <Input
                   type="text"
-                  value={defaultIncome?.lucas_main_income}
-                  onChange={(e) => handleInputChange('lucas_main_income')(e)}
-                  onBlur={handleInputBlur}
+                  value={formValues.lucas_main_income}
+                  onChange={handleInputChange('lucas_main_income')}
+                  onBlur={handleInputBlur('lucas_main_income')}
                   className="pl-7 text-right"
                   placeholder="0,00"
                 />
@@ -120,9 +166,9 @@ export const DefaultIncomeManagement = () => {
                 <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">€</span>
                 <Input
                   type="text"
-                  value={defaultIncome?.lucas_other_income}
-                  onChange={(e) => handleInputChange('lucas_other_income')(e)}
-                  onBlur={handleInputBlur}
+                  value={formValues.lucas_other_income}
+                  onChange={handleInputChange('lucas_other_income')}
+                  onBlur={handleInputBlur('lucas_other_income')}
                   className="pl-7 text-right"
                   placeholder="0,00"
                 />
@@ -138,9 +184,9 @@ export const DefaultIncomeManagement = () => {
                 <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">€</span>
                 <Input
                   type="text"
-                  value={defaultIncome?.camila_main_income}
-                  onChange={(e) => handleInputChange('camila_main_income')(e)}
-                  onBlur={handleInputBlur}
+                  value={formValues.camila_main_income}
+                  onChange={handleInputChange('camila_main_income')}
+                  onBlur={handleInputBlur('camila_main_income')}
                   className="pl-7 text-right"
                   placeholder="0,00"
                 />
@@ -152,9 +198,9 @@ export const DefaultIncomeManagement = () => {
                 <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">€</span>
                 <Input
                   type="text"
-                  value={defaultIncome?.camila_other_income}
-                  onChange={(e) => handleInputChange('camila_other_income')(e)}
-                  onBlur={handleInputBlur}
+                  value={formValues.camila_other_income}
+                  onChange={handleInputChange('camila_other_income')}
+                  onBlur={handleInputBlur('camila_other_income')}
                   className="pl-7 text-right"
                   placeholder="0,00"
                 />
