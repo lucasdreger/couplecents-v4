@@ -25,88 +25,75 @@ export const MonthlyChart = ({ months = 6 }: Props) => {
       const currentYear = today.getFullYear();
       const currentMonth = today.getMonth() + 1;
       
-      // Calculate start date based on months parameter (looking back from current date)
-      const startDate = new Date();
-      startDate.setMonth(startDate.getMonth() - months + 1);
-      const startYear = startDate.getFullYear();
-      const startMonth = startDate.getMonth() + 1;
-      
-      // Create an array of all month/year combinations we need data for
+      // Create an array of month/year combinations to fetch data for
       const periods = [];
-      let year = startYear;
-      let month = startMonth;
       
-      for (let i = 0; i < months; i++) {
-        periods.push({ year, month });
-        
-        // Move to the next month
-        month++;
-        if (month > 12) {
-          month = 1;
-          year++;
-        }
-        
-        // Stop if we've reached beyond the current month/year
-        if (year > currentYear || (year === currentYear && month > currentMonth)) {
-          break;
+      // If showing just one month, use the current month
+      if (months === 1) {
+        periods.push({ year: currentYear, month: currentMonth });
+      } 
+      // If showing more months, go back from current month
+      else {
+        // Start from months - 1 ago (to include current month in the range)
+        for (let i = months - 1; i >= 0; i--) {
+          const date = new Date(currentYear, currentMonth - 1 - i, 1);
+          periods.push({ 
+            year: date.getFullYear(), 
+            month: date.getMonth() + 1 
+          });
         }
       }
       
-      // Get monthly income data for all relevant months
-      const incomePromises = periods.map(period => 
-        supabase
-          .from('monthly_income')
-          .select('*')
-          .eq('year', period.year)
-          .eq('month', period.month)
-          .maybeSingle()
-      );
+      console.log("Periods to fetch:", periods);
       
-      // Get monthly expenses data for all relevant months
-      const expensesPromises = periods.map(period => 
-        supabase
-          .from('monthly_expenses')
-          .select('*')
-          .eq('year', period.year)
-          .eq('month', period.month)
-          .maybeSingle()
-      );
+      // Get all monthly income records
+      const { data: allIncomeData, error: incomeError } = await supabase
+        .from('monthly_income')
+        .select('*');
       
-      // Get all fixed expenses to calculate monthly fixed costs
+      if (incomeError) throw incomeError;
+      
+      // Get all variable expenses
+      const { data: allVariableExpensesData, error: variableExpensesError } = await supabase
+        .from('variable_expenses')
+        .select('amount, year, month');
+      
+      if (variableExpensesError) throw variableExpensesError;
+      
+      // Get all fixed expenses (assuming consistent monthly amount)
       const { data: fixedExpensesData, error: fixedExpensesError } = await supabase
         .from('fixed_expenses')
         .select('estimated_amount');
       
       if (fixedExpensesError) throw fixedExpensesError;
       
-      // Calculate total fixed expenses (assuming they're consistent monthly)
+      // Calculate total fixed expenses
       const totalFixedExpenses = fixedExpensesData?.reduce(
         (sum, expense) => sum + Number(expense.estimated_amount || 0),
         0
       ) || 0;
       
-      // Wait for all promises to resolve
-      const incomeResults = await Promise.all(incomePromises);
-      const expensesResults = await Promise.all(expensesPromises);
-      
-      // Create the final dataset by combining income and expenses data
-      return periods.map((period, index) => {
-        const incomeData = incomeResults[index].data;
-        const expenseData = expensesResults[index].data;
+      // Create data for each month in our range
+      return periods.map(period => {
+        // Find income for this period
+        const income = allIncomeData?.find(
+          inc => inc.year === period.year && inc.month === period.month
+        );
+        
+        // Find all variable expenses for this period
+        const periodVariableExpenses = allVariableExpensesData
+          ?.filter(e => e.year === period.year && e.month === period.month)
+          .reduce((sum, expense) => sum + Number(expense.amount || 0), 0) || 0;
         
         // Calculate totals
-        const totalIncome = incomeData
-          ? (Number(incomeData.lucas_main_income || 0) +
-             Number(incomeData.lucas_other_income || 0) +
-             Number(incomeData.camila_main_income || 0) +
-             Number(incomeData.camila_other_income || 0))
+        const totalIncome = income
+          ? (Number(income.lucas_main_income || 0) +
+             Number(income.lucas_other_income || 0) +
+             Number(income.camila_main_income || 0) +
+             Number(income.camila_other_income || 0))
           : 0;
         
-        // If we have monthly expenses data, use it, otherwise use fixed expenses as an estimate
-        const totalExpenses = expenseData
-          ? Number(expenseData.total_expenses || 0)
-          : totalFixedExpenses;
-        
+        const totalExpenses = periodVariableExpenses + totalFixedExpenses;
         const savings = totalIncome - totalExpenses;
         const savingsRate = totalIncome > 0 ? (savings / totalIncome) * 100 : 0;
         

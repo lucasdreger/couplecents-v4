@@ -62,7 +62,7 @@ export const InvestmentDistribution = () => {
             dataKey="value"
             nameKey="name"
             cx="50%"
-            cy="50%"
+            cy="45%" // Adjusted to move chart a bit higher to make room for legend at bottom
             outerRadius={80}
             labelLine={false}
             label={renderCustomizedLabel}
@@ -83,6 +83,10 @@ export const InvestmentDistribution = () => {
             layout="horizontal"
             verticalAlign="bottom"
             align="center"
+            wrapperStyle={{
+              paddingTop: '10px',
+              fontSize: '12px'
+            }}
           />
         </PieChart>
       </ResponsiveContainer>
