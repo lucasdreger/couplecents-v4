@@ -5,6 +5,8 @@ import { useToast } from "@/components/ui/use-toast"
 import type { PostgrestError } from '@supabase/supabase-js'
 import { Skeleton } from '@/components/ui/skeleton'
 import { supabase } from '@/lib/supabaseClient'
+import { ArrowUp, ArrowDown } from 'lucide-react'
+import { useState } from 'react'
 
 interface Props {
   year: number
@@ -19,11 +21,17 @@ interface FixedExpense {
   categories?: { name: string }
   status?: { fixed_expense_id: string; year: number; month: number; completed: boolean }
   status_required: boolean
+  owner: string
 }
+
+type SortField = 'description' | 'owner' | 'category' | 'amount' | 'due_date';
+type SortOrder = 'asc' | 'desc';
 
 export const FixedExpensesList = ({ year, month }: Props) => {
   const queryClient = useQueryClient()
   const { toast } = useToast()
+  const [sortBy, setSortBy] = useState<SortField>('description');
+  const [sortOrder, setSortOrder] = useState<SortOrder>('asc');
 
   const { data: fixedExpenses, isLoading, isError } = useQuery<FixedExpense[], PostgrestError>({
     queryKey: ['fixed-expenses', year, month],
@@ -62,6 +70,8 @@ export const FixedExpensesList = ({ year, month }: Props) => {
           year,
           month,
           completed: checked
+        }, {
+          onConflict: 'fixed_expense_id,year,month'
         });
 
       if (error) throw error;
@@ -79,6 +89,59 @@ export const FixedExpensesList = ({ year, month }: Props) => {
         description: "Failed to update status",
       });
     }
+  };
+  
+  const handleSortChange = (field: SortField) => {
+    if (field === sortBy) {
+      // Toggle order if clicking the same field
+      setSortOrder(current => current === 'asc' ? 'desc' : 'asc');
+    } else {
+      // Set new field and default to ascending order
+      setSortBy(field);
+      setSortOrder('asc');
+    }
+  };
+  
+  const getSortIcon = (field: SortField) => {
+    if (field === sortBy) {
+      return sortOrder === 'asc' ? <ArrowUp className="ml-2 h-4 w-4" /> : <ArrowDown className="ml-2 h-4 w-4" />;
+    }
+    return null;
+  };
+  
+  const sortExpenses = (expenses: FixedExpense[]) => {
+    return [...expenses].sort((a, b) => {
+      if (sortBy === 'description') {
+        return sortOrder === 'asc'
+          ? a.description.localeCompare(b.description)
+          : b.description.localeCompare(a.description);
+      }
+      if (sortBy === 'owner') {
+        return sortOrder === 'asc'
+          ? a.owner.localeCompare(b.owner)
+          : b.owner.localeCompare(a.owner);
+      }
+      if (sortBy === 'category') {
+        const catA = a.categories?.name || '';
+        const catB = b.categories?.name || '';
+        return sortOrder === 'asc'
+          ? catA.localeCompare(catB)
+          : catB.localeCompare(catA);
+      }
+      if (sortBy === 'amount') {
+        return sortOrder === 'asc'
+          ? a.estimated_amount - b.estimated_amount
+          : b.estimated_amount - a.estimated_amount;
+      }
+      if (sortBy === 'due_date') {
+        const dateA = a.due_date || '';
+        const dateB = b.due_date || '';
+        return sortOrder === 'asc'
+          ? dateA.localeCompare(dateB)
+          : dateB.localeCompare(dateA);
+      }
+      return 0;
+    });
   };
 
   if (isLoading) {
@@ -104,17 +167,39 @@ export const FixedExpensesList = ({ year, month }: Props) => {
     <Table>
       <TableHeader>
         <TableRow>
-          <TableHead>Description</TableHead>
-          <TableHead>Category</TableHead>
-          <TableHead className="text-right">Amount</TableHead>
-          <TableHead>Due Date</TableHead>
+          <TableHead onClick={() => handleSortChange('description')} className="cursor-pointer">
+            <div className="flex items-center">
+              Description {getSortIcon('description')}
+            </div>
+          </TableHead>
+          <TableHead onClick={() => handleSortChange('owner')} className="cursor-pointer">
+            <div className="flex items-center">
+              Owner {getSortIcon('owner')}
+            </div>
+          </TableHead>
+          <TableHead onClick={() => handleSortChange('category')} className="cursor-pointer">
+            <div className="flex items-center">
+              Category {getSortIcon('category')}
+            </div>
+          </TableHead>
+          <TableHead onClick={() => handleSortChange('amount')} className="cursor-pointer text-right">
+            <div className="flex items-center justify-end">
+              Amount {getSortIcon('amount')}
+            </div>
+          </TableHead>
+          <TableHead onClick={() => handleSortChange('due_date')} className="cursor-pointer">
+            <div className="flex items-center">
+              Due Date {getSortIcon('due_date')}
+            </div>
+          </TableHead>
           <TableHead>Paid</TableHead>
         </TableRow>
       </TableHeader>
       <TableBody>
-        {fixedExpenses?.map((expense) => (
+        {sortExpenses(fixedExpenses).map((expense) => (
           <TableRow key={expense.id}>
             <TableCell>{expense.description}</TableCell>
+            <TableCell>{expense.owner}</TableCell>
             <TableCell>{expense.categories?.name}</TableCell>
             <TableCell className="text-right">
               {expense.estimated_amount.toLocaleString('de-DE', { style: 'currency', currency: 'EUR' })}
@@ -123,9 +208,9 @@ export const FixedExpensesList = ({ year, month }: Props) => {
             <TableCell>
               {expense.status_required ? (
                 <Checkbox
-                  checked={expense.status?.completed}
+                  checked={expense.status?.completed || false}
                   onCheckedChange={(checked) => 
-                    handleStatusChange(expense.id, checked as boolean)
+                    handleStatusChange(expense.id, checked === true)
                   }
                 />
               ) : (
