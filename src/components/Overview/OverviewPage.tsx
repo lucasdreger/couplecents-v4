@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import {
   Card,
@@ -9,7 +10,6 @@ import {
 import { BudgetTile } from './BudgetTile';
 import { InvestmentsTile } from './InvestmentsTile';
 import { ReservesTile } from './ReservesTile';
-import { MonthlyChart } from './MonthlyChart';
 import { CategoryBreakdown } from './CategoryBreakdown';
 import { useAuth } from '@/context/AuthContext';
 import { CalendarIcon, LayoutDashboard } from 'lucide-react';
@@ -159,19 +159,6 @@ export const OverviewPage: React.FC = () => {
           </Card>
         </ErrorBoundary>
       </div>
-
-      {/* Monthly Chart */}
-      <ErrorBoundary fallback={<ErrorFallback message="Error loading monthly data" />}>
-        <Card className="shadow-sm border-primary/10">
-          <CardHeader className="border-b border-border/40 pb-2">
-            <CardTitle>Monthly Budget vs Actual</CardTitle>
-            <CardDescription>Compare planned versus actual spending for {timeRangeParams.label}</CardDescription>
-          </CardHeader>
-          <CardContent className="pt-4">
-            <MonthlyChart months={timeRangeParams.months} />
-          </CardContent>
-        </Card>
-      </ErrorBoundary>
     </div>
   );
 };

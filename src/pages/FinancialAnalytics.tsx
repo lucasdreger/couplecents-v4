@@ -1,4 +1,5 @@
-import { FinancialAnalytics as FinancialAnalyticsContent } from '@/components/Overview/FinancialAnalytics';
+
+import { FinancialAnalyticsContent } from '@/components/Overview/FinancialAnalytics';
 
 export default function FinancialAnalytics() {
   return (
