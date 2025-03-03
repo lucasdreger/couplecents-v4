@@ -31,8 +31,6 @@ export const InvestmentsTile = () => {
   const [editValue, setEditValue] = useState<string>('');
   const [currentInvestment, setCurrentInvestment] = useState<Investment | null>(null);
   
-  const totalInvestments = investments?.reduce((sum: number, inv: Investment) => sum + inv.current_value, 0) || 0;
-  
   const handleEdit = (investment: Investment) => {
     setEditingId(investment.id);
     setCurrentInvestment(investment);
@@ -73,12 +71,7 @@ export const InvestmentsTile = () => {
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="flex items-center justify-between">
-          <span>Investments</span>
-          <span className="text-lg font-medium">
-            {totalInvestments.toLocaleString('de-DE', { style: 'currency', currency: 'EUR' })}
-          </span>
-        </CardTitle>
+        <CardTitle>Investments</CardTitle>
       </CardHeader>
       <CardContent>
         {isLoading ? (
@@ -94,7 +87,7 @@ export const InvestmentsTile = () => {
             {investments.map((investment: Investment) => (
               <Card 
                 key={investment.id} 
-                className="border bg-card/50 hover:bg-accent/5 transition-all duration-200 group"
+                className="border bg-card/50 hover:bg-accent/10 transition-all duration-200 group"
               >
                 <CardContent className="p-3">
                   <div className="flex items-center justify-between">
@@ -152,7 +145,7 @@ export const InvestmentsTile = () => {
                           size="icon" 
                           variant="ghost" 
                           onClick={() => handleEdit(investment)}
-                          className="h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity duration-500 delay-500"
+                          className="h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity duration-200"
                         >
                           <PencilIcon className="h-4 w-4" />
                         </Button>

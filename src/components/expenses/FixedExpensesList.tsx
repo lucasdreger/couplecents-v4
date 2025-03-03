@@ -5,12 +5,15 @@ import { useToast } from "@/components/ui/use-toast"
 import type { PostgrestError } from '@supabase/supabase-js'
 import { Skeleton } from '@/components/ui/skeleton'
 import { supabase } from '@/lib/supabaseClient'
-import { ArrowUp, ArrowDown } from 'lucide-react'
+import { ArrowUp, ArrowDown, Edit, Trash } from 'lucide-react'
 import { useState } from 'react'
+import { Button } from "@/components/ui/button"
 
 interface Props {
   year: number
   month: number
+  onEdit?: (expense: FixedExpense) => void
+  onDelete?: (expense: FixedExpense) => void
 }
 
 interface FixedExpense {
@@ -27,11 +30,12 @@ interface FixedExpense {
 type SortField = 'description' | 'owner' | 'category' | 'amount' | 'due_date';
 type SortOrder = 'asc' | 'desc';
 
-export const FixedExpensesList = ({ year, month }: Props) => {
+export const FixedExpensesList = ({ year, month, onEdit, onDelete }: Props) => {
   const queryClient = useQueryClient()
   const { toast } = useToast()
   const [sortBy, setSortBy] = useState<SortField>('description');
   const [sortOrder, setSortOrder] = useState<SortOrder>('asc');
+  const [hoveredRow, setHoveredRow] = useState<string | null>(null);
 
   const { data: fixedExpenses, isLoading, isError } = useQuery<FixedExpense[], PostgrestError>({
     queryKey: ['fixed-expenses', year, month],
@@ -73,12 +77,9 @@ export const FixedExpensesList = ({ year, month }: Props) => {
         }, {
           onConflict: 'fixed_expense_id,year,month'
         });
-
       if (error) throw error;
-
       // Invalidate queries to refresh the list and task count
       queryClient.invalidateQueries({ queryKey: ['fixed-expenses', year, month] });
-
       toast({
         description: `Task marked as ${checked ? 'completed' : 'pending'}`,
       });
@@ -193,11 +194,17 @@ export const FixedExpensesList = ({ year, month }: Props) => {
             </div>
           </TableHead>
           <TableHead>Paid</TableHead>
+          {(onEdit || onDelete) && <TableHead>Actions</TableHead>}
         </TableRow>
       </TableHeader>
       <TableBody>
         {sortExpenses(fixedExpenses).map((expense) => (
-          <TableRow key={expense.id}>
+          <TableRow 
+            key={expense.id}
+            className={`transition-colors duration-200 ${hoveredRow === expense.id ? 'bg-accent/10' : ''}`}
+            onMouseEnter={() => setHoveredRow(expense.id)}
+            onMouseLeave={() => setHoveredRow(null)}
+          >
             <TableCell>{expense.description}</TableCell>
             <TableCell>{expense.owner}</TableCell>
             <TableCell>{expense.categories?.name}</TableCell>
@@ -217,6 +224,32 @@ export const FixedExpensesList = ({ year, month }: Props) => {
                 <span className="text-xs text-muted-foreground">N/A</span>
               )}
             </TableCell>
+            {(onEdit || onDelete) && (
+              <TableCell>
+                <div className="flex gap-1 justify-end">
+                  {onEdit && (
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => onEdit(expense)}
+                      className={`transition-opacity duration-200 ${hoveredRow === expense.id ? 'opacity-100' : 'opacity-0'}`}
+                    >
+                      <Edit className="h-4 w-4" />
+                    </Button>
+                  )}
+                  {onDelete && (
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => onDelete(expense)}
+                      className={`transition-opacity duration-200 ${hoveredRow === expense.id ? 'opacity-100' : 'opacity-0'}`}
+                    >
+                      <Trash className="h-4 w-4" />
+                    </Button>
+                  )}
+                </div>
+              </TableCell>
+            )}
           </TableRow>
         ))}
       </TableBody>

@@ -11,7 +11,7 @@ import { ReservesTile } from './ReservesTile';
 import { MonthlyChart } from './MonthlyChart';
 import { CategoryBreakdown } from './CategoryBreakdown';
 import { useAuth } from '@/context/AuthContext';
-import { CalendarIcon, LayoutDashboard, TrendingUp } from 'lucide-react';
+import { CalendarIcon, LayoutDashboard, TrendingUp, Coins } from 'lucide-react';
 import { InvestmentDistribution } from './InvestmentDistribution';
 import { useInvestments } from '@/hooks/useInvestments';
 import { useReserves } from '@/hooks/useReserves';
@@ -36,7 +36,7 @@ const TotalAssets = () => {
   const isLoading = isInvestmentsLoading || isReservesLoading;
   
   const totalInvestments = investments?.reduce((sum, inv) => sum + inv.current_value, 0) || 0;
-  const totalReserves = reserves?.reduce((sum, reserve) => sum + reserve.current_amount, 0) || 0;
+  const totalReserves = reserves?.reduce((sum, reserve) => sum + reserve.current_value, 0) || 0;
   const totalAssets = totalInvestments + totalReserves;
   
   if (isLoading) {
@@ -104,8 +104,8 @@ export const OverviewPage: React.FC = () => {
         <div className="flex justify-between items-center z-10 relative">
           <div>
             <h2 className="text-3xl font-bold tracking-tight flex items-center gap-2">
-              <LayoutDashboard className="h-7 w-7 text-primary" />
-              <span>Financial Overview</span>
+              <Coins className="h-7 w-7 text-primary" />
+              <span>CoupleCents Overview</span>
             </h2>
             <p className="text-muted-foreground mt-1 flex items-center gap-1">
               <CalendarIcon className="h-3 w-3" /> {formattedDate}

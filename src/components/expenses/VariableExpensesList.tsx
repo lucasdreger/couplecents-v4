@@ -26,6 +26,7 @@ export const VariableExpensesList = ({ year, month, onEdit, onDelete }: Props) =
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
   const [sortBy, setSortBy] = useState<SortField>('date');
   const [sortOrder, setSortOrder] = useState<SortOrder>('desc');
+  const [hoveredRow, setHoveredRow] = useState<string | null>(null);
 
   // Fetch expenses if year and month are provided
   const { data: expensesResponse, isLoading } = useQuery({
@@ -152,7 +153,12 @@ export const VariableExpensesList = ({ year, month, onEdit, onDelete }: Props) =
         </TableHeader>
         <TableBody>
           {sortExpenses(expenses).map((expense) => (
-            <TableRow key={expense.id}>
+            <TableRow 
+              key={expense.id}
+              className={`transition-colors duration-200 ${hoveredRow === expense.id ? 'bg-accent/10' : ''}`}
+              onMouseEnter={() => setHoveredRow(expense.id)}
+              onMouseLeave={() => setHoveredRow(null)}
+            >
               <TableCell>{new Date(expense.date).toLocaleDateString()}</TableCell>
               <TableCell>{expense.description}</TableCell>
               <TableCell>{expense.category?.name}</TableCell>
@@ -160,8 +166,13 @@ export const VariableExpensesList = ({ year, month, onEdit, onDelete }: Props) =
                 {expense.amount.toLocaleString('de-DE', { style: 'currency', currency: 'EUR' })}
               </TableCell>
               <TableCell>
-                <div className="flex gap-2">
-                  <Button variant="ghost" size="icon" onClick={() => onEdit?.(expense)}>
+                <div className="flex justify-end gap-1">
+                  <Button 
+                    variant="ghost" 
+                    size="icon" 
+                    onClick={() => onEdit?.(expense)}
+                    className={`transition-opacity duration-200 ${hoveredRow === expense.id ? 'opacity-100' : 'opacity-0'}`}
+                  >
                     <Edit className="h-4 w-4" />
                   </Button>
                   <Button 
@@ -171,6 +182,7 @@ export const VariableExpensesList = ({ year, month, onEdit, onDelete }: Props) =
                       setExpenseToDelete(expense)
                       setIsDeleteDialogOpen(true)
                     }}
+                    className={`transition-opacity duration-200 ${hoveredRow === expense.id ? 'opacity-100' : 'opacity-0'}`}
                   >
                     <Trash className="h-4 w-4" />
                   </Button>

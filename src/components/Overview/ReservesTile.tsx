@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Progress } from "@/components/ui/progress";
 import { useReserves } from "@/hooks/useReserves";
 import { useAuth } from "@/context/AuthContext";
-import { PencilIcon, CheckIcon, XIcon, ArrowUpIcon, ArrowDownIcon } from "lucide-react";
+import { PencilIcon, CheckIcon, XIcon } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
 
@@ -24,10 +24,6 @@ export const ReservesTile = () => {
   const { reserves, loading, updateValue } = useReserves();
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editValue, setEditValue] = useState<string>('');
-  
-  // Ensure reserves is an array before using reduce
-  const reservesArray = Array.isArray(reserves) ? reserves : [];
-  const totalReserves = reservesArray.reduce((sum, res) => sum + res.current_value, 0);
   
   // Format date as DD/MM/YYYY
   const formatDate = (dateString: string) => {
@@ -55,15 +51,13 @@ export const ReservesTile = () => {
     setEditingId(null);
   };
   
+  // Ensure reserves is an array before using
+  const reservesArray = Array.isArray(reserves) ? reserves : [];
+  
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="flex justify-between items-center">
-          <span>Reserves</span>
-          <span className="text-lg font-medium">
-            {totalReserves.toLocaleString('de-DE', { style: 'currency', currency: 'EUR' })}
-          </span>
-        </CardTitle>
+        <CardTitle>Reserves</CardTitle>
       </CardHeader>
       <CardContent>
         {loading ? (
@@ -78,7 +72,7 @@ export const ReservesTile = () => {
             {reservesArray.map(reserve => (
               <Card 
                 key={reserve.id} 
-                className="border bg-card/50 hover:bg-accent/5 transition-all duration-200 group"
+                className="border bg-card/50 hover:bg-accent/10 transition-all duration-200 group"
               >
                 <CardContent className="p-3">
                   <div className="space-y-2">
@@ -132,7 +126,7 @@ export const ReservesTile = () => {
                             size="icon" 
                             variant="ghost" 
                             onClick={() => handleEdit(reserve)}
-                            className="h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity duration-500 delay-500"
+                            className="h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity duration-200"
                           >
                             <PencilIcon className="h-4 w-4" />
                           </Button>
