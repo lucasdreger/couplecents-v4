@@ -42,19 +42,19 @@ export const InvestmentDistribution = () => {
   }));
 
   if (isLoading) {
-    return <div className="flex items-center justify-center h-[250px]">
-      <Skeleton className="h-40 w-40 rounded-full" />
+    return <div className="flex items-center justify-center h-[300px]">
+      <Skeleton className="h-[250px] w-[250px] rounded-full" />
     </div>;
   }
 
   if (!investments?.length) {
-    return <div className="flex items-center justify-center h-[250px] text-muted-foreground">
+    return <div className="flex items-center justify-center h-[300px] text-muted-foreground">
       No investment data available
     </div>;
   }
 
   return (
-    <div className="h-[250px]">
+    <div className="h-[300px]">
       <ResponsiveContainer width="100%" height="100%">
         <PieChart>
           <Pie
