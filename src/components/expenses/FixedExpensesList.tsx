@@ -41,32 +41,23 @@ export const FixedExpensesList = ({ year, month }: Props) => {
   const { data: fixedExpenses, isLoading, isError } = useQuery<FixedExpense[], PostgrestError>({
     queryKey: ['fixed-expenses', year, month],
     queryFn: async () => {
-      // Get all fixed expenses first
       const { data, error } = await supabase
         .from('fixed_expenses')
         .select(`
           *,
-          categories (name)
+          categories (name),
+          status:monthly_fixed_expense_status!left (
+            completed
+          )
         `)
-        .order('description');
+        .eq('status.year', year)
+        .eq('status.month', month);
 
       if (error) throw error;
-      
-      // Then get status records for the current month/year
-      const { data: statusData, error: statusError } = await supabase
-        .from('monthly_fixed_expense_status')
-        .select('*')
-        .eq('year', year)
-        .eq('month', month);
-        
-      if (statusError) throw statusError;
-      
-      // Merge status data with expenses
+
       return data?.map(expense => ({
         ...expense,
-        status: statusData?.filter(status => 
-          status.fixed_expense_id === expense.id
-        ) || []
+        status: expense.status || []
       })) || [];
     }
   });
