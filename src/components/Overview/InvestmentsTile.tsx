@@ -6,7 +6,7 @@
  * - Current values with edit capability
  * - Last update timestamps
  */
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useInvestments } from "@/hooks/useInvestments";
 import { useAuth } from '@/context/AuthContext';
@@ -31,15 +31,30 @@ export const InvestmentsTile = () => {
   const [editValue, setEditValue] = useState<string>('');
   const [currentInvestment, setCurrentInvestment] = useState<Investment | null>(null);
   const [hoveredId, setHoveredId] = useState<string | null>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
   
   const handleEdit = (investment: Investment) => {
     setEditingId(investment.id);
     setCurrentInvestment(investment);
-    setEditValue(investment.current_value.toString());
+    
+    // Format the value as currency but without the € symbol
+    setEditValue(investment.current_value.toFixed(2).replace('.', ','));
   };
   
+  // Select all text in input when it appears
+  useEffect(() => {
+    if (editingId && inputRef.current) {
+      setTimeout(() => {
+        inputRef.current?.select();
+      }, 10);
+    }
+  }, [editingId]);
+  
   const handleSave = (id: string) => {
-    const value = parseFloat(editValue);
+    // Convert comma to dot for parsing
+    const cleanValue = editValue.replace(/[€\s]/g, '').replace(',', '.');
+    const value = parseFloat(cleanValue);
+    
     if (!isNaN(value) && user?.id && currentInvestment) {
       const oldValue = currentInvestment.current_value;
       
@@ -88,7 +103,10 @@ export const InvestmentsTile = () => {
             {investments.map((investment: Investment) => (
               <Card 
                 key={investment.id} 
-                className={`border bg-card/50 transition-all duration-200 group ${hoveredId === investment.id ? 'bg-accent/10 shadow-sm' : ''}`}
+                className={`border transition-all duration-200 group 
+                  ${hoveredId === investment.id 
+                    ? 'bg-accent/15 shadow-sm ring-1 ring-primary/10' 
+                    : 'bg-card/50'}`}
                 onMouseEnter={() => setHoveredId(investment.id)}
                 onMouseLeave={() => setHoveredId(null)}
               >
@@ -106,6 +124,7 @@ export const InvestmentsTile = () => {
                         <div className="relative">
                           <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">€</span>
                           <Input
+                            ref={inputRef}
                             type="text"
                             value={editValue}
                             onChange={(e) => setEditValue(e.target.value)}

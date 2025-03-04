@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -25,6 +25,7 @@ export const ReservesTile = () => {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editValue, setEditValue] = useState<string>('');
   const [hoveredId, setHoveredId] = useState<string | null>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
   
   // Format date as DD/MM/YYYY
   const formatDate = (dateString: string) => {
@@ -34,11 +35,24 @@ export const ReservesTile = () => {
 
   const handleEdit = (reserve: Reserve) => {
     setEditingId(reserve.id);
-    setEditValue(reserve.current_value.toString());
+    // Format the value as currency but without the € symbol
+    setEditValue(reserve.current_value.toFixed(2).replace('.', ','));
   };
+  
+  // Select all text in input when it appears
+  useEffect(() => {
+    if (editingId && inputRef.current) {
+      setTimeout(() => {
+        inputRef.current?.select();
+      }, 10);
+    }
+  }, [editingId]);
 
   const handleSave = (id: string) => {
-    const value = parseFloat(editValue);
+    // Convert comma to dot for parsing
+    const cleanValue = editValue.replace(/[€\s]/g, '').replace(',', '.');
+    const value = parseFloat(cleanValue);
+    
     if (!isNaN(value) && user?.id) {
       updateValue({ id, value, userId: user.id });
       setEditingId(null);
@@ -73,7 +87,10 @@ export const ReservesTile = () => {
             {reservesArray.map(reserve => (
               <Card 
                 key={reserve.id} 
-                className={`border bg-card/50 transition-all duration-200 group ${hoveredId === reserve.id ? 'bg-accent/10 shadow-sm' : ''}`}
+                className={`border transition-all duration-200 group 
+                  ${hoveredId === reserve.id 
+                    ? 'bg-accent/15 shadow-sm ring-1 ring-primary/10' 
+                    : 'bg-card/50'}`}
                 onMouseEnter={() => setHoveredId(reserve.id)}
                 onMouseLeave={() => setHoveredId(null)}
               >
@@ -92,6 +109,7 @@ export const ReservesTile = () => {
                           <div className="relative">
                             <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">€</span>
                             <Input
+                              ref={inputRef}
                               type="text"
                               value={editValue}
                               onChange={(e) => setEditValue(e.target.value)}

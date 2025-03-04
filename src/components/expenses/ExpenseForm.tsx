@@ -46,7 +46,11 @@ import type { VariableExpense } from '@/types/database.types'
 // Form validation schema
 const expenseFormSchema = z.object({
   description: z.string().min(1, 'Description is required'),
-  amount: z.string().min(1, 'Amount is required').transform(v => parseFloat(v)),
+  amount: z.string().min(1, 'Amount is required').transform(v => {
+    // Convert comma-separated amount to decimal with dot
+    const cleanValue = v.replace(/[€\s]/g, '').replace(',', '.');
+    return parseFloat(cleanValue);
+  }),
   date: z.string().min(1, 'Date is required'),
   category_id: z.string().min(1, 'Category is required'),
   year: z.number(),
@@ -67,13 +71,20 @@ export const ExpenseForm = ({ onSubmit, year, month, expense = null, isEditing =
   const [open, setOpen] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const descriptionInputRef = useRef<HTMLInputElement>(null)
+  const amountInputRef = useRef<HTMLInputElement>(null)
   const { toast } = useToast()
+  
+  // Format amount as currency with comma decimal separator (German format)
+  const formatAmount = (value: number | null): string => {
+    if (value === null || value === undefined) return '';
+    return value.toFixed(2).replace('.', ',');
+  };
   
   const form = useForm<ExpenseFormData>({
     resolver: zodResolver(expenseFormSchema),
     defaultValues: {
       description: '',
-      amount: 0,
+      amount: '',
       date: new Date().toISOString().split('T')[0],
       category_id: '',
       year: year,
@@ -94,11 +105,18 @@ export const ExpenseForm = ({ onSubmit, year, month, expense = null, isEditing =
   useEffect(() => {
     if (expense) {
       form.setValue('description', expense.description)
-      form.setValue('amount', expense.amount)
+      form.setValue('amount', formatAmount(expense.amount))
       form.setValue('date', new Date(expense.date).toISOString().split('T')[0])
       form.setValue('category_id', expense.category_id)
+      
+      // Auto-select the amount input field when editing
+      setTimeout(() => {
+        if (isEditing && amountInputRef.current) {
+          amountInputRef.current.select();
+        }
+      }, 100);
     }
-  }, [expense, form])
+  }, [expense, form, isEditing])
 
   const handleSubmit = async (values: ExpenseFormData, keepOpen: boolean) => {
     try {
@@ -120,14 +138,14 @@ export const ExpenseForm = ({ onSubmit, year, month, expense = null, isEditing =
       
       // Show success message
       toast({
-        title: "Expense Added",
-        description: "Your expense has been successfully added.",
+        title: isEditing ? "Expense Updated" : "Expense Added",
+        description: `Your expense has been successfully ${isEditing ? 'updated' : 'added'}.`,
       });
       
       // Reset the form with the current date
       form.reset({
         description: '',
-        amount: 0,
+        amount: '',
         date: new Date().toISOString().split('T')[0],
         category_id: '',
         year: year,
@@ -147,10 +165,10 @@ export const ExpenseForm = ({ onSubmit, year, month, expense = null, isEditing =
     } catch (error) {
       toast({
         title: "Error",
-        description: "Failed to add expense. Please try again.",
+        description: `Failed to ${isEditing ? 'update' : 'add'} expense. Please try again.`,
         variant: "destructive"
       });
-      console.error("Failed to add expense:", error);
+      console.error(`Failed to ${isEditing ? 'update' : 'add'} expense:`, error);
     } finally {
       setIsSubmitting(false);
     }
@@ -190,13 +208,16 @@ export const ExpenseForm = ({ onSubmit, year, month, expense = null, isEditing =
               <FormItem>
                 <FormLabel>Amount</FormLabel>
                 <FormControl>
-                  <Input 
-                    type="number" 
-                    step="0.01" 
-                    placeholder="0.00"
-                    prefix="$"
-                    {...field} 
-                  />
+                  <div className="relative">
+                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">€</span>
+                    <Input 
+                      type="text"
+                      placeholder="0,00"
+                      className="pl-7 text-right"
+                      {...field}
+                      ref={amountInputRef}
+                    />
+                  </div>
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -298,13 +319,15 @@ export const ExpenseForm = ({ onSubmit, year, month, expense = null, isEditing =
                 <FormItem>
                   <FormLabel>Amount</FormLabel>
                   <FormControl>
-                    <Input 
-                      type="number" 
-                      step="0.01" 
-                      placeholder="0.00"
-                      prefix="$"
-                      {...field} 
-                    />
+                    <div className="relative">
+                      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">€</span>
+                      <Input 
+                        type="text"
+                        placeholder="0,00"
+                        className="pl-7 text-right"
+                        {...field}
+                      />
+                    </div>
                   </FormControl>
                   <FormMessage />
                 </FormItem>

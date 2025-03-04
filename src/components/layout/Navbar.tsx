@@ -5,7 +5,7 @@ import { Moon, Sun, User, Coins } from "lucide-react";
 import { Sparkles } from "@/components/ui/sparkles";
 
 export function Navbar() {
-  const { user, signOut } = useAuth();
+  const { user } = useAuth();
   const { theme, setTheme } = useTheme();
   
   return (
@@ -38,15 +38,6 @@ export function Navbar() {
             </div>
             <span className="text-sm font-medium">{user?.email}</span>
           </div>
-          
-          <Button 
-            variant="outline" 
-            size="sm" 
-            className="rounded-full hover:bg-primary/10 hover:text-primary transition-all duration-300" 
-            onClick={() => signOut()}
-          >
-            Sign out
-          </Button>
         </div>
       </div>
       
