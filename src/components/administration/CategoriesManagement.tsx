@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import React from 'react'  // Import React to access Suspense
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -26,7 +26,7 @@ interface Category {
 
 // Separate the categories list into its own component for suspense
 function CategoriesList({ onDelete }: { 
-  onDelete: (id: string) => void 
+  onDelete: (id: string) => Promise<void> 
 }) {
   const { data: categories } = useQuery({
     queryKey: queryKeys.categories(),
@@ -46,6 +46,7 @@ function CategoriesList({ onDelete }: {
   const [editValue, setEditValue] = useState('')
   const [hoveredId, setHoveredId] = useState<string | null>(null)
   const [confirmingDeleteId, setConfirmingDeleteId] = useState<string | null>(null)
+  const [isDeleting, setIsDeleting] = useState(false)
   
   const { mutate: updateCategory } = useMutation({
     mutationFn: async ({ id, name }: { id: string; name: string }) => {
@@ -82,10 +83,18 @@ function CategoriesList({ onDelete }: {
     setConfirmingDeleteId(id)
   }
   
-  const handleConfirmDelete = () => {
-    if (confirmingDeleteId) {
-      onDelete(confirmingDeleteId)
+  const handleConfirmDelete = async () => {
+    if (!confirmingDeleteId) return
+    
+    try {
+      setIsDeleting(true)
+      await onDelete(confirmingDeleteId)
+      // The toast is handled in the parent component's mutation
       setConfirmingDeleteId(null)
+    } catch (error) {
+      console.error("Error in handleConfirmDelete:", error)
+    } finally {
+      setIsDeleting(false)
     }
   }
   
@@ -165,12 +174,13 @@ function CategoriesList({ onDelete }: {
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogCancel disabled={isDeleting}>Cancel</AlertDialogCancel>
             <AlertDialogAction 
               onClick={handleConfirmDelete}
               className="bg-red-500 hover:bg-red-600"
+              disabled={isDeleting}
             >
-              Delete
+              {isDeleting ? "Deleting..." : "Delete"}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
@@ -204,33 +214,50 @@ export const CategoriesManagement = () => {
     }
   })
   
-  const { mutate: deleteCategory } = useMutation({
-    mutationFn: async (id: string) => {
-      try {
-        const { error } = await supabase
-          .from('categories')
-          .delete()
-          .eq('id', id)
+  // Check if category has associated expenses before deletion
+  const handleDeleteCategory = async (id: string): Promise<void> => {
+    try {
+      // First check if there are any expenses using this category
+      const { data: expenses, error: expensesError } = await supabase
+        .from('variable_expenses')
+        .select('id')
+        .eq('category_id', id)
+        .limit(1);
         
-        if (error) throw error
-        
-        return { success: true }
-      } catch (error: any) {
-        console.error('Error deleting category:', error)
-        throw new Error(error.message || 'Failed to delete category')
+      if (expensesError) throw new Error(expensesError.message);
+      
+      // If there are expenses using this category, we need to handle them
+      if (expenses && expenses.length > 0) {
+        // Update the expenses to use a null category instead of deleting
+        const { error: updateError } = await supabase
+          .from('variable_expenses')
+          .update({ category_id: null })
+          .eq('category_id', id);
+          
+        if (updateError) throw new Error(updateError.message);
       }
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.categories() })
-      toast({ description: "Category deleted successfully" })
-    },
-    onError: (error: Error) => {
+      
+      // Now delete the category
+      const { error } = await supabase
+        .from('categories')
+        .delete()
+        .eq('id', id);
+        
+      if (error) throw new Error(error.message);
+      
+      // Success - invalidate queries and show toast
+      queryClient.invalidateQueries({ queryKey: queryKeys.categories() });
+      toast({ description: "Category deleted successfully" });
+      
+    } catch (error: any) {
+      console.error("Error deleting category:", error);
       toast({ 
         description: "Failed to delete category: " + error.message,
         variant: "destructive"
-      })
+      });
+      throw error; // Rethrow so the calling component can handle it
     }
-  })
+  };
   
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
@@ -257,7 +284,7 @@ export const CategoriesManagement = () => {
             <p className="text-muted-foreground">Loading categories...</p>
           </div>
         }>
-          <CategoriesList onDelete={deleteCategory} />
+          <CategoriesList onDelete={handleDeleteCategory} />
         </React.Suspense>
       </CardContent>
     </Card>
