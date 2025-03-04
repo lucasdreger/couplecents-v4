@@ -1,12 +1,11 @@
+
 import React from 'react'
 import { NavLink } from "react-router-dom"
 import {
   BarChart3,
-  CreditCard,
-  DollarSign,
-  Settings,
-  PiggyBank,
-  Wallet
+  Calendar,
+  PieChart,
+  Settings
 } from "lucide-react"
 
 interface NavItem {
@@ -22,24 +21,14 @@ const items: NavItem[] = [
     icon: BarChart3,
   },
   {
-    title: "Expenses",
-    href: "/expenses",
-    icon: Wallet,
+    title: "Monthly Details",
+    href: "/monthly-expenses",
+    icon: Calendar,
   },
   {
-    title: "Income",
-    href: "/income",
-    icon: DollarSign,
-  },
-  {
-    title: "Reserves",
-    href: "/reserves",
-    icon: PiggyBank,
-  },
-  {
-    title: "Investments",
-    href: "/investments",
-    icon: CreditCard,
+    title: "Financial Analytics",
+    href: "/analytics",
+    icon: PieChart,
   },
   {
     title: "Administration",

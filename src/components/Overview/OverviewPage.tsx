@@ -34,8 +34,8 @@ const ErrorFallback = ({ message }: { message: string }) => (
 
 // Total Assets component
 const TotalAssets = () => {
-  const { investments, isLoading: isInvestmentsLoading } = useInvestments();
-  const { reserves, isLoading: isReservesLoading } = useReserves();
+  const { investments, loading: isInvestmentsLoading } = useInvestments();
+  const { reserves, loading: isReservesLoading } = useReserves();
   const { theme } = useTheme();
   
   const isLoading = isInvestmentsLoading || isReservesLoading;
@@ -88,23 +88,33 @@ const TotalAssets = () => {
 };
 
 interface Props {
-  expenses: any[]
-  monthlyIncome: number
-  monthlyBudget: number
-  monthlyExpenses: number
-  isLoading: boolean
+  expenses?: any[];
+  monthlyIncome?: number;
+  monthlyBudget?: number;
+  monthlyExpenses?: number;
+  isLoading?: boolean;
 }
 
-export const OverviewPage = ({ expenses = [], monthlyIncome = 0, monthlyBudget = 0, monthlyExpenses = 0, isLoading = false }: Props) => {
-  const { investments, isLoading: investmentsLoading } = useInvestments();
-  const { reserves, isLoading: reservesLoading } = useReserves();
+export const OverviewPage = ({ 
+  expenses = [], 
+  monthlyIncome = 0, 
+  monthlyBudget = 0, 
+  monthlyExpenses = 0, 
+  isLoading = false 
+}: Props) => {
+  const { investments, loading: investmentsLoading } = useInvestments();
+  const { reserves, loading: reservesLoading } = useReserves();
 
   if (isLoading || investmentsLoading || reservesLoading) {
     return <LoadingSpinner />;
   }
 
-  const totalInvestments = investments.reduce((sum: number, inv: any) => sum + inv.amount, 0);
-  const totalReserves = reserves.reduce((sum: number, reserve: any) => sum + reserve.amount, 0);
+  // We need to safely handle the investments/reserves data
+  const safeInvestments = investments || [];
+  const safeReserves = reserves || [];
+
+  const totalInvestments = safeInvestments.reduce((sum: number, inv: any) => sum + (inv.amount || 0), 0);
+  const totalReserves = safeReserves.reduce((sum: number, reserve: any) => sum + (reserve.amount || 0), 0);
 
   return (
     <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
@@ -114,12 +124,19 @@ export const OverviewPage = ({ expenses = [], monthlyIncome = 0, monthlyBudget =
         monthlyBudget={monthlyBudget}
         remainingBudget={monthlyIncome - monthlyExpenses}
       />
-      <ReservesTile reserves={reserves} />
+      <ReservesTile reserves={safeReserves} />
       <CategoryBreakdown expenses={expenses} />
       <div className="md:col-span-2 xl:col-span-3">
-        <FinancialAnalytics />
+        <FinancialAnalytics data={[
+          { name: 'Jan', income: 3500, expenses: 2200, savings: 800, investments: 500 },
+          { name: 'Feb', income: 3500, expenses: 2100, savings: 900, investments: 500 },
+          { name: 'Mar', income: 3700, expenses: 2400, savings: 800, investments: 500 },
+          { name: 'Apr', income: 3600, expenses: 2000, savings: 1100, investments: 500 },
+          { name: 'May', income: 3800, expenses: 2300, savings: 1000, investments: 500 },
+          { name: 'Jun', income: 4000, expenses: 2500, savings: 1000, investments: 500 },
+        ]} />
       </div>
-      <InvestmentDistribution investments={investments} />
+      <InvestmentDistribution investments={safeInvestments} />
     </div>
   );
 };
