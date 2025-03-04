@@ -87,10 +87,10 @@ export const ReservesTile = () => {
             {reservesArray.map(reserve => (
               <Card 
                 key={reserve.id} 
-                className={`border transition-all duration-200 group 
+                className={`border transition-all duration-300 group 
                   ${hoveredId === reserve.id 
-                    ? 'bg-accent/15 shadow-sm ring-1 ring-primary/10' 
-                    : 'bg-card/50'}`}
+                    ? 'bg-accent/20 shadow-md scale-[1.02] border-primary/20 transform' 
+                    : 'bg-card/50 hover:bg-accent/5'}`}
                 onMouseEnter={() => setHoveredId(reserve.id)}
                 onMouseLeave={() => setHoveredId(null)}
               >

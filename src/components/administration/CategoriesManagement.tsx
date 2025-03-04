@@ -95,7 +95,10 @@ function CategoriesList({ onDelete }: {
         {categories?.map((category) => (
           <div 
             key={category.id} 
-            className={`flex justify-between items-center p-3 rounded border transition-colors duration-200 ${hoveredId === category.id ? 'bg-accent/10' : ''}`}
+            className={`flex justify-between items-center p-3 rounded border transition-all duration-300 
+              ${hoveredId === category.id 
+                ? 'bg-accent/20 shadow-md scale-[1.01] border-primary/20 transform' 
+                : 'bg-card/50 hover:bg-accent/5'}`}
             onMouseEnter={() => setHoveredId(category.id)}
             onMouseLeave={() => setHoveredId(null)}
           >
@@ -140,7 +143,7 @@ function CategoriesList({ onDelete }: {
                     onClick={() => handleDeleteClick(category.id)}
                     className={`transition-opacity duration-200 ${hoveredId === category.id ? 'opacity-100' : 'opacity-0'}`}
                   >
-                    <Trash2 className="w-4 h-4" />
+                    <Trash2 className="w-4 h-4 text-red-500" />
                   </Button>
                 </div>
               </>
@@ -203,11 +206,19 @@ export const CategoriesManagement = () => {
   
   const { mutate: deleteCategory } = useMutation({
     mutationFn: async (id: string) => {
-      const { error } = await supabase
-        .from('categories')
-        .delete()
-        .eq('id', id)
-      if (error) throw error
+      try {
+        const { error } = await supabase
+          .from('categories')
+          .delete()
+          .eq('id', id)
+        
+        if (error) throw error
+        
+        return { success: true }
+      } catch (error: any) {
+        console.error('Error deleting category:', error)
+        throw new Error(error.message || 'Failed to delete category')
+      }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.categories() })
