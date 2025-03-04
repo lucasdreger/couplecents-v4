@@ -48,7 +48,7 @@ export function MainNav({
           <NavLink
             key={item.href}
             to={item.href}
-            className={({ isActive }) =>
+            className={({ isActive }: { isActive: boolean }) =>
               `group flex items-center rounded-md px-3 py-2 text-sm font-medium hover:bg-accent hover:text-accent-foreground ${
                 isActive ? "bg-accent" : "transparent"
               }`

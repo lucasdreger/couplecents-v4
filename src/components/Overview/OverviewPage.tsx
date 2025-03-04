@@ -34,8 +34,8 @@ const ErrorFallback = ({ message }: { message: string }) => (
 
 // Total Assets component
 const TotalAssets = () => {
-  const { investments, loading: isInvestmentsLoading } = useInvestments();
-  const { reserves, loading: isReservesLoading } = useReserves();
+  const { investments, isLoading: isInvestmentsLoading } = useInvestments();
+  const { reserves, isLoading: isReservesLoading } = useReserves();
   const { theme } = useTheme();
   
   const isLoading = isInvestmentsLoading || isReservesLoading;
@@ -102,8 +102,8 @@ export const OverviewPage = ({
   monthlyExpenses = 0, 
   isLoading = false 
 }: Props) => {
-  const { investments, loading: investmentsLoading } = useInvestments();
-  const { reserves, loading: reservesLoading } = useReserves();
+  const { investments, isLoading: investmentsLoading } = useInvestments();
+  const { reserves, isLoading: reservesLoading } = useReserves();
 
   if (isLoading || investmentsLoading || reservesLoading) {
     return <LoadingSpinner />;
@@ -140,30 +140,3 @@ export const OverviewPage = ({
     </div>
   );
 };
-
-// Error Boundary Component
-class ErrorBoundary extends React.Component<
-  { children: React.ReactNode; fallback: React.ReactNode },
-  { hasError: boolean }
-> {
-  constructor(props: { children: React.ReactNode; fallback: React.ReactNode }) {
-    super(props);
-    this.state = { hasError: false };
-  }
-  
-  static getDerivedStateFromError() {
-    return { hasError: true };
-  }
-  
-  componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
-    console.error('Error caught by boundary:', error);
-    console.error('Component stack:', errorInfo.componentStack);
-  }
-  
-  render() {
-    if (this.state.hasError) {
-      return this.props.fallback;
-    }
-    return this.props.children;
-  }
-}

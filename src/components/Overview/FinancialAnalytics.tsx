@@ -1,6 +1,16 @@
+
 import React from 'react'
-import { Area, AreaChart, CartesianGrid, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
-import { Line } from 'recharts'
+import { 
+  AreaChart, 
+  CartesianGrid, 
+  LineChart, 
+  ResponsiveContainer, 
+  Tooltip, 
+  XAxis, 
+  YAxis,
+  Area as RechartsArea,
+  Line as RechartsLine
+} from 'recharts'
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { formatCurrency } from '@/lib/utils'
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
@@ -79,7 +89,7 @@ export const FinancialAnalytics = ({ data }: Props) => {
       <CardHeader>
         <div className="flex items-center justify-between">
           <CardTitle className="text-base font-medium">Financial Analytics</CardTitle>
-          <Tabs value={view} onValueChange={(v) => setView(v as 'overview' | 'details')}>
+          <Tabs value={view} onValueChange={(v: string) => setView(v as 'overview' | 'details')}>
             <TabsList>
               <TabsTrigger value="overview">Overview</TabsTrigger>
               <TabsTrigger value="details">Details</TabsTrigger>
@@ -114,10 +124,10 @@ export const FinancialAnalytics = ({ data }: Props) => {
                 <XAxis dataKey="name" />
                 <YAxis tickFormatter={(value: number) => formatCurrency(value)} />
                 <Tooltip formatter={(value: number, name: string) => [formatCurrency(value), name]} />
-                <Area type="monotone" dataKey="Income" stroke="#82ca9d" fillOpacity={1} fill="url(#colorIncome)" />
-                <Area type="monotone" dataKey="Expenses" stroke="#ff7c7c" fillOpacity={1} fill="url(#colorExpenses)" />
-                <Area type="monotone" dataKey="Savings" stroke="#8884d8" fillOpacity={1} fill="url(#colorSavings)" />
-                <Area type="monotone" dataKey="Investments" stroke="#ffc658" fillOpacity={1} fill="url(#colorInvestments)" />
+                <RechartsArea type="monotone" dataKey="Income" stroke="#82ca9d" fillOpacity={1} fill="url(#colorIncome)" />
+                <RechartsArea type="monotone" dataKey="Expenses" stroke="#ff7c7c" fillOpacity={1} fill="url(#colorExpenses)" />
+                <RechartsArea type="monotone" dataKey="Savings" stroke="#8884d8" fillOpacity={1} fill="url(#colorSavings)" />
+                <RechartsArea type="monotone" dataKey="Investments" stroke="#ffc658" fillOpacity={1} fill="url(#colorInvestments)" />
               </AreaChart>
             ) : (
               <LineChart data={runningTotals}>
@@ -125,10 +135,10 @@ export const FinancialAnalytics = ({ data }: Props) => {
                 <XAxis dataKey="name" />
                 <YAxis tickFormatter={(value: number) => formatCurrency(value)} />
                 <Tooltip formatter={(value: number) => formatCurrency(value)} />
-                <Line type="monotone" dataKey="income" name="Income" stroke="#82ca9d" />
-                <Line type="monotone" dataKey="expenses" name="Expenses" stroke="#ff7c7c" />
-                <Line type="monotone" dataKey="savings" name="Savings" stroke="#8884d8" />
-                <Line type="monotone" dataKey="investments" name="Investments" stroke="#ffc658" />
+                <RechartsLine type="monotone" dataKey="income" name="Income" stroke="#82ca9d" />
+                <RechartsLine type="monotone" dataKey="expenses" name="Expenses" stroke="#ff7c7c" />
+                <RechartsLine type="monotone" dataKey="savings" name="Savings" stroke="#8884d8" />
+                <RechartsLine type="monotone" dataKey="investments" name="Investments" stroke="#ffc658" />
               </LineChart>
             )}
           </ResponsiveContainer>

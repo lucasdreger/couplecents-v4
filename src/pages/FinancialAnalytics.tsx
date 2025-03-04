@@ -8,20 +8,21 @@ import {
 } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { 
-  Area, 
   AreaChart, 
   CartesianGrid, 
-  Line, 
   LineChart, 
   ResponsiveContainer, 
   Tooltip, 
   XAxis, 
-  YAxis 
+  YAxis,
+  Area as RechartsArea,
+  Line as RechartsLine
 } from 'recharts';
 import { formatCurrency } from '@/lib/utils';
 import { LoadingSpinner } from '@/components/ui/loading-spinner';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
+import { GlowingEffect } from '@/components/ui/glowing-effect';
 
 interface ChartData {
   name: string;
@@ -103,7 +104,8 @@ export default function FinancialAnalytics() {
     <div className="container mx-auto p-6">
       <h1 className="text-3xl font-bold tracking-tight mb-6">Financial Analytics</h1>
       
-      <Card className="col-span-3">
+      <Card className="relative overflow-hidden">
+        <GlowingEffect spread={40} glow={true} disabled={false} />
         <CardHeader>
           <div className="flex items-center justify-between">
             <CardTitle className="text-base font-medium">Financial Analytics</CardTitle>
@@ -142,10 +144,10 @@ export default function FinancialAnalytics() {
                   <XAxis dataKey="name" />
                   <YAxis tickFormatter={(value: number) => formatCurrency(value)} />
                   <Tooltip formatter={(value: number, name: string) => [formatCurrency(value), name]} />
-                  <Area type="monotone" dataKey="Income" stroke="#82ca9d" fillOpacity={1} fill="url(#colorIncome)" />
-                  <Area type="monotone" dataKey="Expenses" stroke="#ff7c7c" fillOpacity={1} fill="url(#colorExpenses)" />
-                  <Area type="monotone" dataKey="Savings" stroke="#8884d8" fillOpacity={1} fill="url(#colorSavings)" />
-                  <Area type="monotone" dataKey="Investments" stroke="#ffc658" fillOpacity={1} fill="url(#colorInvestments)" />
+                  <RechartsArea type="monotone" dataKey="Income" stroke="#82ca9d" fillOpacity={1} fill="url(#colorIncome)" />
+                  <RechartsArea type="monotone" dataKey="Expenses" stroke="#ff7c7c" fillOpacity={1} fill="url(#colorExpenses)" />
+                  <RechartsArea type="monotone" dataKey="Savings" stroke="#8884d8" fillOpacity={1} fill="url(#colorSavings)" />
+                  <RechartsArea type="monotone" dataKey="Investments" stroke="#ffc658" fillOpacity={1} fill="url(#colorInvestments)" />
                 </AreaChart>
               ) : (
                 <LineChart data={runningTotals}>
@@ -153,10 +155,10 @@ export default function FinancialAnalytics() {
                   <XAxis dataKey="name" />
                   <YAxis tickFormatter={(value: number) => formatCurrency(value)} />
                   <Tooltip formatter={(value: number) => formatCurrency(value)} />
-                  <Line type="monotone" dataKey="income" name="Income" stroke="#82ca9d" />
-                  <Line type="monotone" dataKey="expenses" name="Expenses" stroke="#ff7c7c" />
-                  <Line type="monotone" dataKey="savings" name="Savings" stroke="#8884d8" />
-                  <Line type="monotone" dataKey="investments" name="Investments" stroke="#ffc658" />
+                  <RechartsLine type="monotone" dataKey="income" name="Income" stroke="#82ca9d" />
+                  <RechartsLine type="monotone" dataKey="expenses" name="Expenses" stroke="#ff7c7c" />
+                  <RechartsLine type="monotone" dataKey="savings" name="Savings" stroke="#8884d8" />
+                  <RechartsLine type="monotone" dataKey="investments" name="Investments" stroke="#ffc658" />
                 </LineChart>
               )}
             </ResponsiveContainer>
