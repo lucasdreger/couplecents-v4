@@ -1,96 +1,77 @@
-import { useInvestments } from "@/hooks/useInvestments";
-import {
-  PieChart,
-  Pie,
-  Cell,
-  ResponsiveContainer,
-  Tooltip,
-  Legend
-} from 'recharts';
-import { Skeleton } from "@/components/ui/skeleton";
+import React from 'react'
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { formatCurrency } from '@/lib/utils'
 
-const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8', '#4B0082', '#FF1493', '#008B8B', '#8B4513', '#808000'];
+interface Investment {
+  id: string;
+  name: string;
+  amount: number;
+  type: string;
+  returns: number;
+  user_id: string;
+}
 
-// Custom label that only shows percentage inside the pie slice
-const renderCustomizedLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, percent }: any) => {
-  const RADIAN = Math.PI / 180;
-  const radius = innerRadius + (outerRadius - innerRadius) * 0.6;
-  const x = cx + radius * Math.cos(-midAngle * RADIAN);
-  const y = cy + radius * Math.sin(-midAngle * RADIAN);
+interface InvestmentDistributionProps {
+  investments: Investment[];
+}
 
-  return (
-    <text 
-      x={x} 
-      y={y} 
-      fill="white" 
-      textAnchor="middle" 
-      dominantBaseline="central"
-      fontSize="12"
-      fontWeight="bold"
-    >
-      {`${(percent * 100).toFixed(0)}%`}
-    </text>
-  );
-};
+export const InvestmentDistribution = ({ investments }: InvestmentDistributionProps) => {
+  // Group investments by type
+  const groupedInvestments = investments.reduce((acc: { [key: string]: number }, inv: Investment) => {
+    acc[inv.type] = (acc[inv.type] || 0) + inv.amount
+    return acc
+  }, {})
 
-export const InvestmentDistribution = () => {
-  const { investments, isLoading } = useInvestments();
-  
-  const pieData = investments?.map(inv => ({
-    name: inv.name,
-    value: inv.current_value
-  }))
-  .sort((a, b) => b.value - a.value); // Sort by value descending
+  // Convert to array and sort by amount
+  const sortedInvestments = Object.entries(groupedInvestments)
+    .map(([type, amount]) => ({ type, amount }))
+    .sort((a, b) => b.amount - a.amount)
 
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center h-[300px]">
-        <Skeleton className="h-[250px] w-[250px] rounded-full" />
-      </div>
-    );
-  }
+  const totalInvestment = sortedInvestments.reduce((total, item) => total + item.amount, 0)
 
-  if (!investments?.length) {
-    return (
-      <div className="flex items-center justify-center h-[300px] text-muted-foreground">
-        No investment data available. Add some investments to see your portfolio distribution.
-      </div>
-    );
-  }
+  const colors = [
+    "#FF6B6B", "#4ECDC4", "#45B7D1", "#96CEB4", "#FFEEAD",
+    "#D4A5A5", "#9FA8DA", "#CE93D8", "#9575CD", "#7986CB"
+  ]
 
   return (
-    <div className="h-[300px]">
-      <ResponsiveContainer width="100%" height="100%">
-        <PieChart>
-          <Pie
-            data={pieData}
-            dataKey="value"
-            nameKey="name"
-            cx="50%"
-            cy="50%"
-            outerRadius={80}
-            labelLine={false}
-            label={renderCustomizedLabel}
-          >
-            {pieData?.map((_, index) => (
-              <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-            ))}
-          </Pie>
-          <Tooltip 
-            formatter={(value: number) => value.toLocaleString('de-DE', { 
-              style: 'currency', 
-              currency: 'EUR',
-              minimumFractionDigits: 2,
-              maximumFractionDigits: 2
-            })}
-          />
-          <Legend 
-            layout="horizontal"
-            verticalAlign="bottom"
-            align="center"
-          />
-        </PieChart>
-      </ResponsiveContainer>
-    </div>
-  );
-};
+    <Card>
+      <CardHeader className="pb-2">
+        <CardTitle className="text-base font-medium">Investment Distribution</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <div className="space-y-4">
+          {sortedInvestments.map((_, index) => (
+            <div key={index} className="flex items-center gap-4">
+              <div className="flex-1">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <div
+                      className="h-3 w-3 rounded-full"
+                      style={{ backgroundColor: colors[index % colors.length] }}
+                    />
+                    <span className="text-sm font-medium">
+                      {sortedInvestments[index].type}
+                    </span>
+                  </div>
+                  <span className="text-sm text-muted-foreground">
+                    {formatCurrency(sortedInvestments[index].amount)}
+                  </span>
+                </div>
+                <div className="mt-1 h-2 w-full rounded-full bg-muted">
+                  <div
+                    className="h-full rounded-full"
+                    style={{
+                      width: `${(sortedInvestments[index].amount / totalInvestment) * 100}%`,
+                      backgroundColor: colors[index % colors.length]
+                    }}
+                  />
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </CardContent>
+    </Card>
+  )
+}

@@ -9,397 +9,148 @@
  * - Type-safe form data handling
  * - Real-time category loading
  */
-import { useState, useEffect, useRef } from 'react'
-import { useForm } from 'react-hook-form'
-import { zodResolver } from '@hookform/resolvers/zod'
-import { Plus, PlusCircle, CalendarIcon } from 'lucide-react'
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { Calendar } from '@/components/ui/calendar'
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
-import { cn } from '@/lib/utils'
-import { format } from 'date-fns'
-import { useQuery } from '@tanstack/react-query'
-import { queryKeys } from '@/lib/queries'
-import { getCategories } from '@/lib/supabase'
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form"
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"
+import React from 'react'
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Input } from "@/components/ui/input"
 import { useToast } from "@/hooks/use-toast"
-import * as z from 'zod'
-import type { VariableExpense } from '@/types/database.types'
-
-// Form validation schema
-const expenseFormSchema = z.object({
-  description: z.string().min(1, 'Description is required'),
-  amount: z.string().min(1, 'Amount is required').transform(v => {
-    // Convert comma-separated amount to decimal with dot
-    const cleanValue = v.replace(/[€\s]/g, '').replace(',', '.');
-    return parseFloat(cleanValue);
-  }),
-  date: z.string().min(1, 'Date is required'),
-  category_id: z.string().min(1, 'Category is required'),
-  year: z.number(),
-  month: z.number()
-})
-
-type ExpenseFormData = Omit<VariableExpense, 'id' | 'created_at'>
+import { Button } from "@/components/ui/button"
+import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select"
+import { supabase } from '@/lib/supabaseClient'
 
 interface ExpenseFormProps {
-  onSubmit: (data: ExpenseFormData) => Promise<void>;
-  year: number;
-  month: number;
-  expense?: VariableExpense | null;
-  isEditing?: boolean;
+  onSubmit: (data: ExpenseFormData) => Promise<void>
+  year: number
+  month: number
 }
 
-export const ExpenseForm = ({ onSubmit, year, month, expense = null, isEditing = false }: ExpenseFormProps) => {
-  const [open, setOpen] = useState(false)
-  const [isSubmitting, setIsSubmitting] = useState(false)
-  const descriptionInputRef = useRef<HTMLInputElement>(null)
-  const amountInputRef = useRef<HTMLInputElement>(null)
+interface ExpenseFormData {
+  amount: number
+  category_id: string
+  description: string
+  date: string
+}
+
+export const ExpenseForm = ({ onSubmit, year, month }: ExpenseFormProps) => {
   const { toast } = useToast()
-  
-  // Format amount as currency with comma decimal separator (German format)
-  const formatAmount = (value: number | null): string => {
-    if (value === null || value === undefined) return '';
-    return value.toFixed(2).replace('.', ',');
-  };
-  
-  const form = useForm<ExpenseFormData>({
-    resolver: zodResolver(expenseFormSchema),
-    defaultValues: {
-      description: '',
-      amount: '',
-      date: new Date().toISOString().split('T')[0],
-      category_id: '',
-      year: year,
-      month: month
-    }
-  });
+  const [loading, setLoading] = React.useState(false)
+  const [amount, setAmount] = React.useState('')
+  const [categoryId, setCategoryId] = React.useState('')
+  const [description, setDescription] = React.useState('')
+  const [categories, setCategories] = React.useState<Array<{ id: string; name: string }>>([])
 
-  // Load categories
-  const { data: categories, isLoading: isCategoriesLoading } = useQuery({
-    queryKey: ['categories'],
-    queryFn: async () => {
-      const { data } = await getCategories()
-      return data
-    }
-  });
+  React.useEffect(() => {
+    fetchCategories()
+  }, [])
 
-  // Set form data if we're editing an existing expense
-  useEffect(() => {
-    if (expense) {
-      form.setValue('description', expense.description)
-      form.setValue('amount', formatAmount(expense.amount))
-      form.setValue('date', new Date(expense.date).toISOString().split('T')[0])
-      form.setValue('category_id', expense.category_id)
-      
-      // Auto-select the amount input field when editing
-      setTimeout(() => {
-        if (isEditing && amountInputRef.current) {
-          amountInputRef.current.select();
-        }
-      }, 100);
-    }
-  }, [expense, form, isEditing])
-
-  const handleSubmit = async (values: ExpenseFormData, keepOpen: boolean) => {
+  const fetchCategories = async () => {
     try {
-      setIsSubmitting(true)
-      
-      // Ensure the date is extracted properly
-      const date = new Date(values.date);
-      
-      // Create the expense object
-      const expenseData = {
-        ...values,
-        year: date.getFullYear(),
-        month: date.getMonth() + 1,
-        amount: Number(values.amount)
-      };
-      
-      // Submit the data
-      await onSubmit(expenseData);
-      
-      // Show success message
-      toast({
-        title: isEditing ? "Expense Updated" : "Expense Added",
-        description: `Your expense has been successfully ${isEditing ? 'updated' : 'added'}.`,
-      });
-      
-      // Reset the form with the current date
-      form.reset({
-        description: '',
-        amount: '',
-        date: new Date().toISOString().split('T')[0],
-        category_id: '',
-        year: year,
-        month: month
-      });
-      
-      if (keepOpen) {
-        // Focus on the description field after form reset
-        setTimeout(() => {
-          if (descriptionInputRef.current) {
-            descriptionInputRef.current.focus();
-          }
-        }, 0);
-      } else {
-        setOpen(false);
-      }
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: `Failed to ${isEditing ? 'update' : 'add'} expense. Please try again.`,
-        variant: "destructive"
-      });
-      console.error(`Failed to ${isEditing ? 'update' : 'add'} expense:`, error);
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
+      const { data, error } = await supabase
+        .from('categories')
+        .select('id, name')
+        .order('name')
 
-  // If we're editing, just show the form directly
-  if (isEditing) {
-    return (
-      <form onSubmit={form.handleSubmit((values) => handleSubmit(values, false))} className="space-y-4">
-        <DialogHeader>
-          <DialogTitle>{isEditing ? 'Edit' : 'Add'} Expense</DialogTitle>
-        </DialogHeader>
-        
-        <div className="space-y-3">
-          <FormField
-            control={form.control}
-            name="description"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Description</FormLabel>
-                <FormControl>
-                  <Input 
-                    placeholder="Expense description" 
-                    {...field} 
-                    ref={descriptionInputRef}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          
-          <FormField
-            control={form.control}
-            name="amount"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Amount</FormLabel>
-                <FormControl>
-                  <div className="relative">
-                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">€</span>
-                    <Input 
-                      type="text"
-                      placeholder="0,00"
-                      className="pl-7 text-right"
-                      {...field}
-                      ref={amountInputRef}
-                    />
-                  </div>
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          
-          <FormField
-            control={form.control}
-            name="date"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Date</FormLabel>
-                <FormControl>
-                  <Input type="date" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          
-          <FormField
-            control={form.control}
-            name="category_id"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Category</FormLabel>
-                <Select 
-                  onValueChange={field.onChange} 
-                  value={field.value}
-                >
-                  <FormControl>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select a category" />
-                    </SelectTrigger>
-                  </FormControl>
-                  <SelectContent>
-                    {isCategoriesLoading ? (
-                      <SelectItem disabled value="loading">Loading...</SelectItem>
-                    ) : categories && categories.length > 0 ? (
-                      categories.map(cat => (
-                        <SelectItem key={cat.id} value={cat.id}>
-                          {cat.name}
-                        </SelectItem>
-                      ))
-                    ) : (
-                      <SelectItem disabled value="none">No categories found</SelectItem>
-                    )}
-                  </SelectContent>
-                </Select>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-        </div>
-        
-        <Button type="submit" disabled={isSubmitting} className="w-full">
-          {isSubmitting ? 'Saving...' : isEditing ? 'Save Changes' : 'Add Expense'}
-        </Button>
-      </form>
-    )
+      if (error) throw error
+      if (data) setCategories(data)
+    } catch (error) {
+      console.error('Error fetching categories:', error)
+    }
   }
 
-  // Regular add expense dialog
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setLoading(true)
+
+    try {
+      const numericAmount = parseFloat(amount.replace(',', '.'))
+      if (isNaN(numericAmount)) {
+        throw new Error('Invalid amount')
+      }
+
+      const today = new Date()
+      const expenseDate = new Date(year, month - 1, today.getDate())
+
+      await onSubmit({
+        amount: numericAmount,
+        category_id: categoryId,
+        description,
+        date: expenseDate.toISOString()
+      })
+
+      setAmount('')
+      setCategoryId('')
+      setDescription('')
+
+      toast({
+        description: "Expense added successfully",
+      })
+    } catch (error) {
+      toast({
+        description: "Error adding expense",
+        variant: "destructive",
+      })
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value.replace(/[^\d.,]/g, '')
+    setAmount(value)
+  }
+
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <Button onClick={() => setOpen(true)}>
-          <Plus className="mr-2 h-4 w-4" />
-          Add Expense
-        </Button>
-      </DialogTrigger>
-      <DialogContent className="sm:max-w-[425px]">
-        <DialogHeader>
-          <DialogTitle>Add New Expense</DialogTitle>
-        </DialogHeader>
-        <Form {...form}>
-          <form className="space-y-4">
-            <FormField
-              control={form.control}
-              name="description"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Description</FormLabel>
-                  <FormControl>
-                    <Input 
-                      placeholder="Expense description" 
-                      {...field} 
-                      ref={descriptionInputRef}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="amount"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Amount</FormLabel>
-                  <FormControl>
-                    <div className="relative">
-                      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">€</span>
-                      <Input 
-                        type="text"
-                        placeholder="0,00"
-                        className="pl-7 text-right"
-                        {...field}
-                      />
-                    </div>
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="category_id"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Category</FormLabel>
-                  <Select 
-                    onValueChange={field.onChange} 
-                    value={field.value}
-                  >
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select a category" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      {isCategoriesLoading ? (
-                        <SelectItem disabled value="loading">Loading...</SelectItem>
-                      ) : categories && categories.length > 0 ? (
-                        categories.map(cat => (
-                          <SelectItem key={cat.id} value={cat.id}>
-                            {cat.name}
-                          </SelectItem>
-                        ))
-                      ) : (
-                        <SelectItem disabled value="none">No categories found</SelectItem>
-                      )}
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="date"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Date</FormLabel>
-                  <FormControl>
-                    <Input type="date" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <div className="flex space-x-2 pt-2">
-              <Button 
-                type="button" 
-                onClick={form.handleSubmit((values) => handleSubmit(values, true))}
-                className="flex-1"
-                disabled={isSubmitting}
-              >
-                {isSubmitting ? "Saving..." : "Save and another"}
-              </Button>
-              <Button 
-                type="button" 
-                onClick={form.handleSubmit((values) => handleSubmit(values, false))}
-                className="flex-1"
-                disabled={isSubmitting}
-              >
-                {isSubmitting ? "Saving..." : "Save and close"}
-              </Button>
+    <Card>
+      <CardHeader>
+        <CardTitle>Add Expense</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="space-y-2">
+            <label className="text-sm text-muted-foreground">Amount</label>
+            <div className="relative">
+              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">€</span>
+              <Input
+                type="text"
+                value={amount}
+                onChange={handleAmountChange}
+                className="pl-7"
+                placeholder="0,00"
+              />
             </div>
-          </form>
-        </Form>
-      </DialogContent>
-    </Dialog>
+          </div>
+
+          <div className="space-y-2">
+            <label className="text-sm text-muted-foreground">Category</label>
+            <Select value={categoryId} onValueChange={setCategoryId}>
+              <SelectTrigger>
+                <SelectValue placeholder="Select a category" />
+              </SelectTrigger>
+              <SelectContent>
+                {categories.map((cat) => (
+                  <SelectItem key={cat.id} value={cat.id}>
+                    {cat.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="space-y-2">
+            <label className="text-sm text-muted-foreground">Description</label>
+            <Input
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              placeholder="Enter description"
+            />
+          </div>
+
+          <div className="flex justify-end">
+            <Button type="submit" disabled={loading || !amount || !categoryId}>
+              Add Expense
+            </Button>
+          </div>
+        </form>
+      </CardContent>
+    </Card>
   )
 }

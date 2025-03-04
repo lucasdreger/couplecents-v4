@@ -1,4 +1,3 @@
-
 import React from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
@@ -23,8 +22,10 @@ import {
   DropdownMenuSeparator, 
   DropdownMenuTrigger 
 } from "@/components/ui/dropdown-menu";
-import { Sparkles } from "../ui/sparkles";
+import { Sparkles } from "@/components/ui/sparkles";
 import { toast } from "sonner";
+import { ModeToggle } from "@/components/mode-toggle";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 export default function Navbar() {
   const navigate = useNavigate();
@@ -61,43 +62,22 @@ export default function Navbar() {
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <div className="flex h-14 items-center justify-between gap-4 px-4">
-        <div className="flex items-center gap-2">
-          <Button
-            variant="ghost"
-            size="icon"
-            className="mr-2 h-8 w-8"
-            onClick={() => navigate(-1)}
-          >
-            <ChevronLeft className="h-4 w-4" />
-          </Button>
-          <Link to="/" className="flex items-center space-x-2">
-            <span className="font-bold">Expense Empower</span>
-          </Link>
-          <Button
-            variant="ghost"
-            size="icon"
-            className="ml-2 h-8 w-8"
-            onClick={() => navigate(1)}
-          >
-            <ChevronRight className="h-4 w-4" />
-          </Button>
+      <div className="container flex h-14 items-center justify-between">
+        <div className="relative flex items-center">
+          <span className="text-lg font-semibold">Expense Empower</span>
+          <div className="absolute -inset-1">
+            <Sparkles 
+              color={theme === "dark" ? "#8350e8" : "#8350e8"}
+              size={2}
+              density={50}
+              speed={0.5}
+              opacity={0.3}
+            />
+          </div>
         </div>
 
         <div className="flex items-center gap-4">
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={handleThemeToggle}
-            className="h-8 w-8"
-          >
-            {theme === "dark" ? (
-              <Sun className="h-4 w-4" />
-            ) : (
-              <Moon className="h-4 w-4" />
-            )}
-          </Button>
-
+          <ModeToggle />
           {user ? (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -135,16 +115,8 @@ export default function Navbar() {
           )}
         </div>
       </div>
-      
-      <div className="absolute left-0 top-0 h-full w-full overflow-hidden">
-        <Sparkles 
-          color="var(--sparkles-color)" 
-          size={0.5} 
-          density={20} 
-          speed={0.1} 
-          opacity={0.2}
-        />
-      </div>
     </header>
   );
 }
+
+Navbar.displayName = "Navbar";
