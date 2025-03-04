@@ -1,6 +1,8 @@
+
 import React from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { formatCurrency } from '@/lib/utils'
+import { GlowingEffect } from '@/components/ui/glowing-effect'
 
 interface Investment {
   id: string;
@@ -35,7 +37,8 @@ export const InvestmentDistribution = ({ investments }: InvestmentDistributionPr
   ]
 
   return (
-    <Card>
+    <Card className="relative overflow-hidden">
+      <GlowingEffect disabled={false} spread={30} glow={true} />
       <CardHeader className="pb-2">
         <CardTitle className="text-base font-medium">Investment Distribution</CardTitle>
       </CardHeader>

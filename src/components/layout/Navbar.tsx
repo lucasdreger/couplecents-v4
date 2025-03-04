@@ -1,3 +1,4 @@
+
 import React from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
@@ -67,6 +68,7 @@ export default function Navbar() {
           <span className="text-lg font-semibold">Expense Empower</span>
           <div className="absolute -inset-1">
             <Sparkles 
+              className="h-full w-full"
               color={theme === "dark" ? "#8350e8" : "#8350e8"}
               size={2}
               density={50}

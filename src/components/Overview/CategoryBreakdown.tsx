@@ -1,7 +1,9 @@
+
 import React from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Cell, Pie, PieChart, ResponsiveContainer, Tooltip } from 'recharts'
 import { formatCurrency } from '@/lib/utils'
+import { GlowingEffect } from '@/components/ui/glowing-effect'
 
 interface CategoryBreakdownProps {
   expenses: Array<{
@@ -9,15 +11,6 @@ interface CategoryBreakdownProps {
     category_name: string
     total: number
   }>
-}
-
-interface VariableExpenseRow {
-  id: string
-  amount: number
-  description: string
-  date: string
-  category_id: string
-  user_id: string
 }
 
 export const CategoryBreakdown = ({ expenses }: CategoryBreakdownProps) => {
@@ -32,14 +25,15 @@ export const CategoryBreakdown = ({ expenses }: CategoryBreakdownProps) => {
     color: colors[index % colors.length]
   }))
 
-  const renderCustomLabel = (_entry: { name: string; value: number }, index: number) => {
+  const renderCustomLabel = (entry: { name: string; value: number }, index: number) => {
     return `${((data[index].value / total) * 100).toFixed(0)}%`
   }
 
   const total = data.reduce((sum, item) => sum + item.value, 0)
 
   return (
-    <Card>
+    <Card className="relative overflow-hidden">
+      <GlowingEffect disabled={false} spread={30} glow={true} />
       <CardHeader className="pb-2">
         <CardTitle className="text-base font-medium">Category Breakdown</CardTitle>
       </CardHeader>

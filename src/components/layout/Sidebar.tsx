@@ -1,3 +1,4 @@
+
 import React from 'react'
 import { NavLink } from "react-router-dom"
 import { MainNav } from "@/components/navigation/MainNav"
@@ -10,10 +11,6 @@ import { useTheme } from "@/context/ThemeContext"
 
 interface SidebarProps extends React.HTMLAttributes<HTMLDivElement> {
   isCollapsed?: boolean
-}
-
-interface NavLinkProps extends React.ComponentPropsWithoutRef<typeof NavLink> {
-  isActive?: boolean
 }
 
 export function Sidebar({ className, isCollapsed, ...props }: SidebarProps) {
@@ -39,6 +36,7 @@ export function Sidebar({ className, isCollapsed, ...props }: SidebarProps) {
             <span className="text-lg font-semibold">Expense Empower</span>
             <div className="absolute -inset-1">
               <Sparkles 
+                className="h-full w-full"
                 color={theme === "dark" ? "#8350e8" : "#8350e8"}
                 size={2}
                 density={50}
@@ -63,6 +61,7 @@ export function Sidebar({ className, isCollapsed, ...props }: SidebarProps) {
             <span className="text-lg font-semibold">Expense Empower</span>
             <div className="absolute -inset-1">
               <Sparkles 
+                className="h-full w-full"
                 color={theme === "dark" ? "#8350e8" : "#8350e8"}
                 size={2}
                 density={50}

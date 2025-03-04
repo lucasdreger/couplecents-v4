@@ -1,3 +1,4 @@
+
 import React from 'react';
 import {
   Card,
@@ -11,7 +12,7 @@ import { ReservesTile } from './ReservesTile';
 import { MonthlyChart } from './MonthlyChart';
 import { CategoryBreakdown } from './CategoryBreakdown';
 import { useAuth } from '@/context/AuthContext';
-import { CalendarIcon, LayoutDashboard, TrendingUp, Coins } from 'lucide-react';
+import { CalendarIcon, TrendingUp, Coins } from 'lucide-react';
 import { InvestmentDistribution } from './InvestmentDistribution';
 import { useInvestments } from '@/hooks/useInvestments';
 import { useReserves } from '@/hooks/useReserves';
@@ -22,6 +23,7 @@ import { useTheme } from '@/context/ThemeContext';
 import { BudgetTile } from './BudgetTile';
 import { FinancialAnalytics } from './FinancialAnalytics';
 import { LoadingSpinner } from '@/components/ui/loading-spinner';
+import { GlowingEffect } from '@/components/ui/glowing-effect';
 
 // Create a reusable error fallback component
 const ErrorFallback = ({ message }: { message: string }) => (
