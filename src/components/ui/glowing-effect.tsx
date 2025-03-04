@@ -188,4 +188,3 @@ export const GlowingEffect = memo(function GlowingEffect({
     </>
   );
 });
-

@@ -1,4 +1,3 @@
-
 import React from 'react';
 import {
   Card,
@@ -12,7 +11,7 @@ import { ReservesTile } from './ReservesTile';
 import { MonthlyChart } from './MonthlyChart';
 import { CategoryBreakdown } from './CategoryBreakdown';
 import { useAuth } from '@/context/AuthContext';
-import { CalendarIcon, TrendingUp, Coins } from 'lucide-react';
+import { CalendarIcon, LayoutDashboard, TrendingUp, Coins } from 'lucide-react';
 import { InvestmentDistribution } from './InvestmentDistribution';
 import { useInvestments } from '@/hooks/useInvestments';
 import { useReserves } from '@/hooks/useReserves';
@@ -20,10 +19,6 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Sparkles } from '@/components/ui/sparkles';
 import { ProgressiveBlur } from '@/components/ui/progressive-blur';
 import { useTheme } from '@/context/ThemeContext';
-import { BudgetTile } from './BudgetTile';
-import { FinancialAnalytics } from './FinancialAnalytics';
-import { LoadingSpinner } from '@/components/ui/loading-spinner';
-import { GlowingEffect } from '@/components/ui/glowing-effect';
 
 // Create a reusable error fallback component
 const ErrorFallback = ({ message }: { message: string }) => (
@@ -40,8 +35,8 @@ const TotalAssets = () => {
   
   const isLoading = isInvestmentsLoading || isReservesLoading;
   
-  const totalInvestments = investments?.reduce((sum: number, inv: any) => sum + inv.current_value, 0) || 0;
-  const totalReserves = reserves?.reduce((sum: number, reserve: any) => sum + reserve.current_value, 0) || 0;
+  const totalInvestments = investments?.reduce((sum, inv) => sum + inv.current_value, 0) || 0;
+  const totalReserves = reserves?.reduce((sum, reserve) => sum + reserve.current_value, 0) || 0;
   const totalAssets = totalInvestments + totalReserves;
   
   if (isLoading) {
@@ -87,56 +82,157 @@ const TotalAssets = () => {
   );
 };
 
-interface Props {
-  expenses?: any[];
-  monthlyIncome?: number;
-  monthlyBudget?: number;
-  monthlyExpenses?: number;
-  isLoading?: boolean;
-}
-
-export const OverviewPage = ({ 
-  expenses = [], 
-  monthlyIncome = 0, 
-  monthlyBudget = 0, 
-  monthlyExpenses = 0, 
-  isLoading = false 
-}: Props) => {
-  const { investments, isLoading: investmentsLoading } = useInvestments();
-  const { reserves, isLoading: reservesLoading } = useReserves();
-
-  if (isLoading || investmentsLoading || reservesLoading) {
-    return <LoadingSpinner />;
+export const OverviewPage: React.FC = () => {
+  const { user } = useAuth();
+  const { theme } = useTheme();
+  
+  const today = new Date();
+  const formattedDate = today.toLocaleDateString('en-GB', {
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric'
+  });
+  
+  if (!user) {
+    return <ErrorFallback message="Please log in to view this page" />;
   }
-
-  // We need to safely handle the investments/reserves data
-  const safeInvestments = investments || [];
-  const safeReserves = reserves || [];
-
-  const totalInvestments = safeInvestments.reduce((sum: number, inv: any) => sum + (inv.amount || 0), 0);
-  const totalReserves = safeReserves.reduce((sum: number, reserve: any) => sum + (reserve.amount || 0), 0);
-
+  
   return (
-    <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-      <BudgetTile
-        monthlyIncome={monthlyIncome}
-        monthlyExpenses={monthlyExpenses}
-        monthlyBudget={monthlyBudget}
-        remainingBudget={monthlyIncome - monthlyExpenses}
-      />
-      <ReservesTile reserves={safeReserves} />
-      <CategoryBreakdown expenses={expenses} />
-      <div className="md:col-span-2 xl:col-span-3">
-        <FinancialAnalytics data={[
-          { name: 'Jan', income: 3500, expenses: 2200, savings: 800, investments: 500 },
-          { name: 'Feb', income: 3500, expenses: 2100, savings: 900, investments: 500 },
-          { name: 'Mar', income: 3700, expenses: 2400, savings: 800, investments: 500 },
-          { name: 'Apr', income: 3600, expenses: 2000, savings: 1100, investments: 500 },
-          { name: 'May', income: 3800, expenses: 2300, savings: 1000, investments: 500 },
-          { name: 'Jun', income: 4000, expenses: 2500, savings: 1000, investments: 500 },
-        ]} />
+    <div className="container mx-auto p-6 space-y-6">
+      {/* Header with greeting and date */}
+      <div className="bg-gradient-to-r from-primary/10 to-primary/5 rounded-lg p-6 shadow-sm relative overflow-hidden">
+        <div className="flex justify-between items-center z-10 relative">
+          <div>
+            <h2 className="text-3xl font-bold tracking-tight flex items-center gap-2">
+              <Coins className="h-7 w-7 text-primary" />
+              <span>CoupleCents Overview</span>
+            </h2>
+            <p className="text-muted-foreground mt-1 flex items-center gap-1">
+              <CalendarIcon className="h-3 w-3" /> {formattedDate}
+            </p>
+          </div>
+          <div className="hidden md:flex items-center gap-2 bg-gradient-to-r from-purple-500/10 to-blue-500/10 p-2 rounded-lg">
+            <TrendingUp className="h-5 w-5 text-purple-500" />
+            <span className="text-sm font-medium">Financial Health</span>
+          </div>
+        </div>
+        
+        <div className="absolute -z-0 bottom-0 right-0 w-full h-[150%]">
+          <Sparkles 
+            className="h-full w-full" 
+            color={theme === "dark" ? "var(--sparkles-color)" : "#8350e8"}
+            size={1.5}
+            density={40}
+            speed={0.3}
+            opacity={0.15}
+          />
+        </div>
       </div>
-      <InvestmentDistribution investments={safeInvestments} />
+
+      {/* Total Assets Card */}
+      <Card className="w-full overflow-hidden">
+        <CardHeader className="pb-2">
+          <CardTitle>Total Assets</CardTitle>
+          <CardDescription>Combined value of investments and reserves</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <TotalAssets />
+        </CardContent>
+      </Card>
+
+      {/* Investments and Reserves Row */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <ErrorBoundary fallback={<ErrorFallback message="Error loading investments" />}>
+          <InvestmentsTile />
+        </ErrorBoundary>
+        
+        <ErrorBoundary fallback={<ErrorFallback message="Error loading reserves" />}>
+          <ReservesTile />
+        </ErrorBoundary>
+      </div>
+
+      {/* Category Breakdown and Investment Distribution Row */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <ErrorBoundary fallback={<ErrorFallback message="Error loading categories" />}>
+          <Card className="shadow-sm border-primary/10 overflow-hidden">
+            <CardHeader className="border-b border-border/40 pb-2">
+              <CardTitle>Category Breakdown</CardTitle>
+              <CardDescription>Expenses by category</CardDescription>
+            </CardHeader>
+            <CardContent className="pt-4 relative">
+              <CategoryBreakdown timeRange={12} />
+            </CardContent>
+          </Card>
+        </ErrorBoundary>
+
+        <ErrorBoundary fallback={<ErrorFallback message="Error loading investment distribution" />}>
+          <Card className="shadow-sm border-primary/10 relative overflow-hidden">
+            <CardHeader className="border-b border-border/40 pb-2 relative z-10">
+              <CardTitle>Investment Distribution</CardTitle>
+              <CardDescription>Distribution by investment type</CardDescription>
+            </CardHeader>
+            <CardContent className="pt-4 relative z-10">
+              <InvestmentDistribution />
+            </CardContent>
+            <div className="absolute inset-0 -z-0">
+              <ProgressiveBlur 
+                direction="right" 
+                blurLayers={6} 
+                blurIntensity={0.1} 
+                className="h-full w-full opacity-50"
+              />
+            </div>
+          </Card>
+        </ErrorBoundary>
+      </div>
+      
+      {/* Monthly Budget vs Actual Chart */}
+      <ErrorBoundary fallback={<ErrorFallback message="Error loading monthly data" />}>
+        <Card className="shadow-sm border-primary/10 relative overflow-hidden">
+          <CardHeader className="border-b border-border/40 pb-2">
+            <CardTitle>Monthly Budget vs Actual</CardTitle>
+            <CardDescription>Compare planned versus actual spending for current year</CardDescription>
+          </CardHeader>
+          <CardContent className="pt-4">
+            <MonthlyChart months={12} />
+          </CardContent>
+          <div className="absolute inset-0 -z-0">
+            <ProgressiveBlur 
+              direction="top" 
+              blurLayers={6} 
+              blurIntensity={0.1} 
+              className="h-full w-full opacity-50"
+            />
+          </div>
+        </Card>
+      </ErrorBoundary>
     </div>
   );
 };
+
+// Error Boundary Component
+class ErrorBoundary extends React.Component<
+  { children: React.ReactNode; fallback: React.ReactNode },
+  { hasError: boolean }
+> {
+  constructor(props: { children: React.ReactNode; fallback: React.ReactNode }) {
+    super(props);
+    this.state = { hasError: false };
+  }
+  
+  static getDerivedStateFromError() {
+    return { hasError: true };
+  }
+  
+  componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
+    console.error('Error caught by boundary:', error);
+    console.error('Component stack:', errorInfo.componentStack);
+  }
+  
+  render() {
+    if (this.state.hasError) {
+      return this.props.fallback;
+    }
+    return this.props.children;
+  }
+}

@@ -1,64 +1,56 @@
+import { Link } from "react-router-dom"
+import { LayoutDashboard, Wallet, LineChart, Banknote, TrendingUp, Vault, Settings } from "some-icon-library"
 
-import React from 'react'
-import { NavLink } from "react-router-dom"
-import {
-  BarChart3,
-  Calendar,
-  PieChart,
-  Settings
-} from "lucide-react"
-
-interface NavItem {
-  title: string
-  href: string
-  icon: React.ComponentType<{ className?: string }>
-}
-
-const items: NavItem[] = [
+const mainNavItems = [
   {
     title: "Overview",
     href: "/",
-    icon: BarChart3,
+    icon: LayoutDashboard
   },
   {
-    title: "Monthly Details",
-    href: "/monthly-expenses",
-    icon: Calendar,
+    title: "Monthly Expenses",
+    href: "/expenses",
+    icon: Wallet
   },
   {
     title: "Financial Analytics",
     href: "/analytics",
-    icon: PieChart,
+    icon: LineChart
+  },
+  {
+    title: "Income",
+    href: "/income",
+    icon: Banknote
+  },
+  {
+    title: "Investments",
+    href: "/investments",
+    icon: TrendingUp
+  },
+  {
+    title: "Reserves",
+    href: "/reserves",
+    icon: Vault
   },
   {
     title: "Administration",
-    href: "/administration",
-    icon: Settings,
-  },
+    href: "/admin",
+    icon: Settings
+  }
 ]
 
-export function MainNav({
-  className,
-  ...props
-}: React.HTMLAttributes<HTMLElement>) {
+export function MainNav() {
   return (
-    <nav className={className} {...props}>
-      <div className="relative">
-        {items.map((item) => (
-          <NavLink
-            key={item.href}
-            to={item.href}
-            className={({ isActive }: { isActive: boolean }) =>
-              `group flex items-center rounded-md px-3 py-2 text-sm font-medium hover:bg-accent hover:text-accent-foreground ${
-                isActive ? "bg-accent" : "transparent"
-              }`
-            }
-          >
-            <item.icon className="mr-2 h-4 w-4" />
-            <span>{item.title}</span>
-          </NavLink>
-        ))}
-      </div>
+    <nav className="flex items-center space-x-4 lg:space-x-6">
+      {mainNavItems.map((item) => (
+        <Link
+          key={item.href}
+          to={item.href}
+          className="text-sm font-medium text-muted-foreground transition-colors hover:text-primary"
+        >
+          {item.title}
+        </Link>
+      ))}
     </nav>
   )
 }
