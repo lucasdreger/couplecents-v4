@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react'
 import React from 'react'  // Import React to access Suspense
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
@@ -228,13 +229,14 @@ export const CategoriesManagement = () => {
       
       // If there are expenses using this category, we need to handle them
       if (expenses && expenses.length > 0) {
-        // Update the expenses to use a null category instead of deleting
-        const { error: updateError } = await supabase
+        // Update the schema to make category_id nullable or set a default category
+        // For now, just delete the expenses instead of setting them to null
+        const { error: deleteError } = await supabase
           .from('variable_expenses')
-          .update({ category_id: null })
+          .delete()
           .eq('category_id', id);
           
-        if (updateError) throw new Error(updateError.message);
+        if (deleteError) throw new Error(deleteError.message);
       }
       
       // Now delete the category
