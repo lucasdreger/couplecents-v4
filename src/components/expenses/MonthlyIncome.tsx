@@ -4,8 +4,11 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { useToast } from "@/components/ui/use-toast"
 import { FormLabel } from "@/components/ui/form"
+import { Button } from "@/components/ui/button"
+import { ArrowDownCircle } from "lucide-react"
 import { formatCurrency } from '@/lib/utils'
 import { useState, useEffect, useRef } from 'react'
+import { supabase } from '@/lib/supabaseClient'
 
 interface Props {
   year: number
@@ -15,6 +18,7 @@ interface Props {
 export const MonthlyIncome = ({ year, month }: Props) => {
   const queryClient = useQueryClient()
   const { toast } = useToast()
+  const [isApplyingDefaults, setIsApplyingDefaults] = useState(false)
   
   // Local state for input values
   const [lucasMainInput, setLucasMainInput] = useState<string>('')
@@ -28,10 +32,24 @@ export const MonthlyIncome = ({ year, month }: Props) => {
   const camilaMainRef = useRef<HTMLInputElement>(null);
   const camilaOtherRef = useRef<HTMLInputElement>(null);
   
+  // Get current monthly income data
   const { data: income, isLoading } = useQuery({
     queryKey: ['income', year, month],
     queryFn: async () => {
       const { data } = await getMonthlyIncome(year, month)
+      return data
+    }
+  })
+  
+  // Get default income values from settings
+  const { data: defaultIncome, isLoading: isLoadingDefaults } = useQuery({
+    queryKey: ['default-income'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('default_income')
+        .select('*')
+        .single()
+      if (error) throw error
       return data
     }
   })
@@ -73,6 +91,51 @@ export const MonthlyIncome = ({ year, month }: Props) => {
       })
     }
   })
+
+  // Apply default values from settings
+  const applyDefaultValues = async () => {
+    if (!defaultIncome) {
+      toast({ 
+        description: "No default income values found in settings", 
+        variant: "destructive" 
+      });
+      return;
+    }
+
+    try {
+      setIsApplyingDefaults(true);
+
+      // Extract values from default income
+      const values = {
+        lucas_main_income: defaultIncome.lucas_main_income || 0,
+        lucas_other_income: defaultIncome.lucas_other_income || 0,
+        camila_main_income: defaultIncome.camila_main_income || 0,
+        camila_other_income: defaultIncome.camila_other_income || 0
+      };
+
+      // Update the database with default values
+      await updateMonthlyIncome(year, month, values);
+      
+      // Update local state with formatted values
+      setLucasMainInput(values.lucas_main_income.toFixed(2).replace('.', ','));
+      setLucasOtherInput(values.lucas_other_income.toFixed(2).replace('.', ','));
+      setCamilaMainInput(values.camila_main_income.toFixed(2).replace('.', ','));
+      setCamilaOtherInput(values.camila_other_income.toFixed(2).replace('.', ','));
+
+      // Invalidate queries to refresh the data
+      queryClient.invalidateQueries({ queryKey: ['income'] });
+      
+      toast({ description: "Default income values applied successfully" });
+    } catch (error) {
+      console.error("Error applying default income:", error);
+      toast({ 
+        description: "Failed to apply default income values", 
+        variant: "destructive" 
+      });
+    } finally {
+      setIsApplyingDefaults(false);
+    }
+  };
 
   // Format and save input when blurring or pressing Enter
   const handleSaveValue = (field: 'lucas_main_income' | 'lucas_other_income' | 'camila_main_income' | 'camila_other_income', value: string) => {
@@ -140,104 +203,114 @@ export const MonthlyIncome = ({ year, month }: Props) => {
 
   return (
     <div className="space-y-6">
-      {/* Compact Income Layout */}
-      <div className="space-y-4">
+      {/* Header with title and Default Values button */}
+      <div className="flex justify-between items-center">
         <h3 className="font-medium text-lg">Monthly Income</h3>
-        
-        {/* Grid Layout for Income Sections */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {/* Lucas Section */}
-          <div className="bg-card/50 p-4 rounded-lg border">
-            <div className="flex justify-between items-center mb-3">
-              <h4 className="font-medium">Lucas's Income</h4>
-              <span className="text-sm font-medium bg-primary/10 text-primary px-2 py-1 rounded">
-                {lucasTotal.toLocaleString('de-DE', { style: 'currency', currency: 'EUR' })}
-              </span>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={applyDefaultValues}
+          disabled={isApplyingDefaults || isLoadingDefaults}
+          className="flex items-center gap-1"
+        >
+          <ArrowDownCircle className="h-4 w-4 mr-1" />
+          {isApplyingDefaults ? "Applying..." : "Default Values"}
+        </Button>
+      </div>
+      
+      {/* Grid Layout for Income Sections */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {/* Lucas Section */}
+        <div className="bg-card/50 p-4 rounded-lg border">
+          <div className="flex justify-between items-center mb-3">
+            <h4 className="font-medium">Lucas's Income</h4>
+            <span className="text-sm font-medium bg-primary/10 text-primary px-2 py-1 rounded">
+              {lucasTotal.toLocaleString('de-DE', { style: 'currency', currency: 'EUR' })}
+            </span>
+          </div>
+          
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-1">
+              <FormLabel className="text-xs text-muted-foreground">Main Income</FormLabel>
+              <div className="relative">
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">€</span>
+                <Input
+                  ref={lucasMainRef}
+                  type="text"
+                  value={lucasMainInput}
+                  onChange={(e) => setLucasMainInput(e.target.value)}
+                  onBlur={(e) => handleSaveValue('lucas_main_income', e.target.value)}
+                  onKeyDown={(e) => handleKeyDown(e, 'lucas_main_income', e.currentTarget.value)}
+                  onFocus={handleFocus}
+                  className="pl-7 text-right text-sm h-9"
+                  placeholder="0,00"
+                />
+              </div>
             </div>
             
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-1">
-                <FormLabel className="text-xs text-muted-foreground">Main Income</FormLabel>
-                <div className="relative">
-                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">€</span>
-                  <Input
-                    ref={lucasMainRef}
-                    type="text"
-                    value={lucasMainInput}
-                    onChange={(e) => setLucasMainInput(e.target.value)}
-                    onBlur={(e) => handleSaveValue('lucas_main_income', e.target.value)}
-                    onKeyDown={(e) => handleKeyDown(e, 'lucas_main_income', e.currentTarget.value)}
-                    onFocus={handleFocus}
-                    className="pl-7 text-right text-sm h-9"
-                    placeholder="0,00"
-                  />
-                </div>
-              </div>
-              
-              <div className="space-y-1">
-                <FormLabel className="text-xs text-muted-foreground">Other Income</FormLabel>
-                <div className="relative">
-                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">€</span>
-                  <Input
-                    ref={lucasOtherRef}
-                    type="text"
-                    value={lucasOtherInput}
-                    onChange={(e) => setLucasOtherInput(e.target.value)}
-                    onBlur={(e) => handleSaveValue('lucas_other_income', e.target.value)}
-                    onKeyDown={(e) => handleKeyDown(e, 'lucas_other_income', e.currentTarget.value)}
-                    onFocus={handleFocus}
-                    className="pl-7 text-right text-sm h-9"
-                    placeholder="0,00"
-                  />
-                </div>
+            <div className="space-y-1">
+              <FormLabel className="text-xs text-muted-foreground">Other Income</FormLabel>
+              <div className="relative">
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">€</span>
+                <Input
+                  ref={lucasOtherRef}
+                  type="text"
+                  value={lucasOtherInput}
+                  onChange={(e) => setLucasOtherInput(e.target.value)}
+                  onBlur={(e) => handleSaveValue('lucas_other_income', e.target.value)}
+                  onKeyDown={(e) => handleKeyDown(e, 'lucas_other_income', e.currentTarget.value)}
+                  onFocus={handleFocus}
+                  className="pl-7 text-right text-sm h-9"
+                  placeholder="0,00"
+                />
               </div>
             </div>
           </div>
+        </div>
+        
+        {/* Camila Section */}
+        <div className="bg-card/50 p-4 rounded-lg border">
+          <div className="flex justify-between items-center mb-3">
+            <h4 className="font-medium">Camila's Income</h4>
+            <span className="text-sm font-medium bg-primary/10 text-primary px-2 py-1 rounded">
+              {camilaTotal.toLocaleString('de-DE', { style: 'currency', currency: 'EUR' })}
+            </span>
+          </div>
           
-          {/* Camila Section */}
-          <div className="bg-card/50 p-4 rounded-lg border">
-            <div className="flex justify-between items-center mb-3">
-              <h4 className="font-medium">Camila's Income</h4>
-              <span className="text-sm font-medium bg-primary/10 text-primary px-2 py-1 rounded">
-                {camilaTotal.toLocaleString('de-DE', { style: 'currency', currency: 'EUR' })}
-              </span>
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-1">
+              <FormLabel className="text-xs text-muted-foreground">Main Income</FormLabel>
+              <div className="relative">
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">€</span>
+                <Input
+                  ref={camilaMainRef}
+                  type="text"
+                  value={camilaMainInput}
+                  onChange={(e) => setCamilaMainInput(e.target.value)}
+                  onBlur={(e) => handleSaveValue('camila_main_income', e.target.value)}
+                  onKeyDown={(e) => handleKeyDown(e, 'camila_main_income', e.currentTarget.value)}
+                  onFocus={handleFocus}
+                  className="pl-7 text-right text-sm h-9"
+                  placeholder="0,00"
+                />
+              </div>
             </div>
             
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-1">
-                <FormLabel className="text-xs text-muted-foreground">Main Income</FormLabel>
-                <div className="relative">
-                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">€</span>
-                  <Input
-                    ref={camilaMainRef}
-                    type="text"
-                    value={camilaMainInput}
-                    onChange={(e) => setCamilaMainInput(e.target.value)}
-                    onBlur={(e) => handleSaveValue('camila_main_income', e.target.value)}
-                    onKeyDown={(e) => handleKeyDown(e, 'camila_main_income', e.currentTarget.value)}
-                    onFocus={handleFocus}
-                    className="pl-7 text-right text-sm h-9"
-                    placeholder="0,00"
-                  />
-                </div>
-              </div>
-              
-              <div className="space-y-1">
-                <FormLabel className="text-xs text-muted-foreground">Other Income</FormLabel>
-                <div className="relative">
-                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">€</span>
-                  <Input
-                    ref={camilaOtherRef}
-                    type="text"
-                    value={camilaOtherInput}
-                    onChange={(e) => setCamilaOtherInput(e.target.value)}
-                    onBlur={(e) => handleSaveValue('camila_other_income', e.target.value)}
-                    onKeyDown={(e) => handleKeyDown(e, 'camila_other_income', e.currentTarget.value)}
-                    onFocus={handleFocus}
-                    className="pl-7 text-right text-sm h-9"
-                    placeholder="0,00"
-                  />
-                </div>
+            <div className="space-y-1">
+              <FormLabel className="text-xs text-muted-foreground">Other Income</FormLabel>
+              <div className="relative">
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">€</span>
+                <Input
+                  ref={camilaOtherRef}
+                  type="text"
+                  value={camilaOtherInput}
+                  onChange={(e) => setCamilaOtherInput(e.target.value)}
+                  onBlur={(e) => handleSaveValue('camila_other_income', e.target.value)}
+                  onKeyDown={(e) => handleKeyDown(e, 'camila_other_income', e.currentTarget.value)}
+                  onFocus={handleFocus}
+                  className="pl-7 text-right text-sm h-9"
+                  placeholder="0,00"
+                />
               </div>
             </div>
           </div>
