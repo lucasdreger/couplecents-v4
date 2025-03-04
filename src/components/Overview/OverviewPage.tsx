@@ -40,8 +40,8 @@ const TotalAssets = () => {
   
   const isLoading = isInvestmentsLoading || isReservesLoading;
   
-  const totalInvestments = investments?.reduce((sum, inv) => sum + inv.current_value, 0) || 0;
-  const totalReserves = reserves?.reduce((sum, reserve) => sum + reserve.current_value, 0) || 0;
+  const totalInvestments = investments?.reduce((sum: number, inv: any) => sum + inv.current_value, 0) || 0;
+  const totalReserves = reserves?.reduce((sum: number, reserve: any) => sum + reserve.current_value, 0) || 0;
   const totalAssets = totalInvestments + totalReserves;
   
   if (isLoading) {
@@ -95,16 +95,16 @@ interface Props {
   isLoading: boolean
 }
 
-export const OverviewPage = ({ expenses, monthlyIncome, monthlyBudget, monthlyExpenses, isLoading }: Props) => {
-  const { investments, loading: investmentsLoading } = useInvestments()
-  const { reserves, loading: reservesLoading } = useReserves()
+export const OverviewPage = ({ expenses = [], monthlyIncome = 0, monthlyBudget = 0, monthlyExpenses = 0, isLoading = false }: Props) => {
+  const { investments, isLoading: investmentsLoading } = useInvestments();
+  const { reserves, isLoading: reservesLoading } = useReserves();
 
   if (isLoading || investmentsLoading || reservesLoading) {
-    return <LoadingSpinner />
+    return <LoadingSpinner />;
   }
 
-  const totalInvestments = investments.reduce((sum: number, inv: any) => sum + inv.amount, 0)
-  const totalReserves = reserves.reduce((sum: number, reserve: any) => sum + reserve.amount, 0)
+  const totalInvestments = investments.reduce((sum: number, inv: any) => sum + inv.amount, 0);
+  const totalReserves = reserves.reduce((sum: number, reserve: any) => sum + reserve.amount, 0);
 
   return (
     <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
@@ -121,8 +121,8 @@ export const OverviewPage = ({ expenses, monthlyIncome, monthlyBudget, monthlyEx
       </div>
       <InvestmentDistribution investments={investments} />
     </div>
-  )
-}
+  );
+};
 
 // Error Boundary Component
 class ErrorBoundary extends React.Component<
