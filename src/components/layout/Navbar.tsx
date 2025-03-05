@@ -31,6 +31,11 @@ export function Navbar() {
   const { user, signOut } = useAuth()
   const navigate = useNavigate()
 
+  // For debugging
+  React.useEffect(() => {
+    console.log("Auth user:", user);
+  }, [user]);
+
   const handleSignOut = async () => {
     try {
       await signOut()
@@ -79,16 +84,21 @@ export function Navbar() {
         <div className="flex items-center gap-4">
           <ModeToggle />
           
-          {user ? (
+          {/* Ensure we have a user object with email */}
+          {user && user.email ? (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" className="relative h-9 w-9 rounded-full">
-                  <Avatar className="h-9 w-9">
+                <Button variant="outline" className="relative flex items-center gap-2 px-3 py-2 h-9 rounded-full border border-primary/20 hover:bg-primary/10 cursor-pointer">
+                  <Avatar className="h-7 w-7">
                     <AvatarImage src={user.photoURL || ''} />
-                    <AvatarFallback className="bg-primary/10">
-                      {user.email ? user.email.substring(0, 2).toUpperCase() : 'U'}
+                    <AvatarFallback className="bg-primary/10 text-sm">
+                      {user.email.substring(0, 2).toUpperCase()}
                     </AvatarFallback>
                   </Avatar>
+                  <span className="text-sm font-medium hidden sm:block">
+                    {user.email.split('@')[0]}
+                  </span>
+                  <ChevronDown className="h-4 w-4 opacity-70" />
                   <div className="absolute inset-0 rounded-full">
                     <GlowingEffect
                       spread={20}
