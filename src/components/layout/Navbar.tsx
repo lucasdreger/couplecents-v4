@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { useNavigate } from "react-router-dom"
 import { ModeToggle } from "@/components/mode-toggle"
 import { Sparkles } from "@/components/ui/sparkles"
@@ -30,10 +30,11 @@ export function Navbar() {
   const { theme } = useTheme()
   const { user, signOut } = useAuth()
   const navigate = useNavigate()
+  const [isMenuOpen, setIsMenuOpen] = useState(false)
 
-  // For debugging
+  // Enhanced debugging
   React.useEffect(() => {
-    console.log("Auth user:", user);
+    console.log("Navbar render - Auth user:", user);
   }, [user]);
 
   const handleSignOut = async () => {
@@ -46,24 +47,39 @@ export function Navbar() {
   }
 
   const handleProfileClick = () => {
+    console.log("Profile clicked");
     navigate("/profile")
   }
 
   const handleSecurityClick = () => {
+    console.log("Security clicked");
     navigate("/security")
   }
 
   const handleEmailClick = () => {
+    console.log("Email preferences clicked");
     navigate("/email-preferences")
   }
 
   const handlePasswordClick = () => {
+    console.log("Change password clicked");
     navigate("/change-password")
   }
 
   const handlePaymentClick = () => {
+    console.log("Payment methods clicked");
     navigate("/payment-methods")
   }
+
+  const handleMenuOpenChange = (open: boolean) => {
+    console.log("Dropdown menu state:", open ? "open" : "closed");
+    setIsMenuOpen(open);
+  };
+
+  // Used for manually opening menu for testing
+  const toggleMenu = () => {
+    setIsMenuOpen(!isMenuOpen);
+  };
 
   return (
     <div className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -86,11 +102,15 @@ export function Navbar() {
           
           {/* Ensure we have a user object with email */}
           {user && user.email ? (
-            <DropdownMenu>
+            <DropdownMenu open={isMenuOpen} onOpenChange={handleMenuOpenChange}>
               <DropdownMenuTrigger asChild>
-                <Button variant="outline" className="relative flex items-center gap-2 px-3 py-2 h-9 rounded-full border border-primary/20 hover:bg-primary/10 cursor-pointer">
+                <Button 
+                  variant="outline" 
+                  className="relative flex items-center gap-2 px-3 py-2 h-9 rounded-full border border-primary/20 hover:bg-primary/10 cursor-pointer"
+                  onClick={() => console.log("DropdownMenuTrigger clicked")}
+                >
                   <Avatar className="h-7 w-7">
-                    <AvatarImage src={user.photoURL || ''} />
+                    <AvatarImage src={user.photoURL || user.user_metadata?.avatar_url || ''} />
                     <AvatarFallback className="bg-primary/10 text-sm">
                       {user.email.substring(0, 2).toUpperCase()}
                     </AvatarFallback>
@@ -99,43 +119,33 @@ export function Navbar() {
                     {user.email.split('@')[0]}
                   </span>
                   <ChevronDown className="h-4 w-4 opacity-70" />
-                  <div className="absolute inset-0 rounded-full">
-                    <GlowingEffect
-                      spread={20}
-                      glow={true}
-                      disabled={false}
-                      proximity={40}
-                      inactiveZone={0.4}
-                      borderWidth={1}
-                    />
-                  </div>
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-56">
+              <DropdownMenuContent align="end" className="w-56 z-50" sideOffset={5}>
                 <DropdownMenuLabel>My Account</DropdownMenuLabel>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={handleProfileClick}>
+                <DropdownMenuItem onClick={handleProfileClick} className="cursor-pointer">
                   <User className="mr-2 h-4 w-4" />
                   <span>Profile Information</span>
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={handleEmailClick}>
+                <DropdownMenuItem onClick={handleEmailClick} className="cursor-pointer">
                   <Mail className="mr-2 h-4 w-4" />
                   <span>Email Preferences</span>
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={handlePasswordClick}>
+                <DropdownMenuItem onClick={handlePasswordClick} className="cursor-pointer">
                   <Key className="mr-2 h-4 w-4" />
                   <span>Change Password</span>
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={handleSecurityClick}>
+                <DropdownMenuItem onClick={handleSecurityClick} className="cursor-pointer">
                   <Shield className="mr-2 h-4 w-4" />
                   <span>Security Settings</span>
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={handlePaymentClick}>
+                <DropdownMenuItem onClick={handlePaymentClick} className="cursor-pointer">
                   <CreditCard className="mr-2 h-4 w-4" />
                   <span>Payment Methods</span>
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={handleSignOut}>
+                <DropdownMenuItem onClick={handleSignOut} className="cursor-pointer">
                   <LogOut className="mr-2 h-4 w-4" />
                   <span>Sign Out</span>
                 </DropdownMenuItem>
