@@ -3,6 +3,7 @@ import { Outlet } from 'react-router-dom'
 import { Navbar } from '@/components/layout/Navbar'
 import { Sidebar } from '@/components/layout/Sidebar'
 import { GlowingEffect } from '@/components/ui/glowing-effect'
+import { AuroraBackground } from '@/components/ui/aurora-background'
 
 export function DashboardLayout() {
   return (
@@ -20,25 +21,24 @@ export function DashboardLayout() {
         
         {/* Scrollable main content area - shifted down and right to accommodate fixed navbar and sidebar */}
         <main className="flex-1 w-full pt-14 md:pl-[60px] overflow-y-auto transition-all duration-300">
-          <div className="container max-w-6xl mx-auto py-6 px-4">
-            {/* Add subtle gradient background */}
-            <div className="absolute inset-0 bg-gradient-to-br from-background to-muted/30 pointer-events-none -z-10" />
-            
-            {/* Create a nice border around the content with a glowing effect */}
-            <div className="relative min-h-[calc(100vh-theme(spacing.14)-theme(spacing.12))] rounded-xl border bg-card p-6 shadow-sm">
-              <div className="absolute inset-0 rounded-xl">
-                <GlowingEffect 
-                  spread={40}
-                  glow={true}
-                  disabled={false}
-                  proximity={100}
-                  inactiveZone={0.5}
-                  borderWidth={1}
-                />
+          <AuroraBackground className="min-h-full items-start justify-start p-0">
+            <div className="container max-w-6xl mx-auto py-6 px-4 w-full">
+              {/* Content container with glowing effect */}
+              <div className="relative min-h-[calc(100vh-theme(spacing.14)-theme(spacing.12))] rounded-xl border bg-card/80 backdrop-blur-sm p-6 shadow-sm">
+                <div className="absolute inset-0 rounded-xl">
+                  <GlowingEffect 
+                    spread={40}
+                    glow={true}
+                    disabled={false}
+                    proximity={100}
+                    inactiveZone={0.5}
+                    borderWidth={1}
+                  />
+                </div>
+                <Outlet />
               </div>
-              <Outlet />
             </div>
-          </div>
+          </AuroraBackground>
         </main>
       </div>
     </div>

@@ -7,10 +7,7 @@ import {
   LayoutDashboard, 
   BarChart3, 
   Receipt, 
-  CreditCard, 
-  DollarSign, 
-  Settings, 
-  PiggyBank
+  Settings
 } from "lucide-react"
 
 // Import the new sidebar components
@@ -26,7 +23,7 @@ export function Sidebar() {
   const location = useLocation()
   const [open, setOpen] = useState(false)
 
-  // Define navigation links
+  // Define navigation links - removed Income, Investments, and Reserves
   const links = [
     {
       label: "Dashboard",
@@ -42,21 +39,6 @@ export function Sidebar() {
       label: "Financial Analytics",
       href: "/analytics",
       icon: <BarChart3 className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />
-    },
-    {
-      label: "Income",
-      href: "/income",
-      icon: <DollarSign className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />
-    },
-    {
-      label: "Investments",
-      href: "/investments",
-      icon: <CreditCard className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />
-    },
-    {
-      label: "Reserves",
-      href: "/reserves",
-      icon: <PiggyBank className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />
     },
     {
       label: "Administration",

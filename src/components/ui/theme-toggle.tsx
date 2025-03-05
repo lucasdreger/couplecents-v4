@@ -1,20 +1,30 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Moon, Sun } from "lucide-react"
 import { cn } from "@/lib/utils"
+import { useTheme } from "@/context/ThemeContext"
 
 interface ThemeToggleProps {
   className?: string
 }
 
 export function ThemeToggle({ className }: ThemeToggleProps) {
-  const [isDark, setIsDark] = useState(true)
+  // Use the actual theme state from ThemeContext
+  const { theme, setTheme } = useTheme()
+  const [isDark, setIsDark] = useState(theme === "dark")
 
-  // next-themes
-  // const { resolvedTheme, setTheme } = useTheme()
-  // const isDark = resolvedTheme === "dark"
-  // onClick={() => setTheme(isDark ? "light" : "dark")}
+  // Keep local state in sync with context
+  useEffect(() => {
+    setIsDark(theme === "dark")
+  }, [theme])
+
+  // Update theme when toggle is clicked
+  const toggleTheme = () => {
+    const newTheme = isDark ? "light" : "dark"
+    setTheme(newTheme)
+    setIsDark(!isDark)
+  }
 
   return (
     <div
@@ -25,7 +35,7 @@ export function ThemeToggle({ className }: ThemeToggleProps) {
           : "bg-white border border-zinc-200",
         className
       )}
-      onClick={() => setIsDark(!isDark)}
+      onClick={toggleTheme}
       role="button"
       tabIndex={0}
     >

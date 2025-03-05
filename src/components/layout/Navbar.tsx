@@ -35,10 +35,21 @@ export function Navbar() {
     navigate(path);
   };
 
+  // Handle clicking on the CoupleCents logo
+  const navigateToDashboard = () => {
+    navigate("/");
+  };
+
   return (
     <div className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container flex h-14 items-center justify-between">
-        <div className="relative flex items-center">
+        {/* Make logo clickable */}
+        <div 
+          className="relative flex items-center cursor-pointer" 
+          onClick={navigateToDashboard}
+          role="button"
+          tabIndex={0}
+        >
           <span className="text-lg font-semibold">CoupleCents</span>
           <div className="absolute -inset-1">
             <Sparkles
