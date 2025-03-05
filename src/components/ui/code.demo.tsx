@@ -7,6 +7,7 @@ import { ProgressiveBlur } from "@/components/ui/progressive-blur";
 import { Box, Lock, Search, Settings } from "lucide-react";
 import { GlowingEffect } from "@/components/ui/glowing-effect";
 import { cn } from "@/lib/utils";
+import { ThemeToggle } from "@/components/ui/theme-toggle"
 
 // logos
 
@@ -199,3 +200,15 @@ const GridItem = ({ area, icon, title, description }: GridItemProps) => {
     </li>
   );
 };
+
+function DefaultToggle() {
+  return (
+    <div className="space-y-2 text-center">
+      <div className="flex justify-center">
+        <ThemeToggle />
+      </div>
+    </div>
+  )
+}
+
+export { DefaultToggle }
