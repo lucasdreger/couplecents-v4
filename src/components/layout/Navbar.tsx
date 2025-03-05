@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react'
 import { useNavigate } from "react-router-dom"
 import { ModeToggle } from "@/components/mode-toggle"
@@ -8,7 +9,6 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import { 
   User, 
-  Settings, 
   LogOut, 
   Mail, 
   Key, 
@@ -53,6 +53,7 @@ export function Navbar() {
           <span className="text-lg font-semibold">Expense Empower</span>
           <div className="absolute -inset-1">
             <Sparkles 
+              className="h-full w-full"
               color={theme === "dark" ? "#8350e8" : "#8350e8"}
               size={2}
               density={50}

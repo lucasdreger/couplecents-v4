@@ -1,3 +1,4 @@
+
 import React from 'react';
 import {
   Card,
@@ -11,7 +12,7 @@ import { ReservesTile } from './ReservesTile';
 import { MonthlyChart } from './MonthlyChart';
 import { CategoryBreakdown } from './CategoryBreakdown';
 import { useAuth } from '@/context/AuthContext';
-import { CalendarIcon, LayoutDashboard, TrendingUp, Coins } from 'lucide-react';
+import { CalendarIcon, Coins } from 'lucide-react';
 import { InvestmentDistribution } from './InvestmentDistribution';
 import { useInvestments } from '@/hooks/useInvestments';
 import { useReserves } from '@/hooks/useReserves';
@@ -29,11 +30,11 @@ const ErrorFallback = ({ message }: { message: string }) => (
 
 // Total Assets component
 const TotalAssets = () => {
-  const { investments, isLoading: isInvestmentsLoading } = useInvestments();
-  const { reserves, isLoading: isReservesLoading } = useReserves();
+  const { investments, isLoading: investmentsLoading } = useInvestments();
+  const { reserves, loading: reservesLoading } = useReserves();
   const { theme } = useTheme();
   
-  const isLoading = isInvestmentsLoading || isReservesLoading;
+  const isLoading = investmentsLoading || reservesLoading;
   
   const totalInvestments = investments?.reduce((sum, inv) => sum + inv.current_value, 0) || 0;
   const totalReserves = reserves?.reduce((sum, reserve) => sum + reserve.current_value, 0) || 0;
@@ -112,7 +113,6 @@ export const OverviewPage: React.FC = () => {
             </p>
           </div>
           <div className="hidden md:flex items-center gap-2 bg-gradient-to-r from-purple-500/10 to-blue-500/10 p-2 rounded-lg">
-            <TrendingUp className="h-5 w-5 text-purple-500" />
             <span className="text-sm font-medium">Financial Health</span>
           </div>
         </div>
