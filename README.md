@@ -1,10 +1,10 @@
-# Welcome to Expense Empower
+# Welcome to CoupleCents
 
 A comprehensive financial management platform designed for couples to manage shared finances with real-time collaboration.
 
 ## Project Overview
 
-Expense Empower provides a unified dashboard for tracking income, expenses, investments, and savings reserves. The application is designed with a shared data model, ensuring that all users see the same financial data in real-time.
+CoupleCents provides a unified dashboard for tracking income, expenses, investments, and savings reserves. The application is designed with a shared data model, ensuring that all users see the same financial data in real-time.
 
 ### Key Features
 
@@ -43,7 +43,7 @@ The application uses a shared data model where all records are visible to all au
 
 ### Architecture
 
-Expense Empower is built with:
+CoupleCents is built with:
 
 - **Frontend**: React with TypeScript
 - **UI Framework**: Tailwind CSS with Shadcn UI components
@@ -80,7 +80,7 @@ Expense Empower is built with:
 
 ## Business Description
 
-Expense Empower is a collaborative financial management platform specifically optimized for couples to manage shared finances. Unlike general budgeting apps, this system acknowledges the reality that couples often maintain both individual and shared financial responsibilities, requiring special tracking mechanisms.
+CoupleCents is a collaborative financial management platform specifically optimized for couples to manage shared finances. Unlike general budgeting apps, this system acknowledges the reality that couples often maintain both individual and shared financial responsibilities, requiring special tracking mechanisms.
 
 ### Core Financial Philosophy
 

@@ -24,7 +24,7 @@ export const Login: React.FC = () => {
     <div className="flex justify-center items-center min-h-screen p-4">
       <Card className="w-full max-w-md">
         <CardHeader>
-          <CardTitle>Login to Expense Empower</CardTitle>
+          <CardTitle>Login to CoupleCents</CardTitle>
         </CardHeader>
         <CardContent>
           {error && (

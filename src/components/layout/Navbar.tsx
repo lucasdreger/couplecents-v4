@@ -50,7 +50,7 @@ export function Navbar() {
     <div className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container flex h-14 items-center justify-between">
         <div className="relative flex items-center">
-          <span className="text-lg font-semibold">Expense Empower</span>
+          <span className="text-lg font-semibold">CoupleCents</span>
           <div className="absolute -inset-1">
             <Sparkles 
               className="h-full w-full"
