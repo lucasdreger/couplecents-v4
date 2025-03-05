@@ -52,10 +52,9 @@ export function Navbar() {
         </div>
 
         <div className="flex items-center gap-4">
-          {/* Replace ModeToggle with ThemeToggle */}
+          {/* Using the new ThemeToggle component */}
           <ThemeToggle />
 
-          {/* Replace dropdown with sheet for more reliable mobile experience */}
           {user && user.email ? (
             <Sheet open={isProfileOpen} onOpenChange={setIsProfileOpen}>
               <SheetTrigger asChild>
