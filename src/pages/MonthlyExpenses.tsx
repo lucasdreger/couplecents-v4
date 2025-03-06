@@ -338,23 +338,8 @@ export function MonthlyExpenses() {
             </CardContent>
           </Card>
         </ErrorBoundary>
-      </div>
-      
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <ErrorBoundary FallbackComponent={ErrorFallback}>
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle>Fixed Expenses</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <FixedExpensesList 
-                year={selectedYear}
-                month={selectedMonth}
-              />
-            </CardContent>
-          </Card>
-        </ErrorBoundary>
         
+        {/* Variable expenses first, full width */}
         <ErrorBoundary FallbackComponent={ErrorFallback}>
           <Card>
             <CardHeader className="pb-2">
@@ -372,6 +357,21 @@ export function MonthlyExpenses() {
                 year={selectedYear}
                 month={selectedMonth}
                 onEdit={handleEditExpense}
+              />
+            </CardContent>
+          </Card>
+        </ErrorBoundary>
+        
+        {/* Fixed expenses moved below variable expenses for full width */}
+        <ErrorBoundary FallbackComponent={ErrorFallback}>
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle>Fixed Expenses</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <FixedExpensesList 
+                year={selectedYear}
+                month={selectedMonth}
               />
             </CardContent>
           </Card>

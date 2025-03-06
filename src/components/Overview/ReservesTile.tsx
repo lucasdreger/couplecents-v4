@@ -8,6 +8,7 @@ import { useAuth } from "@/context/AuthContext";
 import { PencilIcon, CheckIcon, XIcon } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
+import { GlowingEffect } from '@/components/ui/glowing-effect';
 
 interface Reserve {
   id: string;
@@ -70,7 +71,17 @@ export const ReservesTile = () => {
   const reservesArray = Array.isArray(reserves) ? reserves : [];
   
   return (
-    <Card>
+    <Card className="relative overflow-hidden">
+      <div className="absolute inset-0 rounded-xl">
+        <GlowingEffect 
+          spread={40}
+          glow={true}
+          disabled={false}
+          proximity={100}
+          inactiveZone={0.5}
+          borderWidth={1}
+        />
+      </div>
       <CardHeader>
         <CardTitle>Reserves</CardTitle>
       </CardHeader>
@@ -87,9 +98,9 @@ export const ReservesTile = () => {
             {reservesArray.map(reserve => (
               <Card 
                 key={reserve.id} 
-                className={`border transition-all duration-300 group 
+                className={`border relative overflow-hidden transition-all duration-300 group 
                   ${hoveredId === reserve.id 
-                    ? 'bg-accent/20 shadow-md scale-[1.02] border-primary/20 transform' 
+                    ? 'bg-accent/20 shadow-md scale-[1.02] border-primary/20 transform glow-border' 
                     : 'bg-card/50 hover:bg-accent/5'}`}
                 onMouseEnter={() => setHoveredId(reserve.id)}
                 onMouseLeave={() => setHoveredId(null)}
@@ -151,7 +162,7 @@ export const ReservesTile = () => {
                             size="icon" 
                             variant="ghost" 
                             onClick={() => handleEdit(reserve)}
-                            className="h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity duration-200"
+                            className="h-8 w-8 opacity-80 dark:opacity-100 group-hover:opacity-100 transition-opacity duration-200 bg-muted/30 hover:bg-muted/50"
                           >
                             <PencilIcon className="h-4 w-4" />
                           </Button>
