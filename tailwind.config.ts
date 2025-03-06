@@ -1,6 +1,21 @@
-
 import type { Config } from "tailwindcss";
 import { flattenColorPalette } from "tailwindcss/lib/util/flattenColorPalette";
+
+// Fix: Define the addVariablesForColors function before using it in plugins
+function addVariablesForColors({ addBase, theme }: any) {
+  try {
+    const colors = flattenColorPalette(theme("colors"));
+    const newVars = Object.fromEntries(
+      Object.entries(colors || {}).map(([key, val]) => [`--${key}`, val])
+    );
+  
+    addBase({
+      ":root": newVars,
+    });
+  } catch (error) {
+    console.error("Error in addVariablesForColors plugin:", error);
+  }
+}
 
 export default {
 	darkMode: ["class"],
@@ -109,24 +124,3 @@ export default {
 		addVariablesForColors
 	],
 } satisfies Config;
-
-// Fix: Properly define the addVariablesForColors function as a plugin
-function addVariablesForColors({ addBase, theme }: any) {
-  if (!addBase || !theme || typeof theme !== 'function') {
-    // Safeguard against undefined properties
-    return;
-  }
-  
-  try {
-    let allColors = flattenColorPalette(theme("colors"));
-    let newVars = Object.fromEntries(
-      Object.entries(allColors).map(([key, val]) => [`--${key}`, val])
-    );
-  
-    addBase({
-      ":root": newVars,
-    });
-  } catch (error) {
-    console.error("Error in addVariablesForColors plugin:", error);
-  }
-}
