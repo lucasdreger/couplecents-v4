@@ -71,17 +71,7 @@ export const ReservesTile = () => {
   const reservesArray = Array.isArray(reserves) ? reserves : [];
   
   return (
-    <Card className="relative overflow-hidden">
-      <div className="absolute inset-0 rounded-xl">
-        <GlowingEffect 
-          spread={40}
-          glow={true}
-          disabled={false}
-          proximity={100}
-          inactiveZone={0.5}
-          borderWidth={1}
-        />
-      </div>
+    <Card className="border-border/40 bg-card/80 backdrop-blur-sm">
       <CardHeader>
         <CardTitle>Reserves</CardTitle>
       </CardHeader>
@@ -100,8 +90,8 @@ export const ReservesTile = () => {
                 key={reserve.id} 
                 className={`border relative overflow-hidden transition-all duration-300 group 
                   ${hoveredId === reserve.id 
-                    ? 'bg-accent/20 shadow-md scale-[1.02] border-primary/20 transform glow-border' 
-                    : 'bg-card/50 hover:bg-accent/5'}`}
+                    ? 'dark:bg-accent/80 bg-accent/20 shadow-md scale-[1.02] border-primary/20 transform' 
+                    : 'dark:bg-card/40 bg-card/50 hover:bg-accent/5 dark:hover:bg-accent/60'}`}
                 onMouseEnter={() => setHoveredId(reserve.id)}
                 onMouseLeave={() => setHoveredId(null)}
               >
@@ -124,7 +114,7 @@ export const ReservesTile = () => {
                               type="text"
                               value={editValue}
                               onChange={(e) => setEditValue(e.target.value)}
-                              className="w-32 text-right pl-7"
+                              className="w-32 text-right pl-7 bg-background/50 dark:bg-background/30"
                               placeholder="0,00"
                               autoFocus
                             />
@@ -133,7 +123,7 @@ export const ReservesTile = () => {
                             size="icon" 
                             variant="ghost" 
                             onClick={() => handleSave(reserve.id)}
-                            className="h-8 w-8"
+                            className="h-8 w-8 hover:bg-background/50 dark:hover:bg-background/30"
                           >
                             <CheckIcon className="h-4 w-4" />
                           </Button>
@@ -141,7 +131,7 @@ export const ReservesTile = () => {
                             size="icon" 
                             variant="ghost" 
                             onClick={handleCancel}
-                            className="h-8 w-8"
+                            className="h-8 w-8 hover:bg-background/50 dark:hover:bg-background/30"
                           >
                             <XIcon className="h-4 w-4" />
                           </Button>
@@ -162,7 +152,7 @@ export const ReservesTile = () => {
                             size="icon" 
                             variant="ghost" 
                             onClick={() => handleEdit(reserve)}
-                            className="h-8 w-8 opacity-80 dark:opacity-100 group-hover:opacity-100 transition-opacity duration-200 bg-muted/30 hover:bg-muted/50"
+                            className="h-8 w-8 opacity-80 dark:opacity-100 group-hover:opacity-100 transition-opacity duration-200 hover:bg-background/50 dark:hover:bg-background/30"
                           >
                             <PencilIcon className="h-4 w-4" />
                           </Button>

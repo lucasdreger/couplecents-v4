@@ -1,54 +1,53 @@
 "use client";
-import { cn } from "@/lib/utils";
-import React, { ReactNode } from "react";
 
-interface AuroraBackgroundProps extends React.HTMLProps<HTMLDivElement> {
-  children: ReactNode;
+import { cn } from "@/lib/utils";
+
+interface AuroraBackgroundProps {
+  className?: string;
+  children: React.ReactNode;
   showRadialGradient?: boolean;
 }
 
-export const AuroraBackground = ({
+export function AuroraBackground({
   className,
   children,
   showRadialGradient = true,
-  ...props
-}: AuroraBackgroundProps) => {
+}: AuroraBackgroundProps) {
   return (
-    <main>
+    <div
+      className={cn(
+        "relative min-h-screen w-full overflow-hidden bg-white dark:bg-zinc-900",
+        className
+      )}
+    >
       <div
-        className={cn(
-          "relative flex flex-col h-[100vh] items-center justify-center bg-zinc-50 dark:bg-zinc-900 text-slate-950 transition-bg",
-          className
-        )}
-        {...props}
+        className="absolute inset-0 overflow-hidden"
+        style={{
+          opacity: 0.8,
+          background: "radial-gradient(circle at 50% 50%, rgba(167, 189, 255, 0.3) 0%, rgba(255, 255, 255, 0) 100%)",
+        }}
       >
-        <div className="absolute inset-0 overflow-hidden">
-          <div
-            //   I'm sorry but this is what peak developer performance looks like // trigger warning
-            className={cn(
-              `
-            [--white-gradient:repeating-linear-gradient(100deg,var(--white)_0%,var(--white)_7%,var(--transparent)_10%,var(--transparent)_12%,var(--white)_16%)]
-            [--dark-gradient:repeating-linear-gradient(100deg,var(--black)_0%,var(--black)_7%,var(--transparent)_10%,var(--transparent)_12%,var(--black)_16%)]
-            [--aurora:repeating-linear-gradient(100deg,var(--blue-500)_10%,var(--indigo-300)_15%,var(--blue-300)_20%,var(--violet-200)_25%,var(--blue-400)_30%)]
-            [background-image:var(--white-gradient),var(--aurora)]
-            dark:[background-image:var(--dark-gradient),var(--aurora)]
-            [background-size:300%,_200%]
-            [background-position:50%_50%,50%_50%]
-            filter blur-[10px] invert dark:invert-0
-            after:content-[""] after:absolute after:inset-0 after:[background-image:var(--white-gradient),var(--aurora)] 
-            after:dark:[background-image:var(--dark-gradient),var(--aurora)]
-            after:[background-size:200%,_100%] 
-            after:animate-aurora after:[background-attachment:fixed] after:mix-blend-difference
-            pointer-events-none
-            absolute -inset-[10px] opacity-50 will-change-transform`,
-
-              showRadialGradient &&
-                `[mask-image:radial-gradient(ellipse_at_100%_0%,black_10%,var(--transparent)_70%)]`
-            )}
-          ></div>
-        </div>
-        {children}
+        <div
+          className={cn(
+            `animate-aurora will-change-transform
+            bg-[linear-gradient(to_right,rgb(224,231,255),rgb(199,210,254),rgb(224,231,255))]
+            bg-[length:200%_200%]
+            opacity-60
+            dark:opacity-0`,
+            showRadialGradient &&
+              "mask-[radial-gradient(ellipse_at_100%_0%,black_20%,transparent_60%)]"
+          )}
+          style={{
+            position: "absolute",
+            inset: "-100%",
+            width: "300%",
+            height: "300%",
+            backgroundPosition: "50% 50%",
+            animation: "aurora 20s linear infinite",
+          }}
+        />
       </div>
-    </main>
+      <div className="relative z-10">{children}</div>
+    </div>
   );
-};
+}
