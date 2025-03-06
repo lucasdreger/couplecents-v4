@@ -1,3 +1,4 @@
+
 "use client";
 
 import { cn } from "@/lib/utils";
@@ -30,9 +31,9 @@ export function AuroraBackground({
         <div
           className={cn(
             `animate-aurora will-change-transform
-            bg-[linear-gradient(to_right,rgb(224,231,255),rgb(199,210,254),rgb(224,231,255))]
+            bg-[linear-gradient(to_right,rgb(236,238,254),rgb(213,219,250),rgb(236,238,254))]
             bg-[length:200%_200%]
-            opacity-60
+            opacity-70
             dark:opacity-0`,
             showRadialGradient &&
               "mask-[radial-gradient(ellipse_at_100%_0%,black_20%,transparent_60%)]"
@@ -45,6 +46,15 @@ export function AuroraBackground({
             backgroundPosition: "50% 50%",
             animation: "aurora 20s linear infinite",
           }}
+        />
+        
+        {/* Additional subtle gradient layers */}
+        <div 
+          className="absolute inset-0 bg-gradient-to-b from-primary/5 to-transparent opacity-50"
+        />
+        
+        <div 
+          className="absolute inset-0 bg-gradient-to-tr from-transparent via-primary/5 to-transparent opacity-50"
         />
       </div>
       <div className="relative z-10">{children}</div>

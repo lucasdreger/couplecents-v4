@@ -13,7 +13,7 @@
     --popover: 0 0% 100%;
     --popover-foreground: 222.2 84% 4.9%;
  
-    --primary: 222.2 47.4% 11.2%;
+    --primary: 252 59% 48%;
     --primary-foreground: 210 40% 98%;
  
     --secondary: 210 40% 96.1%;
@@ -22,31 +22,37 @@
     --muted: 210 40% 96.1%;
     --muted-foreground: 215.4 16.3% 46.9%;
  
-    --accent: 210 40% 96.1%;
+    --accent: 252 59% 94%;
     --accent-foreground: 222.2 47.4% 11.2%;
  
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 210 40% 98%;
 
+    --success: 142 76% 36%;
+    --success-foreground: 210 40% 98%;
+
+    --warning: 38 92% 50%;
+    --warning-foreground: 222.2 47.4% 11.2%;
+
     --border: 214.3 31.8% 91.4%;
     --input: 214.3 31.8% 91.4%;
-    --ring: 222.2 84% 4.9%;
+    --ring: 252 59% 48%;
  
     --radius: 0.5rem;
 
     /* Sidebar Theme */
-    --sidebar-background: 220 14% 16%;
+    --sidebar-background: 249 27% 16%;
     --sidebar-foreground: 210 40% 98%;
-    --sidebar-primary: 217.2 91.2% 59.8%;
+    --sidebar-primary: 252 59% 58%;
     --sidebar-primary-foreground: 210 40% 98%;
-    --sidebar-accent: 220 14% 24%;
+    --sidebar-accent: 249 27% 24%;
     --sidebar-accent-foreground: 210 40% 98%;
-    --sidebar-border: 220 14% 24%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    --sidebar-border: 249 27% 24%;
+    --sidebar-ring: 252 59% 58%;
 
     /* Sparkles variables */
-    --gradient-color: #8350e8;
-    --sparkles-color: #8350e8;
+    --gradient-color: #7c3aed;
+    --sparkles-color: #7c3aed;
   }
  
   .dark {
@@ -59,7 +65,7 @@
     --popover: 222 47% 5%;
     --popover-foreground: 213 31% 91%;
  
-    --primary: 217.2 91.2% 59.8%;
+    --primary: 252 59% 58%;
     --primary-foreground: 222.2 47.4% 11.2%;
  
     --secondary: 222 47% 9%;
@@ -68,28 +74,34 @@
     --muted: 222 47% 8%;
     --muted-foreground: 215 20.2% 75.1%;
  
-    --accent: 222 47% 11%;
+    --accent: 252 59% 18%;
     --accent-foreground: 213 31% 91%;
  
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 213 31% 91%;
+
+    --success: 142 76% 36%;
+    --success-foreground: 210 40% 98%;
+
+    --warning: 38 92% 50%;
+    --warning-foreground: 222.2 47.4% 11.2%;
  
     --border: 222 47% 12%;
     --input: 222 47% 10%;
-    --ring: 224 71.4% 45.9%;
+    --ring: 252 59% 58%;
 
     /* Sidebar Theme - Dark Mode */
     --sidebar-background: 222 47% 5%;
     --sidebar-foreground: 213 31% 91%;
-    --sidebar-primary: 217.2 91.2% 59.8%;
+    --sidebar-primary: 252 59% 58%;
     --sidebar-primary-foreground: 222.2 47.4% 11.2%;
     --sidebar-accent: 222 47% 11%;
     --sidebar-accent-foreground: 213 31% 91%;
     --sidebar-border: 222 47% 15%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    --sidebar-ring: 252 59% 58%;
 
     /* Sparkles variables */
-    --gradient-color: #8350e8;
+    --gradient-color: #7c3aed;
     --sparkles-color: #ffffff;
   }
 }
@@ -138,7 +150,7 @@
   @apply backdrop-blur-sm bg-gradient-to-br from-card to-secondary/80;
 }
 
-/* Glowing border effect for sub-cards */
+/* Improved Glowing effect for special components */
 .glow-border {
   position: relative;
   overflow: hidden;
@@ -154,9 +166,9 @@
   border-radius: inherit;
   background: linear-gradient(
     45deg,
-    rgba(131, 80, 232, 0.5),
-    rgba(131, 80, 232, 0),
-    rgba(131, 80, 232, 0.5)
+    rgba(124, 58, 237, 0.5),
+    rgba(124, 58, 237, 0),
+    rgba(124, 58, 237, 0.5)
   );
   z-index: -1;
   animation: glowPulse 2s ease-in-out;
@@ -274,4 +286,64 @@
 
 .animate-beam-glow {
   animation: beam-glow 10s ease-in-out infinite;
+}
+
+/* Financial cards and value indicators */
+.financial-card {
+  @apply rounded-lg border border-border/50 bg-card shadow-sm hover:shadow-md transition-all duration-300;
+}
+
+.financial-value {
+  @apply text-lg md:text-xl font-semibold;
+}
+
+.financial-label {
+  @apply text-xs md:text-sm text-muted-foreground uppercase tracking-wide;
+}
+
+.trend-positive {
+  @apply text-success flex items-center gap-1;
+}
+
+.trend-negative {
+  @apply text-destructive flex items-center gap-1;
+}
+
+.trend-neutral {
+  @apply text-muted-foreground flex items-center gap-1;
+}
+
+/* Dashboard Layout Improvements */
+.dashboard-section {
+  @apply mb-6;
+}
+
+.dashboard-heading {
+  @apply text-2xl font-bold mb-4 bg-gradient-to-r from-primary/90 to-primary bg-clip-text text-transparent;
+}
+
+/* Improved form elements */
+.form-control {
+  @apply space-y-2;
+}
+
+.form-label {
+  @apply block text-sm font-medium text-foreground;
+}
+
+/* Enhanced Table Styling */
+.finance-table {
+  @apply w-full border-collapse;
+}
+
+.finance-table th {
+  @apply p-2 text-left text-xs font-medium uppercase tracking-wider text-muted-foreground bg-secondary/50;
+}
+
+.finance-table td {
+  @apply p-2 border-t border-border/60;
+}
+
+.finance-table tr:hover {
+  @apply bg-accent/30;
 }

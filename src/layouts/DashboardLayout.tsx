@@ -1,4 +1,4 @@
-import React from 'react'
+
 import { Outlet } from 'react-router-dom'
 import { Navbar } from '@/components/layout/Navbar'
 import { Sidebar } from '@/components/layout/Sidebar'
@@ -31,7 +31,7 @@ export function DashboardLayout() {
               intensity="medium"
             >
               <div className="container max-w-6xl mx-auto py-6 px-4 w-full">
-                <div className="relative min-h-[calc(100vh-theme(spacing.14)-theme(spacing.12))] rounded-xl border border-slate-800/60 bg-slate-900/80 backdrop-blur-xl p-6 shadow-lg">
+                <div className="relative min-h-[calc(100vh-theme(spacing.14)-theme(spacing.12))] rounded-xl border border-slate-800/60 bg-slate-900/80 backdrop-blur-xl p-4 md:p-6 shadow-lg">
                   <Outlet />
                 </div>
               </div>
@@ -42,7 +42,7 @@ export function DashboardLayout() {
               showRadialGradient={true}
             >
               <div className="container max-w-6xl mx-auto py-6 px-4 w-full">
-                <div className="relative min-h-[calc(100vh-theme(spacing.14)-theme(spacing.12))] rounded-xl border border-slate-200 bg-white/90 backdrop-blur-sm p-6 shadow-sm">
+                <div className="relative min-h-[calc(100vh-theme(spacing.14)-theme(spacing.12))] rounded-xl border border-slate-200/80 bg-white/90 backdrop-blur-sm p-4 md:p-6 shadow-sm">
                   <Outlet />
                 </div>
               </div>

@@ -1,3 +1,4 @@
+
 "use client";
 
 import { cn } from "@/lib/utils";
@@ -27,11 +28,11 @@ export function BeamsBackground({
         style={{ opacity: 0.9 }}
       />
 
-      {/* First beam layer - subtle blue tint */}
+      {/* First beam layer with primary color tint */}
       <div className="pointer-events-none absolute inset-0 flex [perspective:1000px]">
         <div
           className={cn(
-            "absolute inset-0 bg-gradient-to-b from-transparent via-blue-900/20 to-transparent transform-gpu rotate-12",
+            "absolute inset-0 bg-gradient-to-b from-transparent via-primary/20 to-transparent transform-gpu rotate-12",
             opacityMap[intensity],
             "animate-beam-slide"
           )}
@@ -57,10 +58,10 @@ export function BeamsBackground({
         }}
       />
 
-      {/* Third beam layer - additional highlight */}
+      {/* Third beam layer - primary highlight */}
       <div
         className={cn(
-          "absolute inset-0 bg-gradient-to-tr from-blue-950/10 via-transparent to-indigo-950/10",
+          "absolute inset-0 bg-gradient-to-tr from-primary/10 via-transparent to-primary/10",
           "animate-beam-glow"
         )}
         style={{ 

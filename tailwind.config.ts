@@ -1,12 +1,24 @@
+
 import type { Config } from "tailwindcss";
 import { flattenColorPalette } from "tailwindcss/lib/util/flattenColorPalette";
 
 // Fix: Define the addVariablesForColors function before using it in plugins
 function addVariablesForColors({ addBase, theme }: any) {
   try {
-    const colors = flattenColorPalette(theme("colors"));
+    // Only proceed if both addBase and theme are defined and theme has colors
+    if (!addBase || !theme || typeof theme !== 'function' || !theme('colors')) {
+      console.warn("Couldn't generate CSS variables from colors - missing inputs");
+      return;
+    }
+    
+    const colors = flattenColorPalette(theme("colors") || {});
+    if (!colors || typeof colors !== 'object') {
+      console.warn("No valid colors found in theme");
+      return;
+    }
+    
     const newVars = Object.fromEntries(
-      Object.entries(colors || {}).map(([key, val]) => [`--${key}`, val])
+      Object.entries(colors).map(([key, val]) => [`--${key}`, val])
     );
   
     addBase({
@@ -52,6 +64,14 @@ export default {
 				destructive: {
 					DEFAULT: 'hsl(var(--destructive))',
 					foreground: 'hsl(var(--destructive-foreground))'
+				},
+				success: {
+					DEFAULT: 'hsl(var(--success))',
+					foreground: 'hsl(var(--success-foreground))'
+				},
+				warning: {
+					DEFAULT: 'hsl(var(--warning))',
+					foreground: 'hsl(var(--warning-foreground))'
 				},
 				muted: {
 					DEFAULT: 'hsl(var(--muted))',
@@ -109,12 +129,53 @@ export default {
 					to: {
 						backgroundPosition: "350% 50%, 350% 50%",
 					},
-				}
+				},
+				'beam-slide': {
+					'0%': {
+						transform: 'translateY(-30%) rotate(-20deg) scale(2.5)',
+						opacity: '0.15',
+					},
+					'50%': {
+						transform: 'translateY(-25%) rotate(-22deg) scale(2.6)',
+						opacity: '0.2',
+					},
+					'100%': {
+						transform: 'translateY(-30%) rotate(-20deg) scale(2.5)',
+						opacity: '0.15',
+					},
+				},
+				'beam-pulse': {
+					'0%': {
+						transform: 'translateY(-20%) rotate(20deg) scale(2.5)',
+						opacity: '0.15',
+					},
+					'50%': {
+						transform: 'translateY(-22%) rotate(22deg) scale(2.6)',
+						opacity: '0.2',
+					},
+					'100%': {
+						transform: 'translateY(-20%) rotate(20deg) scale(2.5)',
+						opacity: '0.15',
+					},
+				},
+				'beam-glow': {
+					'0%, 100%': {
+						opacity: '0.2',
+						transform: 'scale(1.5) rotate(-15deg)',
+					},
+					'50%': {
+						opacity: '0.25',
+						transform: 'scale(1.6) rotate(-12deg)',
+					},
+				},
 			},
 			animation: {
 				'accordion-down': 'accordion-down 0.2s ease-out',
 				'accordion-up': 'accordion-up 0.2s ease-out',
-				'aurora': 'aurora 60s linear infinite'
+				'aurora': 'aurora 60s linear infinite',
+				'beam-slide': 'beam-slide 8s ease-in-out infinite',
+				'beam-pulse': 'beam-pulse 10s ease-in-out infinite',
+				'beam-glow': 'beam-glow 10s ease-in-out infinite',
 			}
 		}
 	},
