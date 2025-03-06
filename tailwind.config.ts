@@ -1,3 +1,4 @@
+
 import type { Config } from "tailwindcss";
 import { flattenColorPalette } from "tailwindcss/lib/util/flattenColorPalette";
 
@@ -105,15 +106,27 @@ export default {
 	plugins: [
 		require("tailwindcss-animate"), 
 		require("@tailwindcss/typography"),
-		function addVariablesForColors({ addBase, theme }: any) {
-			let allColors = flattenColorPalette(theme("colors"));
-			let newVars = Object.fromEntries(
-				Object.entries(allColors).map(([key, val]) => [`--${key}`, val])
-			);
-		
-			addBase({
-				":root": newVars,
-			});
-		}
+		addVariablesForColors
 	],
 } satisfies Config;
+
+// Fix: Properly define the addVariablesForColors function as a plugin
+function addVariablesForColors({ addBase, theme }: any) {
+  if (!addBase || !theme || typeof theme !== 'function') {
+    // Safeguard against undefined properties
+    return;
+  }
+  
+  try {
+    let allColors = flattenColorPalette(theme("colors"));
+    let newVars = Object.fromEntries(
+      Object.entries(allColors).map(([key, val]) => [`--${key}`, val])
+    );
+  
+    addBase({
+      ":root": newVars,
+    });
+  } catch (error) {
+    console.error("Error in addVariablesForColors plugin:", error);
+  }
+}
