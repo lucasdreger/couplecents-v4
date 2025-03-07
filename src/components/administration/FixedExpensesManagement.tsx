@@ -172,30 +172,50 @@ export const FixedExpensesManagement = () => {
   
   const { mutate: deleteExpense, isPending: isDeletePending } = useMutation({
     mutationFn: async (id: string) => {
+      // First, delete any associated status records
+      const { error: statusError } = await supabase
+        .from('monthly_fixed_expense_status')
+        .delete()
+        .eq('fixed_expense_id', id);
+      
+      if (statusError) {
+        console.error("Error deleting status records:", statusError);
+        throw statusError;
+      }
+
+      // Then delete the fixed expense
       const { error } = await supabase
         .from('fixed_expenses')
         .delete()
-        .eq('id', id)
+        .eq('id', id);
       
       if (error) {
-        console.error("Supabase delete error:", error);
+        console.error("Error deleting fixed expense:", error);
         throw error;
       }
+
+      return { success: true };
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.fixedExpenses() })
-      setShowDeleteDialog(false)
-      setExpenseToDelete(null)
-      toast({ description: "Fixed expense deleted successfully" })
+      queryClient.invalidateQueries({ queryKey: queryKeys.fixedExpenses() });
+      setShowDeleteDialog(false);
+      setExpenseToDelete(null);
+      toast({ description: "Fixed expense deleted successfully" });
     },
     onError: (error: Error) => {
       console.error("Delete error:", error);
       toast({ 
-        description: "Failed to delete fixed expense: " + error.message,
-        variant: "destructive"
-      })
+        variant: "destructive",
+        description: "Failed to delete fixed expense. Please try again." 
+      });
     }
-  })
+  });
+
+  const confirmDelete = async () => {
+    if (expenseToDelete) {
+      deleteExpense(expenseToDelete);
+    }
+  }
   
   const handleEditExpense = (expense: FixedExpense) => {
     setExpense({
@@ -213,12 +233,6 @@ export const FixedExpensesManagement = () => {
   const handleDeleteExpense = (id: string) => {
     setExpenseToDelete(id)
     setShowDeleteDialog(true)
-  }
-  
-  const confirmDelete = () => {
-    if (expenseToDelete) {
-      deleteExpense(expenseToDelete)
-    }
   }
   
   const resetForm = () => {
@@ -468,10 +482,13 @@ export const FixedExpensesManagement = () => {
           </Table>
         </div>
       </CardContent>
-      <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+      <AlertDialog open={showDeleteDialog} onOpenChange={(open) => {
+        setShowDeleteDialog(open);
+        if (!open) setExpenseToDelete(null);
+      }}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+            <AlertDialogTitle>Delete Fixed Expense</AlertDialogTitle>
             <AlertDialogDescription>
               This will permanently delete this fixed expense. This action cannot be undone.
             </AlertDialogDescription>
