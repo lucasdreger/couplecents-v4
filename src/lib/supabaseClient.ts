@@ -1,3 +1,4 @@
+
 import { createClient } from '@supabase/supabase-js'
 import { Database } from '@/types/database.types'
 import { TypedSupabaseClient } from '@/types/supabase'
@@ -26,6 +27,6 @@ supabase.from('investments').select('count').single()
   .then(() => {
     console.log('Successfully connected to Supabase')
   })
-  .catch((error) => {
+  .catch((error: Error) => {
     console.error('Failed to connect to Supabase:', error)
   })

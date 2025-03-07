@@ -1,5 +1,8 @@
+
+import React from "react";
 import { Navigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
+import { LoadingOverlay } from "../ui/loading-overlay";
 
 interface PrivateRouteProps {
   children: React.ReactNode;
@@ -14,7 +17,7 @@ export function PrivateRoute({
   const location = useLocation();
 
   if (loading) {
-    return <div className="flex h-screen items-center justify-center">Loading...</div>;
+    return <LoadingOverlay isLoading={true} text="Checking authentication..." />;
   }
 
   if (!user) {
@@ -23,3 +26,5 @@ export function PrivateRoute({
 
   return <>{children}</>;
 }
+
+export default PrivateRoute;
