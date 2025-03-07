@@ -1,25 +1,13 @@
 
-import React from 'react';
-import { Link } from 'react-router-dom';
-import { cn } from '@/lib/utils';
+import { useState } from "react";
+import { Link, useLocation } from "react-router-dom";
+import { cn } from "@/lib/utils";
 
 const navItems = [
-  {
-    title: 'Overview',
-    href: '/',
-  },
-  {
-    title: 'Monthly Expenses',
-    href: '/monthly-expenses',
-  },
-  {
-    title: 'Analytics',
-    href: '/analytics',
-  },
-  {
-    title: 'Administration',
-    href: '/administration',
-  },
+  { name: "Dashboard", href: "/" },
+  { name: "Monthly Expenses", href: "/monthly-expenses" },
+  { name: "Analytics", href: "/analytics" },
+  { name: "Administration", href: "/administration" },
 ];
 
 interface MainNavProps {
@@ -27,17 +15,26 @@ interface MainNavProps {
 }
 
 export function MainNav({ className }: MainNavProps) {
+  const location = useLocation();
+  
   return (
-    <nav className={cn('flex items-center space-x-4 lg:space-x-6', className)}>
+    <nav className={cn("flex items-center space-x-4 lg:space-x-6", className)}>
       {navItems.map((item) => (
         <Link
           key={item.href}
           to={item.href}
-          className="text-sm font-medium transition-colors hover:text-primary"
+          className={cn(
+            "text-sm font-medium transition-colors hover:text-primary",
+            location.pathname === item.href
+              ? "text-foreground font-semibold"
+              : "text-muted-foreground"
+          )}
         >
-          {item.title}
+          {item.name}
         </Link>
       ))}
     </nav>
   );
 }
+
+export default MainNav;

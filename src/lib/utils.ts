@@ -1,125 +1,182 @@
-import { type ClassValue, clsx } from "clsx";
-import { twMerge } from "tailwind-merge";
+import { type ClassValue, clsx } from 'clsx';
+import { twMerge } from 'tailwind-merge';
 
-/**
- * Combines multiple class names into a single string, 
- * handling Tailwind CSS class conflicts
- */
+// Type-safe class name merging
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
-/**
- * Formats a number as a currency string
- * @param value The value to format
- */
-export function formatCurrency(value: number): string {
-  return value.toLocaleString('de-DE', {
-    style: 'currency',
-    currency: 'EUR',
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2
-  })
+// Type-safe date formatting
+interface DateFormatOptions {
+  format?: 'short' | 'medium' | 'long';
+  includeTime?: boolean;
+  locale?: string;
 }
 
-/**
- * Parses a number input string to a number
- * @param value The value to parse
- */
-export function parseNumberInput(value: string): number {
-  // Remove currency symbol and convert German format to standard decimal
-  const sanitized = value.replace(/[€\s]/g, '').replace(',', '.')
-  const number = parseFloat(sanitized)
-  return isNaN(number) ? 0 : number
-}
+export function formatDate(date: Date | string, options: DateFormatOptions = {}) {
+  const { format = 'medium', includeTime = false, locale = 'en-US' } = options;
+  const dateObj = date instanceof Date ? date : new Date(date);
 
-/**
- * Formats a number as a Euro currency string
- * @param value The value to format
- */
-export function formatEuro(value: number): string {
-  return value.toLocaleString('de-DE', {
-    style: 'currency',
-    currency: 'EUR'
-  });
-}
+  const formatOptions: Intl.DateTimeFormatOptions = {
+    short: { month: 'numeric', day: 'numeric', year: '2-digit' },
+    medium: { month: 'short', day: 'numeric', year: 'numeric' },
+    long: { month: 'long', day: 'numeric', year: 'numeric' },
+  }[format];
 
-/**
- * Parses a Euro currency input string to a number
- * @param value The value to parse
- */
-export function parseEuroInput(value: string): number {
-  // Remove all non-numeric characters except comma and period
-  const cleaned = value.replace(/[^0-9,.]/, '');
-  // Replace comma with period for parsing
-  const normalized = cleaned.replace(',', '.');
-  return parseFloat(normalized);
-}
-
-/**
- * Formats a date as a localized string
- * @param date The date to format
- * @param options Intl.DateTimeFormatOptions
- */
-export function formatDate(
-  date: Date | string | number,
-  options: Intl.DateTimeFormatOptions = { 
-    year: "numeric", 
-    month: "short", 
-    day: "numeric" 
+  if (includeTime) {
+    formatOptions.hour = 'numeric';
+    formatOptions.minute = 'numeric';
   }
-): string {
-  const dateObj = typeof date === "string" || typeof date === "number" 
-    ? new Date(date) 
-    : date;
-  
-  return new Intl.DateTimeFormat("en-US", options).format(dateObj);
+
+  return new Intl.DateTimeFormat(locale, formatOptions).format(dateObj);
 }
 
-/**
- * Calculates the percentage change between two values
- */
-export function calculatePercentageChange(
-  currentValue: number,
-  previousValue: number
-): number {
-  if (previousValue === 0) return 0;
-  return ((currentValue - previousValue) / Math.abs(previousValue)) * 100;
+// Type-safe currency formatting
+interface CurrencyFormatOptions {
+  currency?: string;
+  locale?: string;
+  minimumFractionDigits?: number;
+  maximumFractionDigits?: number;
 }
 
-/**
- * Truncates a string if it exceeds the specified length
- */
-export function truncateString(str: string, maxLength: number = 30): string {
-  if (str.length <= maxLength) return str;
-  return `${str.substring(0, maxLength - 3)}...`;
+export function formatCurrency(
+  amount: number,
+  options: CurrencyFormatOptions = {}
+) {
+  const {
+    currency = 'USD',
+    locale = 'en-US',
+    minimumFractionDigits = 2,
+    maximumFractionDigits = 2,
+  } = options;
+
+  return new Intl.NumberFormat(locale, {
+    style: 'currency',
+    currency,
+    minimumFractionDigits,
+    maximumFractionDigits,
+  }).format(amount);
 }
 
-/**
- * Generates a random ID
- */
-export function generateId(length: number = 8): string {
-  return Math.random().toString(36).substring(2, 2 + length);
+// Type-safe number formatting
+interface NumberFormatOptions {
+  style?: 'decimal' | 'percent';
+  minimumFractionDigits?: number;
+  maximumFractionDigits?: number;
+  locale?: string;
 }
 
-/**
- * Deep clones an object
- */
-export function deepClone<T>(obj: T): T {
-  return JSON.parse(JSON.stringify(obj));
+export function formatNumber(
+  value: number,
+  options: NumberFormatOptions = {}
+) {
+  const {
+    style = 'decimal',
+    minimumFractionDigits = 0,
+    maximumFractionDigits = 2,
+    locale = 'en-US',
+  } = options;
+
+  return new Intl.NumberFormat(locale, {
+    style,
+    minimumFractionDigits,
+    maximumFractionDigits,
+  }).format(value);
 }
 
-/**
- * Debounces a function call
- */
+// Type-safe color utilities
+interface RGB {
+  r: number;
+  g: number;
+  b: number;
+}
+
+export function hexToRgb(hex: string): RGB | null {
+  const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+  return result
+    ? {
+        r: parseInt(result[1], 16),
+        g: parseInt(result[2], 16),
+        b: parseInt(result[3], 16),
+      }
+    : null;
+}
+
+export function rgbToHex({ r, g, b }: RGB): string {
+  return '#' + [r, g, b]
+    .map(x => {
+      const hex = x.toString(16);
+      return hex.length === 1 ? '0' + hex : hex;
+    })
+    .join('');
+}
+
+// Type-safe debounce function
 export function debounce<T extends (...args: any[]) => any>(
   func: T,
   wait: number
 ): (...args: Parameters<T>) => void {
-  let timeout: ReturnType<typeof setTimeout> | null = null;
-  
-  return (...args: Parameters<T>) => {
-    if (timeout) clearTimeout(timeout);
-    timeout = setTimeout(() => func(...args), wait);
+  let timeout: NodeJS.Timeout | null = null;
+
+  return function executedFunction(...args: Parameters<T>) {
+    const later = () => {
+      timeout = null;
+      func(...args);
+    };
+
+    if (timeout) {
+      clearTimeout(timeout);
+    }
+    timeout = setTimeout(later, wait);
   };
 }
+
+// Type-safe deep clone function
+export function deepClone<T>(obj: T): T {
+  if (obj === null || typeof obj !== 'object') {
+    return obj;
+  }
+
+  if (obj instanceof Date) {
+    return new Date(obj.getTime()) as any;
+  }
+
+  if (Array.isArray(obj)) {
+    return obj.map(item => deepClone(item)) as any;
+  }
+
+  return Object.fromEntries(
+    Object.entries(obj as any).map(([key, value]) => [
+      key,
+      deepClone(value),
+    ])
+  ) as T;
+}
+
+// Type-safe local storage helpers
+export const storage = {
+  get<T>(key: string, defaultValue: T): T {
+    try {
+      const item = localStorage.getItem(key);
+      return item ? (JSON.parse(item) as T) : defaultValue;
+    } catch {
+      return defaultValue;
+    }
+  },
+
+  set<T>(key: string, value: T): void {
+    try {
+      localStorage.setItem(key, JSON.stringify(value));
+    } catch (error) {
+      console.error('Error saving to localStorage:', error);
+    }
+  },
+
+  remove(key: string): void {
+    try {
+      localStorage.removeItem(key);
+    } catch (error) {
+      console.error('Error removing from localStorage:', error);
+    }
+  },
+};

@@ -1,13 +1,13 @@
 
-import React from 'react'
-import { Link } from 'react-router-dom'
-import { MainNav } from '@/components/layout/MainNav'
-import { ThemeToggle } from '@/components/ui/theme-toggle'
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
-import { useAuth } from '@/context/AuthContext'
-import { Sparkles } from '@/components/ui/sparkles'
-import { useTheme } from '@/context/ThemeContext'
-import { cn } from '@/lib/utils'
+import { Link } from 'react-router-dom';
+import { MainNav } from '@/components/layout/MainNav';
+import { ThemeToggle } from '@/components/ui/theme-toggle';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { useAuth } from '@/context/AuthContext';
+import { Sparkles } from '@/components/ui/sparkles';
+import { cn } from '@/lib/utils';
+import { useTheme } from "@/context/ThemeContext";
+import { UserNav } from "./UserNav";
 
 export function Navbar() {
   const { theme } = useTheme();
@@ -37,15 +37,7 @@ export function Navbar() {
         <div className="flex flex-1 items-center justify-end space-x-4">
           <nav className="flex items-center space-x-2">
             <ThemeToggle />
-            
-            <div className="relative ml-3">
-              <Avatar alt={user?.email || 'User'} className="border border-primary/20">
-                <AvatarImage src={user?.photoURL || undefined} />
-                <AvatarFallback className="bg-secondary">
-                  {user?.email?.charAt(0).toUpperCase() || 'U'}
-                </AvatarFallback>
-              </Avatar>
-            </div>
+            <UserNav />
           </nav>
         </div>
       </div>

@@ -68,447 +68,173 @@ export type Json =
   | boolean
   | null
   | { [key: string]: Json | undefined }
-  | Json[]
+  | Json[];
 
 export interface Database {
   public: {
     Tables: {
       categories: {
         Row: {
-          id: string
-          name: string
-          created_at: string
-          updated_at: string | null
-          user_id: string | null
-        }
-        Insert: {
-          id?: string
-          name: string
-          created_at?: string
-          updated_at?: string | null
-          user_id?: string | null
-        }
-        Update: {
-          id?: string
-          name?: string
-          created_at?: string
-          updated_at?: string | null
-          user_id?: string | null
-        }
-      }
-      default_income: {
-        Row: {
-          id: string
-          lucas_income: number
-          camila_income: number
-          other_income: number
-          updated_at: string | null
-        }
-        Insert: {
-          id?: string
-          lucas_income: number
-          camila_income: number
-          other_income: number
-          updated_at?: string | null
-        }
-        Update: {
-          id?: string
-          lucas_income?: number
-          camila_income?: number
-          other_income?: number
-          updated_at?: string | null
-        }
-      }
-      financial_goals: {
-        Row: {
-          id: string
-          name: string
-          target_amount: number
-          current_amount: number
-          target_date: string | null
-          created_at: string
-          updated_at: string | null
-          category_id: string | null
-          notes: string | null
-          completed: boolean
-          completed_at: string | null
-          linked_reserve_id: string | null
-          linked_investment_id: string | null
-        }
-        Insert: {
-          id?: string
-          name: string
-          target_amount: number
-          current_amount?: number
-          target_date?: string | null
-          created_at?: string
-          updated_at?: string | null
-          category_id?: string | null
-          notes?: string | null
-          completed?: boolean
-          completed_at?: string | null
-          linked_reserve_id?: string | null
-          linked_investment_id?: string | null
-        }
-        Update: {
-          id?: string
-          name?: string
-          target_amount?: number
-          current_amount?: number
-          target_date?: string | null
-          created_at?: string
-          updated_at?: string | null
-          category_id?: string | null
-          notes?: string | null
-          completed?: boolean
-          completed_at?: string | null
-          linked_reserve_id?: string | null
-          linked_investment_id?: string | null
-        }
-      }
-      fixed_expenses: {
-        Row: {
-          id: string
-          description: string
-          amount: number
-          category_id: string
-          status_required: boolean
-          owner: string
-          created_at: string
-          updated_at: string | null
-        }
-        Insert: {
-          id?: string
-          description: string
-          amount: number
-          category_id: string
-          status_required?: boolean
-          owner: string
-          created_at?: string
-          updated_at?: string | null
-        }
-        Update: {
-          id?: string
-          description?: string
-          amount?: number
-          category_id?: string
-          status_required?: boolean
-          owner?: string
-          created_at?: string
-          updated_at?: string | null
-        }
-      }
-      households: {
-        Row: {
-          id: string
-          name: string
-          created_at: string
-          created_by: string
-          updated_at: string | null
-        }
-        Insert: {
-          id?: string
-          name: string
-          created_at?: string
-          created_by: string
-          updated_at?: string | null
-        }
-        Update: {
-          id?: string
-          name?: string
-          created_at?: string
-          created_by?: string
-          updated_at?: string | null
-        }
-      }
-      investment_history: {
-        Row: {
-          id: string
-          investment_id: string
-          previous_value: number
-          new_value: number
-          created_at: string
-          updated_by: string
-        }
-        Insert: {
-          id?: string
-          investment_id: string
-          previous_value: number
-          new_value: number
-          created_at?: string
-          updated_by: string
-        }
-        Update: {
-          id?: string
-          investment_id?: string
-          previous_value?: number
-          new_value?: number
-          created_at?: string
-          updated_by?: string
-        }
-      }
-      investments: {
-        Row: {
-          id: string
-          name: string
-          current_value: number
-          initial_value: number
-          category: string
-          created_at: string
-          last_updated: string | null
-          notes: string | null
-        }
-        Insert: {
-          id?: string
-          name: string
-          current_value: number
-          initial_value: number
-          category: string
-          created_at?: string
-          last_updated?: string | null
-          notes?: string | null
-        }
-        Update: {
-          id?: string
-          name?: string
-          current_value?: number
-          initial_value?: number
-          category?: string
-          created_at?: string
-          last_updated?: string | null
-          notes?: string | null
-        }
-      }
-      monthly_credit_card: {
-        Row: {
-          id: string
-          amount: number
-          month: number
-          year: number
-          created_at: string
-          updated_at: string | null
-          transfer_completed: boolean
-          transfer_completed_at: string | null
-          notes: string | null
-        }
-        Insert: {
-          id?: string
-          amount: number
-          month: number
-          year: number
-          created_at?: string
-          updated_at?: string | null
-          transfer_completed?: boolean
-          transfer_completed_at?: string | null
-          notes?: string | null
-        }
-        Update: {
-          id?: string
-          amount?: number
-          month?: number
-          year?: number
-          created_at?: string
-          updated_at?: string | null
-          transfer_completed?: boolean
-          transfer_completed_at?: string | null
-          notes?: string | null
-        }
-      }
-      monthly_fixed_expense_status: {
-        Row: {
-          id: string
-          fixed_expense_id: string
-          month: number
-          year: number
-          completed: boolean
-          completed_at: string | null
-          created_at: string
-          updated_at: string | null
-        }
-        Insert: {
-          id?: string
-          fixed_expense_id: string
-          month: number
-          year: number
-          completed?: boolean
-          completed_at?: string | null
-          created_at?: string
-          updated_at?: string | null
-        }
-        Update: {
-          id?: string
-          fixed_expense_id?: string
-          month?: number
-          year?: number
-          completed?: boolean
-          completed_at?: string | null
-          created_at?: string
-          updated_at?: string | null
-        }
-      }
-      monthly_income: {
-        Row: {
-          id: string
-          lucas_income: number
-          camila_income: number
-          other_income: number
-          month: number
-          year: number
-          created_at: string
-          updated_at: string | null
-        }
-        Insert: {
-          id?: string
-          lucas_income: number
-          camila_income: number
-          other_income: number
-          month: number
-          year: number
-          created_at?: string
-          updated_at?: string | null
-        }
-        Update: {
-          id?: string
-          lucas_income?: number
-          camila_income?: number
-          other_income?: number
-          month?: number
-          year?: number
-          created_at?: string
-          updated_at?: string | null
-        }
-      }
-      reserves: {
-        Row: {
-          id: string
-          name: string
-          current_amount: number
-          target_amount: number | null
-          created_at: string
-          updated_at: string | null
-          notes: string | null
-        }
-        Insert: {
-          id?: string
-          name: string
-          current_amount: number
-          target_amount?: number | null
-          created_at?: string
-          updated_at?: string | null
-          notes?: string | null
-        }
-        Update: {
-          id?: string
-          name?: string
-          current_amount?: number
-          target_amount?: number | null
-          created_at?: string
-          updated_at?: string | null
-          notes?: string | null
-        }
-      }
-      reserve_history: {
-        Row: {
-          id: string
-          reserve_id: string
-          previous_amount: number
-          new_amount: number
-          created_at: string
-          updated_by: string
-          notes: string | null
-        }
-        Insert: {
-          id?: string
-          reserve_id: string
-          previous_amount: number
-          new_amount: number
-          created_at?: string
-          updated_by: string
-          notes?: string | null
-        }
-        Update: {
-          id?: string
-          reserve_id?: string
-          previous_amount?: number
-          new_amount?: number
-          created_at?: string
-          updated_by?: string
-          notes?: string | null
-        }
-      }
-      user_households: {
-        Row: {
-          id: string
-          user_id: string
-          role: string
-          joined_at: string
-          invited_by: string | null
-        }
-        Insert: {
-          id?: string
-          user_id: string
-          role?: string
-          joined_at?: string
-          invited_by?: string | null
-        }
-        Update: {
-          id?: string
-          user_id?: string
-          role?: string
-          joined_at?: string
-          invited_by?: string | null
-        }
-      }
+          id: string;
+          name: string;
+          color: string;
+          budget: number | null;
+          parent_id: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: Omit<Categories['Row'], 'id' | 'created_at' | 'updated_at'>;
+        Update: Partial<Omit<Categories['Row'], 'id'>>;
+      };
       variable_expenses: {
         Row: {
-          id: string
-          description: string
-          amount: number
-          date: string
-          category_id: string
-          month: number
-          year: number
-          created_at: string
-          created_by: string
-          updated_at: string | null
-        }
-        Insert: {
-          id?: string
-          description: string
-          amount: number
-          date: string
-          category_id: string
-          month: number
-          year: number
-          created_at?: string
-          created_by: string
-          updated_at?: string | null
-        }
-        Update: {
-          id?: string
-          description?: string
-          amount?: number
-          date?: string
-          category_id?: string
-          month?: number
-          year?: number
-          created_at?: string
-          created_by?: string
-          updated_at?: string | null
-        }
-      }
-    }
+          id: string;
+          description: string;
+          amount: number;
+          date: string;
+          category_id: string;
+          user_id: string;
+          year: number;
+          month: number;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: Omit<VariableExpenses['Row'], 'id' | 'created_at' | 'updated_at'>;
+        Update: Partial<Omit<VariableExpenses['Row'], 'id'>>;
+      };
+      fixed_expenses: {
+        Row: {
+          id: string;
+          description: string;
+          amount: number;
+          due_day: number;
+          category_id: string;
+          user_id: string;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: Omit<FixedExpenses['Row'], 'id' | 'created_at' | 'updated_at'>;
+        Update: Partial<Omit<FixedExpenses['Row'], 'id'>>;
+      };
+      monthly_fixed_expense_status: {
+        Row: {
+          id: string;
+          expense_id: string;
+          year: number;
+          month: number;
+          completed: boolean;
+          completed_at: string | null;
+          created_at: string;
+        };
+        Insert: Omit<MonthlyFixedExpenseStatus['Row'], 'id' | 'created_at'>;
+        Update: Partial<Omit<MonthlyFixedExpenseStatus['Row'], 'id'>>;
+      };
+      investments: {
+        Row: {
+          id: string;
+          name: string;
+          type: 'STOCK' | 'BOND' | 'CRYPTO' | 'REAL_ESTATE' | 'OTHER';
+          initial_value: number;
+          current_value: number;
+          target_value: number | null;
+          notes: string | null;
+          user_id: string;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: Omit<Investments['Row'], 'id' | 'created_at' | 'updated_at'>;
+        Update: Partial<Omit<Investments['Row'], 'id'>>;
+      };
+      investment_history: {
+        Row: {
+          id: string;
+          investment_id: string;
+          previous_value: number;
+          new_value: number;
+          updated_by: string;
+          created_at: string;
+        };
+        Insert: Omit<InvestmentHistory['Row'], 'id' | 'created_at'>;
+        Update: Partial<Omit<InvestmentHistory['Row'], 'id'>>;
+      };
+      monthly_income: {
+        Row: {
+          id: string;
+          year: number;
+          month: number;
+          lucas_main_income: number;
+          lucas_other_income: number;
+          camila_main_income: number;
+          camila_other_income: number;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: Omit<MonthlyIncome['Row'], 'id' | 'created_at' | 'updated_at'>;
+        Update: Partial<Omit<MonthlyIncome['Row'], 'id'>>;
+      };
+      default_income: {
+        Row: {
+          id: string;
+          lucas_main_income: number;
+          lucas_other_income: number;
+          camila_main_income: number;
+          camila_other_income: number;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: Omit<DefaultIncome['Row'], 'id' | 'created_at' | 'updated_at'>;
+        Update: Partial<Omit<DefaultIncome['Row'], 'id'>>;
+      };
+      reserves: {
+        Row: {
+          id: string;
+          name: string;
+          target_amount: number;
+          current_amount: number;
+          priority: number;
+          notes: string | null;
+          user_id: string;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: Omit<Reserves['Row'], 'id' | 'created_at' | 'updated_at'>;
+        Update: Partial<Omit<Reserves['Row'], 'id'>>;
+      };
+      user_preferences: {
+        Row: {
+          user_id: string;
+          currency: string;
+          theme: 'light' | 'dark' | 'system';
+          notifications: boolean;
+          week_starts_on: number;
+          language: string;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: Omit<UserPreferences['Row'], 'created_at' | 'updated_at'>;
+        Update: Partial<Omit<UserPreferences['Row'], 'user_id'>>;
+      };
+    };
     Views: {
-      [_ in never]: never
-    }
+      monthly_details: {
+        Row: {
+          month: string;
+          total_income: number;
+          total_expenses: number;
+          planned_amount: number;
+          actual_amount: number;
+        };
+      };
+    };
     Functions: {
-      [_ in never]: never
-    }
-    Enums: {
-      [_ in never]: never
-    }
-    CompositeTypes: {
-      [_ in never]: never
-    }
-  }
+      calculate_monthly_totals: {
+        Args: { year: number; month: number };
+        Returns: {
+          total_income: number;
+          total_expenses: number;
+          savings: number;
+        };
+      };
+    };
+  };
 }

@@ -1,31 +1,22 @@
-
-import { 
-  createContext, 
-  useContext, 
-  useState, 
-  useEffect, 
-  ReactNode 
-} from 'react';
-import { User, Session } from '@supabase/supabase-js';
-import { supabase } from '@/lib/supabaseClient';
+import { createContext, useContext, useEffect, useState } from "react";
+import { User, AuthError } from "@supabase/supabase-js";
+import { supabase } from "@/lib/supabaseClient";
 import { toast } from 'sonner';
 
 interface AuthContextType {
   user: User | null;
-  session: Session | null;
-  loading: boolean;
-  signIn: (email: string, password: string) => Promise<{ data: any; error: any }>;
-  signUp: (email: string, password: string) => Promise<{ data: any; error: any }>;
+  signIn: (email: string, password: string) => Promise<void>;
   signOut: () => Promise<void>;
-  resetPassword: (email: string) => Promise<{ error: any }>;
+  loading: boolean;
+  error: AuthError | null;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-export function AuthProvider({ children }: { children: ReactNode }) {
+export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
-  const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<AuthError | null>(null);
 
   useEffect(() => {
     console.log("AuthProvider: initializing");
@@ -35,7 +26,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         console.log("AuthProvider: getting initial session");
         const { data: { session: initialSession } } = await supabase.auth.getSession();
         console.log("AuthProvider: got initial session", initialSession);
-        setSession(initialSession);
         setUser(initialSession?.user ?? null);
         setLoading(false);
       } catch (error) {
@@ -50,7 +40,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (_event, session) => {
         console.log("AuthProvider: auth state changed", _event, session?.user?.email);
-        setSession(session);
         setUser(session?.user ?? null);
         setLoading(false);
       }
@@ -61,17 +50,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const signIn = async (email: string, password: string) => {
     try {
+      setError(null);
       console.log("AuthProvider: signing in", email);
-      const result = await supabase.auth.signInWithPassword({ email, password });
-      if (result.error) {
-        console.error("Sign in error:", result.error);
-        toast.error(result.error.message);
+      const { error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+      if (error) {
+        console.error("Sign in error:", error);
+        toast.error(error.message);
+        throw error;
       } else {
         console.log("Sign in successful");
         toast.success("Signed in successfully");
       }
-      return result;
     } catch (error) {
+      setError(error as AuthError);
       console.error("Unexpected error during sign in:", error);
       toast.error("An unexpected error occurred");
       throw error;
@@ -99,10 +93,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const signOut = async () => {
     try {
+      setError(null);
       console.log("AuthProvider: signing out");
-      await supabase.auth.signOut();
-      toast.success("Signed out successfully");
+      const { error } = await supabase.auth.signOut();
+      if (error) {
+        console.error("Sign out error:", error);
+        toast.error(error.message);
+        throw error;
+      } else {
+        toast.success("Signed out successfully");
+      }
     } catch (error) {
+      setError(error as AuthError);
       console.error("Sign out error:", error);
       toast.error("Failed to sign out");
       throw error;
@@ -133,22 +135,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const value = {
     user,
-    session,
-    loading,
     signIn,
-    signUp,
     signOut,
-    resetPassword,
+    loading,
+    error,
   };
 
   console.log("AuthProvider rendering, user:", user?.email);
-  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+  return (
+    <AuthContext.Provider value={value}>
+      {!loading && children}
+    </AuthContext.Provider>
+  );
 }
 
 export function useAuth() {
   const context = useContext(AuthContext);
   if (context === undefined) {
-    throw new Error('useAuth must be used within an AuthProvider');
+    throw new Error("useAuth must be used within an AuthProvider");
   }
   return context;
 }

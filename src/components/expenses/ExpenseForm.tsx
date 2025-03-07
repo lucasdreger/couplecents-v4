@@ -9,9 +9,10 @@
  * - Type-safe form data handling
  * - Real-time category loading
  */
-import { useState, useEffect, useRef } from 'react'
-import { useForm } from 'react-hook-form'
+import React, { useState, useEffect, useRef } from 'react'
 import { zodResolver } from '@hookform/resolvers/zod'
+import { useForm } from 'react-hook-form'
+import * as z from 'zod'
 import { Plus, PlusCircle, CalendarIcon } from 'lucide-react'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
@@ -40,17 +41,12 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { useToast } from "@/hooks/use-toast"
-import * as z from 'zod'
 import type { VariableExpense } from '@/types/database.types'
 
 // Form validation schema
 const expenseFormSchema = z.object({
   description: z.string().min(1, 'Description is required'),
-  amount: z.string().min(1, 'Amount is required').transform(v => {
-    // Convert comma-separated amount to decimal with dot
-    const cleanValue = v.replace(/[€\s]/g, '').replace(',', '.');
-    return parseFloat(cleanValue);
-  }),
+  amount: z.coerce.number().min(0, "Amount must be positive"),
   date: z.string().min(1, 'Date is required'),
   category_id: z.string().min(1, 'Category is required'),
   year: z.number(),
@@ -84,7 +80,7 @@ export const ExpenseForm = ({ onSubmit, year, month, expense = null, isEditing =
     resolver: zodResolver(expenseFormSchema),
     defaultValues: {
       description: '',
-      amount: '',
+      amount: 0,
       date: new Date().toISOString().split('T')[0],
       category_id: '',
       year: year,
@@ -145,7 +141,7 @@ export const ExpenseForm = ({ onSubmit, year, month, expense = null, isEditing =
       // Reset the form with the current date
       form.reset({
         description: '',
-        amount: '',
+        amount: 0,
         date: new Date().toISOString().split('T')[0],
         category_id: '',
         year: year,
@@ -211,7 +207,7 @@ export const ExpenseForm = ({ onSubmit, year, month, expense = null, isEditing =
                   <div className="relative">
                     <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">€</span>
                     <Input 
-                      type="text"
+                      type="number"
                       placeholder="0,00"
                       className="pl-7 text-right"
                       {...field}
@@ -322,7 +318,7 @@ export const ExpenseForm = ({ onSubmit, year, month, expense = null, isEditing =
                     <div className="relative">
                       <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">€</span>
                       <Input 
-                        type="text"
+                        type="number"
                         placeholder="0,00"
                         className="pl-7 text-right"
                         {...field}

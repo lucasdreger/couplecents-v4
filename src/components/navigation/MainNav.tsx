@@ -1,9 +1,9 @@
 import { Link } from "react-router-dom"
-import { LayoutDashboard, Wallet, LineChart, Banknote, TrendingUp, Vault, Settings } from "some-icon-library"
+import { LayoutDashboard, Wallet, LineChart, Settings } from "lucide-react"
 
 const mainNavItems = [
   {
-    title: "Overview",
+    title: "Dashboard",
     href: "/",
     icon: LayoutDashboard
   },
@@ -16,21 +16,6 @@ const mainNavItems = [
     title: "Financial Analytics",
     href: "/analytics",
     icon: LineChart
-  },
-  {
-    title: "Income",
-    href: "/income",
-    icon: Banknote
-  },
-  {
-    title: "Investments",
-    href: "/investments",
-    icon: TrendingUp
-  },
-  {
-    title: "Reserves",
-    href: "/reserves",
-    icon: Vault
   },
   {
     title: "Administration",
