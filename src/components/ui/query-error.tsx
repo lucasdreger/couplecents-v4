@@ -1,48 +1,42 @@
-import React from 'react';
-import { ErrorBoundary } from 'react-error-boundary';
-import { Button } from './button';
-import { AlertCircle } from 'lucide-react';
-import { Alert, AlertDescription, AlertTitle } from './alert';
-
-interface FallbackProps {
-  error: Error;
-  resetErrorBoundary: () => void;
-}
-
-interface QueryErrorBoundaryProps {
-  children: React.ReactNode;
-}
+import React from 'react'
+import { ErrorBoundary, type FallbackProps } from 'react-error-boundary'
+import { Button } from './button'
+import { useQueryClient } from '@tanstack/react-query'
 
 function ErrorFallback({ error, resetErrorBoundary }: FallbackProps) {
+  const queryClient = useQueryClient()
+
+  const handleReset = () => {
+    queryClient.clear()
+    resetErrorBoundary()
+  }
+
   return (
-    <Alert variant="destructive" className="mt-4">
-      <AlertCircle className="h-4 w-4" />
-      <AlertTitle>Something went wrong</AlertTitle>
-      <AlertDescription className="mt-2">
-        {error.message}
-      </AlertDescription>
-      <div className="mt-4">
-        <Button
-          variant="outline"
-          onClick={resetErrorBoundary}
-        >
-          Try again
-        </Button>
-      </div>
-    </Alert>
-  );
+    <div className="flex flex-col items-center justify-center p-4 space-y-4">
+      <p className="text-destructive font-medium">Something went wrong!</p>
+      <p className="text-sm text-muted-foreground">{error.message}</p>
+      <Button onClick={handleReset} variant="outline">
+        Try Again
+      </Button>
+    </div>
+  )
+}
+
+type QueryErrorBoundaryProps = {
+  children: JSX.Element | JSX.Element[];
 }
 
 export function QueryErrorBoundary({ children }: QueryErrorBoundaryProps) {
+  const handleReset = () => {
+    window.location.reload()
+  }
+
   return (
-    <ErrorBoundary
+    <ErrorBoundary 
       FallbackComponent={ErrorFallback}
-      onReset={() => {
-        // Reset the state of your app here
-        window.location.reload();
-      }}
+      onReset={handleReset}
     >
       {children}
     </ErrorBoundary>
-  );
+  )
 }

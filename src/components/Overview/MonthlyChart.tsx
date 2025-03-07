@@ -1,130 +1,153 @@
-import React from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { ResponsiveContainer, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend } from 'recharts';
 import { useQuery } from '@tanstack/react-query';
-import { queryKeys } from '@/lib/queries';
 import { supabase } from '@/lib/supabaseClient';
-import { Skeleton } from '@/components/ui/skeleton';
-import { MonthlySummary } from '@/types/supabase';
+import { 
+  BarChart, 
+  Bar, 
+  XAxis, 
+  YAxis, 
+  CartesianGrid, 
+  Tooltip, 
+  Legend, 
+  ResponsiveContainer 
+} from 'recharts';
+import { Skeleton } from "@/components/ui/skeleton";
 
-interface MonthlyData extends MonthlySummary {
-  name: string;
+interface Props {
+  months?: number; // Number of months to display (default: 6)
 }
 
-interface MonthlyChartProps {
-  months?: number; // Number of months to display
-}
-
-const MONTHS = [
-  'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-  'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
-];
-
-export function MonthlyChart({ months = 12 }: MonthlyChartProps) {
-  const currentDate = new Date();
-  const currentYear = currentDate.getFullYear();
-
-  const { data: monthlySummaries, isLoading } = useQuery<MonthlySummary[]>({
-    queryKey: queryKeys.monthlyAnalytics(currentYear),
+export const MonthlyChart = ({ months = 6 }: Props) => {
+  const { data: monthlyData, isLoading } = useQuery({
+    queryKey: ['monthly-expenses-chart', months],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from('monthly_summary')
-        .select('*')
-        .eq('year', currentYear)
-        .order('month');
-
-      if (error) throw error;
-      return data;
-    },
+      // Get current date
+      const today = new Date();
+      const currentYear = today.getFullYear();
+      const currentMonth = today.getMonth() + 1;
+      
+      // Create an array of month/year combinations to fetch data for
+      const periods = [];
+      
+      // If showing just one month, use the current month
+      if (months === 1) {
+        periods.push({ year: currentYear, month: currentMonth });
+      } 
+      // If showing more months, go back from current month
+      else {
+        // Start from months - 1 ago (to include current month in the range)
+        for (let i = months - 1; i >= 0; i--) {
+          const date = new Date(currentYear, currentMonth - 1 - i, 1);
+          periods.push({ 
+            year: date.getFullYear(), 
+            month: date.getMonth() + 1 
+          });
+        }
+      }
+      
+      console.log("Periods to fetch:", periods);
+      
+      // Get all monthly income records
+      const { data: allIncomeData, error: incomeError } = await supabase
+        .from('monthly_income')
+        .select('*');
+      
+      if (incomeError) throw incomeError;
+      
+      // Get all variable expenses
+      const { data: allVariableExpensesData, error: variableExpensesError } = await supabase
+        .from('variable_expenses')
+        .select('amount, year, month');
+      
+      if (variableExpensesError) throw variableExpensesError;
+      
+      // Get all fixed expenses (assuming consistent monthly amount)
+      const { data: fixedExpensesData, error: fixedExpensesError } = await supabase
+        .from('fixed_expenses')
+        .select('estimated_amount');
+      
+      if (fixedExpensesError) throw fixedExpensesError;
+      
+      // Calculate total fixed expenses
+      const totalFixedExpenses = fixedExpensesData?.reduce(
+        (sum, expense) => sum + Number(expense.estimated_amount || 0),
+        0
+      ) || 0;
+      
+      // Create data for each month in our range
+      return periods.map(period => {
+        // Find income for this period
+        const income = allIncomeData?.find(
+          inc => inc.year === period.year && inc.month === period.month
+        );
+        
+        // Find all variable expenses for this period
+        const periodVariableExpenses = allVariableExpensesData
+          ?.filter(e => e.year === period.year && e.month === period.month)
+          .reduce((sum, expense) => sum + Number(expense.amount || 0), 0) || 0;
+        
+        // Calculate totals
+        const totalIncome = income
+          ? (Number(income.lucas_main_income || 0) +
+             Number(income.lucas_other_income || 0) +
+             Number(income.camila_main_income || 0) +
+             Number(income.camila_other_income || 0))
+          : 0;
+        
+        const totalExpenses = periodVariableExpenses + totalFixedExpenses;
+        const savings = totalIncome - totalExpenses;
+        const savingsRate = totalIncome > 0 ? (savings / totalIncome) * 100 : 0;
+        
+        // Format month name
+        const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+        const monthDisplay = monthNames[period.month - 1];
+        
+        return {
+          name: `${monthDisplay}/${period.year}`,
+          Income: totalIncome,
+          Expenses: totalExpenses,
+          Savings: savings,
+          SavingsRate: savingsRate
+        };
+      });
+    }
   });
-
-  const chartData = React.useMemo((): MonthlyData[] => {
-    if (!monthlySummaries) return [];
-
-    return monthlySummaries
-      .map(summary => ({
-        ...summary,
-        name: MONTHS[summary.month - 1],
-      }))
-      .slice(-months);
-  }, [monthlySummaries, months]);
 
   if (isLoading) {
     return (
-      <Card>
-        <CardHeader>
-          <CardTitle>Monthly Overview</CardTitle>
-        </CardHeader>
-        <CardContent className="pt-6">
-          <Skeleton className="h-[300px] w-full" />
-        </CardContent>
-      </Card>
+      <div className="w-full h-[300px] flex items-center justify-center">
+        <Skeleton className="h-[250px] w-full" />
+      </div>
     );
   }
 
-  const formatCurrency = (value: number) => {
-    return value.toLocaleString('de-DE', { 
-      style: 'currency', 
-      currency: 'EUR',
-      maximumFractionDigits: 0
-    });
-  };
+  if (!monthlyData?.length) {
+    return (
+      <div className="flex items-center justify-center h-[300px] text-muted-foreground">
+        No monthly data available. Please add income and expenses to see your budget trends.
+      </div>
+    );
+  }
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Monthly Overview</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <div className="h-[300px] w-full">
-          <ResponsiveContainer width="100%" height="100%">
-            <LineChart data={chartData} margin={{ top: 5, right: 20, left: 10, bottom: 5 }}>
-              <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
-              <XAxis 
-                dataKey="name" 
-                className="text-muted-foreground text-xs"
-              />
-              <YAxis
-                className="text-muted-foreground text-xs"
-                tickFormatter={formatCurrency}
-              />
-              <Tooltip
-                formatter={(value: number) => [formatCurrency(value)]}
-                labelClassName="text-muted-foreground"
-                contentStyle={{
-                  backgroundColor: 'hsl(var(--background))',
-                  borderColor: 'hsl(var(--border))',
-                }}
-              />
-              <Legend />
-              <Line
-                type="monotone"
-                dataKey="total_income"
-                name="Income"
-                stroke="#10b981"
-                activeDot={{ r: 8 }}
-                strokeWidth={2}
-              />
-              <Line
-                type="monotone"
-                dataKey="total_expenses"
-                name="Expenses"
-                stroke="#ef4444"
-                activeDot={{ r: 8 }}
-                strokeWidth={2}
-              />
-              <Line
-                type="monotone"
-                dataKey="savings"
-                name="Savings"
-                stroke="#3b82f6"
-                activeDot={{ r: 8 }}
-                strokeWidth={2}
-              />
-            </LineChart>
-          </ResponsiveContainer>
-        </div>
-      </CardContent>
-    </Card>
+    <div className="h-[300px]">
+      <ResponsiveContainer width="100%" height="100%">
+        <BarChart data={monthlyData}>
+          <CartesianGrid strokeDasharray="3 3" />
+          <XAxis dataKey="name" />
+          <YAxis />
+          <Tooltip 
+            formatter={(value: number, name: string) => {
+              if (name === "SavingsRate") {
+                return [`${value.toFixed(1)}%`, name];
+              }
+              return [value.toLocaleString('de-DE', { style: 'currency', currency: 'EUR' }), name];
+            }}
+          />
+          <Legend />
+          <Bar dataKey="Income" fill="#8884d8" />
+          <Bar dataKey="Expenses" fill="#82ca9d" />
+        </BarChart>
+      </ResponsiveContainer>
+    </div>
   );
-}
+};

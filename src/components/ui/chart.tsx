@@ -1,11 +1,5 @@
 import * as React from "react"
 import * as RechartsPrimitive from "recharts"
-import { Line as RechartsLine } from "recharts"
-import type { 
-  LineProps as RechartsLineProps,
-  ResponsiveContainerProps,
-  TooltipProps
-} from "recharts"
 
 import { cn } from "@/lib/utils"
 
@@ -359,69 +353,9 @@ function getPayloadConfigFromPayload(
     : config[key as keyof typeof config]
 }
 
-interface ChartProps extends Omit<ResponsiveContainerProps, "children"> {
-  children: React.ReactNode;
-}
-
-interface LineProps extends Omit<RechartsLineProps, "type"> {
-  type?: "monotone" | "linear";
-}
-
-interface CustomTooltipProps extends TooltipProps<any, any> {
-  className?: string;
-  formatter?: (value: any, name: string) => [string, string];
-}
-
-export const Chart = React.forwardRef<
-  HTMLDivElement,
-  React.HTMLProps<HTMLDivElement> & ChartProps
->(({ children, className, ...props }, ref) => (
-  <div ref={ref} className={className}>
-    {children}
-  </div>
-));
-
-Chart.displayName = "Chart";
-
-export const Line = React.forwardRef<SVGPathElement, LineProps>(
-  ({ className, ...props }, ref) => (
-    <RechartsLine ref={ref} {...props} className={className} />
-  )
-);
-
-Line.displayName = "Line";
-
-export const LineChart = React.forwardRef<
-  SVGSVGElement,
-  React.ComponentProps<typeof RechartsLine>
->(({ className, children, ...props }, ref) => (
-  <RechartsLine ref={ref} {...props} className={className}>
-    {children}
-  </RechartsLine>
-));
-
-LineChart.displayName = "LineChart";
-
-export const ChartTooltip = React.forwardRef<HTMLDivElement, CustomTooltipProps>(
-  ({ className, formatter, ...props }, ref) => (
-    <div
-      ref={ref}
-      className={className}
-      style={{
-        backgroundColor: "var(--background)",
-        border: "1px solid var(--border)",
-        padding: "0.5rem",
-        borderRadius: "0.25rem",
-      }}
-      {...props}
-    />
-  )
-);
-
-ChartTooltip.displayName = "ChartTooltip";
-
 export {
   ChartContainer,
+  ChartTooltip,
   ChartTooltipContent,
   ChartLegend,
   ChartLegendContent,

@@ -1,3 +1,4 @@
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -13,7 +14,7 @@
     --popover: 0 0% 100%;
     --popover-foreground: 222.2 84% 4.9%;
  
-    --primary: 252 59% 48%;
+    --primary: 222.2 47.4% 11.2%;
     --primary-foreground: 210 40% 98%;
  
     --secondary: 210 40% 96.1%;
@@ -22,86 +23,74 @@
     --muted: 210 40% 96.1%;
     --muted-foreground: 215.4 16.3% 46.9%;
  
-    --accent: 252 59% 94%;
+    --accent: 210 40% 96.1%;
     --accent-foreground: 222.2 47.4% 11.2%;
  
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 210 40% 98%;
 
-    --success: 142 76% 36%;
-    --success-foreground: 210 40% 98%;
-
-    --warning: 38 92% 50%;
-    --warning-foreground: 222.2 47.4% 11.2%;
-
     --border: 214.3 31.8% 91.4%;
     --input: 214.3 31.8% 91.4%;
-    --ring: 252 59% 48%;
+    --ring: 222.2 84% 4.9%;
  
     --radius: 0.5rem;
 
     /* Sidebar Theme */
-    --sidebar-background: 249 27% 16%;
+    --sidebar-background: 220 14% 16%;
     --sidebar-foreground: 210 40% 98%;
-    --sidebar-primary: 252 59% 58%;
+    --sidebar-primary: 217.2 91.2% 59.8%;
     --sidebar-primary-foreground: 210 40% 98%;
-    --sidebar-accent: 249 27% 24%;
+    --sidebar-accent: 220 14% 24%;
     --sidebar-accent-foreground: 210 40% 98%;
-    --sidebar-border: 249 27% 24%;
-    --sidebar-ring: 252 59% 58%;
+    --sidebar-border: 220 14% 24%;
+    --sidebar-ring: 217.2 91.2% 59.8%;
 
     /* Sparkles variables */
-    --gradient-color: #7c3aed;
-    --sparkles-color: #7c3aed;
+    --gradient-color: #8350e8;
+    --sparkles-color: #8350e8;
   }
  
   .dark {
-    --background: 222 47% 4%;
-    --foreground: 213 31% 91%;
+    --background: 222.2 84% 4.9%;
+    --foreground: 210 40% 98%;
  
-    --card: 222 47% 6%;
-    --card-foreground: 213 31% 91%;
+    --card: 222.2 84% 4.9%;
+    --card-foreground: 210 40% 98%;
  
-    --popover: 222 47% 5%;
-    --popover-foreground: 213 31% 91%;
+    --popover: 222.2 84% 4.9%;
+    --popover-foreground: 210 40% 98%;
  
-    --primary: 252 59% 58%;
+    --primary: 210 40% 98%;
     --primary-foreground: 222.2 47.4% 11.2%;
  
-    --secondary: 222 47% 9%;
-    --secondary-foreground: 213 31% 91%;
+    --secondary: 217.2 32.6% 17.5%;
+    --secondary-foreground: 210 40% 98%;
  
-    --muted: 222 47% 8%;
-    --muted-foreground: 215 20.2% 75.1%;
+    --muted: 217.2 32.6% 17.5%;
+    --muted-foreground: 215 20.2% 65.1%;
  
-    --accent: 252 59% 18%;
-    --accent-foreground: 213 31% 91%;
+    --accent: 217.2 32.6% 17.5%;
+    --accent-foreground: 210 40% 98%;
  
     --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 213 31% 91%;
-
-    --success: 142 76% 36%;
-    --success-foreground: 210 40% 98%;
-
-    --warning: 38 92% 50%;
-    --warning-foreground: 222.2 47.4% 11.2%;
+    --destructive-foreground: 210 40% 98%;
  
-    --border: 222 47% 12%;
-    --input: 222 47% 10%;
-    --ring: 252 59% 58%;
+    --border: 217.2 32.6% 17.5%;
+    --input: 217.2 32.6% 17.5%;
+    --ring: 212.7 26.8% 83.9%;
 
     /* Sidebar Theme - Dark Mode */
-    --sidebar-background: 222 47% 5%;
-    --sidebar-foreground: 213 31% 91%;
-    --sidebar-primary: 252 59% 58%;
+    --sidebar-background: 222.2 84% 4.9%;
+    --sidebar-foreground: 210 40% 98%;
+    --sidebar-primary: 217.2 91.2% 59.8%;
     --sidebar-primary-foreground: 222.2 47.4% 11.2%;
-    --sidebar-accent: 222 47% 11%;
-    --sidebar-accent-foreground: 213 31% 91%;
-    --sidebar-border: 222 47% 15%;
-    --sidebar-ring: 252 59% 58%;
+    --sidebar-accent: 217.2 32.6% 17.5%;
+    --sidebar-accent-foreground: 210 40% 98%;
+    --sidebar-border: 217.2 32.6% 17.5%;
+    --sidebar-ring: 217.2 91.2% 59.8%;
 
     /* Sparkles variables */
-    --gradient-color: #7c3aed;
+    --gradient-color: #8350e8;
     --sparkles-color: #ffffff;
   }
 }
@@ -150,48 +139,6 @@
   @apply backdrop-blur-sm bg-gradient-to-br from-card to-secondary/80;
 }
 
-/* Improved Glowing effect for special components */
-.glow-border {
-  position: relative;
-  overflow: hidden;
-}
-
-.glow-border::before {
-  content: '';
-  position: absolute;
-  top: -2px;
-  left: -2px;
-  right: -2px;
-  bottom: -2px;
-  border-radius: inherit;
-  background: linear-gradient(
-    45deg,
-    rgba(124, 58, 237, 0.5),
-    rgba(124, 58, 237, 0),
-    rgba(124, 58, 237, 0.5)
-  );
-  z-index: -1;
-  animation: glowPulse 2s ease-in-out;
-  opacity: 0;
-}
-
-.glow-border:hover::before {
-  animation: glowPulse 2s ease-in-out;
-  opacity: 1;
-}
-
-@keyframes glowPulse {
-  0% {
-    opacity: 0;
-  }
-  50% {
-    opacity: 1;
-  }
-  100% {
-    opacity: 0;
-  }
-}
-
 /* Animation utilities */
 .fade-in {
   opacity: 0;
@@ -211,139 +158,4 @@
 @keyframes slideIn {
   from { transform: translateX(-100%); }
   to { transform: translateX(0); }
-}
-
-@keyframes aurora {
-  from {
-    background-position: 0% 50%;
-  }
-  to {
-    background-position: 200% 50%;
-  }
-}
-
-@keyframes pulse {
-  0%, 100% {
-    opacity: 1;
-  }
-  50% {
-    opacity: 0.5;
-  }
-}
-
-@keyframes beam-slide {
-  0% {
-    transform: translateY(-30%) rotate(-20deg) scale(2.5);
-    opacity: 0.15;
-  }
-  50% {
-    transform: translateY(-25%) rotate(-22deg) scale(2.6);
-    opacity: 0.2;
-  }
-  100% {
-    transform: translateY(-30%) rotate(-20deg) scale(2.5);
-    opacity: 0.15;
-  }
-}
-
-@keyframes beam-pulse {
-  0% {
-    transform: translateY(-20%) rotate(20deg) scale(2.5);
-    opacity: 0.15;
-  }
-  50% {
-    transform: translateY(-22%) rotate(22deg) scale(2.6);
-    opacity: 0.2;
-  }
-  100% {
-    transform: translateY(-20%) rotate(20deg) scale(2.5);
-    opacity: 0.15;
-  }
-}
-
-@keyframes beam-glow {
-  0%, 100% {
-    opacity: 0.2;
-    transform: scale(1.5) rotate(-15deg);
-  }
-  50% {
-    opacity: 0.25;
-    transform: scale(1.6) rotate(-12deg);
-  }
-}
-
-.animate-aurora {
-  animation: aurora 10s linear infinite;
-}
-
-.animate-beam-slide {
-  animation: beam-slide 8s ease-in-out infinite;
-}
-
-.animate-beam-pulse {
-  animation: beam-pulse 10s ease-in-out infinite;
-}
-
-.animate-beam-glow {
-  animation: beam-glow 10s ease-in-out infinite;
-}
-
-/* Financial cards and value indicators */
-.financial-card {
-  @apply rounded-lg border border-border/50 bg-card shadow-sm hover:shadow-md transition-all duration-300;
-}
-
-.financial-value {
-  @apply text-lg md:text-xl font-semibold;
-}
-
-.financial-label {
-  @apply text-xs md:text-sm text-muted-foreground uppercase tracking-wide;
-}
-
-.trend-positive {
-  @apply text-success flex items-center gap-1;
-}
-
-.trend-negative {
-  @apply text-destructive flex items-center gap-1;
-}
-
-.trend-neutral {
-  @apply text-muted-foreground flex items-center gap-1;
-}
-
-/* Dashboard Layout Improvements */
-.dashboard-section {
-  @apply mb-6;
-}
-
-.dashboard-heading {
-  @apply text-2xl font-bold mb-4 bg-gradient-to-r from-primary/90 to-primary bg-clip-text text-transparent;
-}
-
-/* Improved form elements */
-.form-control {
-  @apply space-y-2;
-}
-
-.form-label {
-  @apply block text-sm font-medium text-foreground;
-}
-
-/* Enhanced Table Styling */
-.finance-table {
-  @apply w-full border-collapse;
-}
-
-.finance-table th {
-  @apply p-2 text-left text-xs font-medium uppercase tracking-wider text-muted-foreground bg-secondary/50;
-}
-
-.finance-table td {
-  @apply p-2 border-t border-border/60;
-}
-
-.finance-table tr:hover {
-  @apply bg-accent/30;
 }

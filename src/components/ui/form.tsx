@@ -1,3 +1,4 @@
+
 import * as React from "react"
 import * as LabelPrimitive from "@radix-ui/react-label"
 import { Slot } from "@radix-ui/react-slot"
@@ -9,73 +10,34 @@ import {
   FormProvider,
   useFormContext,
 } from "react-hook-form"
-import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
 
 import { cn } from "@/lib/utils"
 import { Label } from "@/components/ui/label"
 
-interface FormProps<TSchema extends z.ZodType<any, any>> {
-  schema: TSchema;
-  onSubmit: (data: z.infer<TSchema>) => void | Promise<void>;
-  children: React.ReactNode;
-  className?: string;
-  defaultValues?: UseFormProps<z.infer<TSchema>>['defaultValues'];
+const Form = FormProvider
+
+type FormFieldContextValue<
+  TFieldValues extends FieldValues = FieldValues,
+  TName extends FieldPath<TFieldValues> = FieldPath<TFieldValues>
+> = {
+  name: TName
 }
 
-export function Form<TSchema extends z.ZodType<any, any>>({
-  schema,
-  onSubmit,
-  children,
-  className,
-  defaultValues
-}: FormProps<TSchema>) {
-  const form = useForm<z.infer<TSchema>>({
-    resolver: zodResolver(schema),
-    defaultValues
-  });
+const FormFieldContext = React.createContext<FormFieldContextValue>(
+  {} as FormFieldContextValue
+)
 
-  const handleSubmit = form.handleSubmit(async (data) => {
-    try {
-      await onSubmit(data);
-      form.reset(defaultValues);
-    } catch (error) {
-      // Error will be handled by the ErrorProvider
-      console.error('Form submission error:', error);
-    }
-  });
-
+const FormField = <
+  TFieldValues extends FieldValues = FieldValues,
+  TName extends FieldPath<TFieldValues> = FieldPath<TFieldValues>
+>({
+  ...props
+}: ControllerProps<TFieldValues, TName>) => {
   return (
-    <form onSubmit={handleSubmit} className={cn('space-y-4', className)}>
-      {children}
-    </form>
-  );
-}
-
-interface FormFieldProps {
-  name: string;
-  label: string;
-  children: React.ReactNode;
-  error?: string;
-  className?: string;
-}
-
-export function FormField({
-  name,
-  label,
-  children,
-  error,
-  className
-}: FormFieldProps) {
-  return (
-    <div className={cn('space-y-2', className)}>
-      <Label htmlFor={name}>{label}</Label>
-      {children}
-      {error && (
-        <span className="text-sm text-destructive">{error}</span>
-      )}
-    </div>
-  );
+    <FormFieldContext.Provider value={{ name: props.name }}>
+      <Controller {...props} />
+    </FormFieldContext.Provider>
+  )
 }
 
 const useFormField = () => {
@@ -225,5 +187,4 @@ export {
   FormDescription,
   FormMessage,
   FormField,
-  useForm,
 }

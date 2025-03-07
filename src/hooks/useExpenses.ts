@@ -9,98 +9,98 @@
  * - Type-safe expense mutations
  */
 
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { QueryKeys } from '@/lib/query-keys';
-import { useOptimisticMutation } from '@/hooks/use-optimistic-mutation';
-import { selectFrom, insertInto, updateIn, deleteFrom } from '@/lib/supabase';
-import type { Database } from '@/types/database.types';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { 
+  getMonthlyExpenses, 
+  getFixedExpenses,
+  getMonthlyIncome,
+  addVariableExpense, 
+  updateVariableExpense, 
+  deleteVariableExpense,
+  updateFixedExpenseStatus
+} from '@/lib/supabase/queries'
+import type { VariableExpense, FixedExpense, Income } from '@/types/database.types'
+import { queryKeys } from '@/lib/queries'
 
-type VariableExpense = Database['public']['Tables']['variable_expenses']['Row'];
-type ExpenseInsert = Database['public']['Tables']['variable_expenses']['Insert'];
-type ExpenseUpdate = Database['public']['Tables']['variable_expenses']['Update'];
+export const useExpenses = (year: number, month: number) => {
+  const queryClient = useQueryClient()
 
-interface UseExpensesOptions {
-  year: number;
-  month: number;
-  enabled?: boolean;
-}
+  // Fetch variable expenses for the specified month
+  const { data: expenses, isLoading: loadingExpenses } = useQuery({
+    queryKey: queryKeys.expenses(year, month),
+    queryFn: async () => {
+      const { data, error } = await getMonthlyExpenses(year, month)
+      if (error) throw error
+      return data || []
+    }
+  })
 
-export function useExpenses({ year, month, enabled = true }: UseExpensesOptions) {
-  return useQuery({
-    queryKey: QueryKeys.expenses.list({ year, month }),
-    queryFn: () => selectFrom('variable_expenses', {
-      filters: { year, month },
-      orderBy: { column: 'date', ascending: false }
-    }),
-    enabled
-  });
-}
+  // Fetch fixed expenses
+  const { data: fixedExpenses, isLoading: loadingFixed } = useQuery({
+    queryKey: queryKeys.fixedExpenses(),
+    queryFn: async () => {
+      const { data, error } = await getFixedExpenses(year, month)
+      if (error) throw error
+      return data || []
+    }
+  })
 
-export function useExpense(id: string) {
-  return useQuery({
-    queryKey: QueryKeys.expenses.detail(id),
-    queryFn: () => selectFrom('variable_expenses', {
-      filters: { id }
-    }).then(data => data[0]),
-    enabled: !!id
-  });
-}
+  // Fetch monthly income
+  const { data: income, isLoading: loadingIncome } = useQuery({
+    queryKey: queryKeys.income(year, month),
+    queryFn: async () => {
+      const { data, error } = await getMonthlyIncome(year, month)
+      if (error) throw error
+      return data || { lucas_income: 0, camila_income: 0, other_income: 0 }
+    }
+  })
 
-export function useCreateExpense() {
-  const queryClient = useQueryClient();
+  // Mutation for adding new expenses
+  const { mutate: addExpense } = useMutation({
+    mutationFn: addVariableExpense,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.expenses(year, month) })
+      // Also invalidate category breakdown since it depends on expenses
+      queryClient.invalidateQueries({ queryKey: ['categoryBreakdown'] })
+    }
+  })
 
-  return useOptimisticMutation<VariableExpense[], ExpenseInsert>({
-    mutationFn: (data) => insertInto('variable_expenses', data),
-    queryKey: QueryKeys.expenses.all,
-    updateFn: (old = [], newExpense) => {
-      return [...old, { ...newExpense, id: 'temp-id' } as VariableExpense];
-    },
-    successMessage: 'Expense added successfully',
-    errorMessage: (error) => `Failed to add expense: ${error.message}`
-  });
-}
+  // Mutation for updating expenses
+  const { mutate: updateExpense } = useMutation({
+    mutationFn: ({ id, expense }: { id: string; expense: Partial<VariableExpense> }) => 
+      updateVariableExpense(id, expense),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.expenses(year, month) })
+      queryClient.invalidateQueries({ queryKey: ['categoryBreakdown'] })
+    }
+  })
 
-export function useUpdateExpense() {
-  const queryClient = useQueryClient();
+  // Mutation for deleting expenses
+  const { mutate: removeExpense } = useMutation({
+    mutationFn: deleteVariableExpense,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.expenses(year, month) })
+      queryClient.invalidateQueries({ queryKey: ['categoryBreakdown'] })
+    }
+  })
 
-  return useOptimisticMutation<VariableExpense, { id: string } & ExpenseUpdate>({
-    mutationFn: ({ id, ...data }) => updateIn('variable_expenses', id, data),
-    queryKey: QueryKeys.expenses.all,
-    updateFn: (old = [], { id, ...update }) => {
-      return old.map(expense =>
-        expense.id === id
-          ? { ...expense, ...update }
-          : expense
-      );
-    },
-    successMessage: 'Expense updated successfully',
-    errorMessage: (error) => `Failed to update expense: ${error.message}`
-  });
-}
+  // Mutation for updating fixed expense status
+  const { mutate: updateFixedStatus } = useMutation({
+    mutationFn: ({ id, completed }: { id: string; completed: boolean }) =>
+      updateFixedExpenseStatus(id, completed),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.fixedExpenses() })
+    }
+  })
 
-export function useDeleteExpense() {
-  const queryClient = useQueryClient();
-
-  return useOptimisticMutation<void, string>({
-    mutationFn: deleteFrom,
-    queryKey: QueryKeys.expenses.all,
-    updateFn: (old = [], id) => {
-      return old.filter(expense => expense.id !== id);
-    },
-    successMessage: 'Expense deleted successfully',
-    errorMessage: (error) => `Failed to delete expense: ${error.message}`
-  });
-}
-
-export function useExpenseStats({ year, month }: { year: number; month: number }) {
-  return useQuery({
-    queryKey: QueryKeys.expenses.stats(`${year}-${month}`),
-    queryFn: () => fetch(`/api/expenses/stats?year=${year}&month=${month}`).then(res => res.json()),
-    select: (data) => ({
-      totalExpenses: data.total,
-      averageExpense: data.average,
-      categoryBreakdown: data.byCategory,
-      dailyExpenses: data.byDay
-    })
-  });
+  return {
+    expenses,
+    fixedExpenses,
+    income,
+    isLoading: loadingExpenses || loadingFixed || loadingIncome,
+    addExpense,
+    updateExpense,
+    removeExpense,
+    updateFixedStatus
+  }
 }
