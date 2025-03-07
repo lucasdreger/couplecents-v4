@@ -40,7 +40,7 @@ export function Navbar() {
             
             <div className="relative ml-3">
               <Avatar alt={user?.email || 'User'} className="border border-primary/20">
-                <AvatarImage src={user?.photoURL || undefined} />
+                <AvatarImage src={user?.photoURL} />
                 <AvatarFallback className="bg-secondary">
                   {user?.email?.charAt(0).toUpperCase() || 'U'}
                 </AvatarFallback>

@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { cn } from '@/lib/utils';
@@ -14,7 +15,7 @@ interface SidebarProps {
 
 export function Sidebar({ isOpen }: SidebarProps) {
   const location = useLocation();
-  const { user, logout } = useAuth();
+  const { user } = useAuth();
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
   const toggleSettings = () => {
@@ -72,7 +73,7 @@ export function Sidebar({ isOpen }: SidebarProps) {
           <div className="border-t border-sidebar-border/40 my-2"></div>
           <div className="flex items-center justify-between px-2 py-2">
             <Avatar className="h-7 w-7">
-              <AvatarImage src={user?.photoURL || undefined} />
+              <AvatarImage src={user?.photoURL} />
               <AvatarFallback className="bg-secondary">
                 {user?.email?.charAt(0).toUpperCase() || 'U'}
               </AvatarFallback>
@@ -80,7 +81,7 @@ export function Sidebar({ isOpen }: SidebarProps) {
             {isOpen && (
               <div className="flex flex-col items-start">
                 <span className="text-sm font-medium">{user?.email}</span>
-                <button onClick={logout} className="text-xs text-muted-foreground hover:underline">
+                <button onClick={() => {}} className="text-xs text-muted-foreground hover:underline">
                   Log out
                 </button>
               </div>
