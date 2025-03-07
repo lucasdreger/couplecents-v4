@@ -1,19 +1,45 @@
-import * as React from "react"
+import { useState, useEffect } from 'react';
 
-const MOBILE_BREAKPOINT = 768
+interface UseMobileOptions {
+  mobileBreakpoint?: number;
+  tabletBreakpoint?: number;
+}
 
-export function useIsMobile() {
-  const [isMobile, setIsMobile] = React.useState<boolean | undefined>(undefined)
+interface DeviceInfo {
+  isMobile: boolean;
+  isTablet: boolean;
+  isDesktop: boolean;
+}
 
-  React.useEffect(() => {
-    const mql = window.matchMedia(`(max-width: ${MOBILE_BREAKPOINT - 1}px)`)
-    const onChange = () => {
-      setIsMobile(window.innerWidth < MOBILE_BREAKPOINT)
-    }
-    mql.addEventListener("change", onChange)
-    setIsMobile(window.innerWidth < MOBILE_BREAKPOINT)
-    return () => mql.removeEventListener("change", onChange)
-  }, [])
+export function useMobile({
+  mobileBreakpoint = 640,
+  tabletBreakpoint = 1024
+}: UseMobileOptions = {}): DeviceInfo {
+  const [deviceInfo, setDeviceInfo] = useState<DeviceInfo>({
+    isMobile: false,
+    isTablet: false,
+    isDesktop: true
+  });
 
-  return !!isMobile
+  useEffect(() => {
+    const checkDevice = () => {
+      const width = window.innerWidth;
+      setDeviceInfo({
+        isMobile: width < mobileBreakpoint,
+        isTablet: width >= mobileBreakpoint && width < tabletBreakpoint,
+        isDesktop: width >= tabletBreakpoint
+      });
+    };
+
+    // Initial check
+    checkDevice();
+
+    // Add event listener for window resize
+    window.addEventListener('resize', checkDevice);
+
+    // Cleanup
+    return () => window.removeEventListener('resize', checkDevice);
+  }, [mobileBreakpoint, tabletBreakpoint]);
+
+  return deviceInfo;
 }

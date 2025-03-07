@@ -7,20 +7,30 @@ import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { getMonthlyExpenses, deleteVariableExpense } from '@/lib/supabase'
 import { queryKeys } from '@/lib/queries'
 import { toast } from '@/hooks/use-toast'
-import type { VariableExpense } from '@/types/database.types'
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { formatCurrency } from "@/lib/utils";
 
-interface Props {
-  expenses?: VariableExpense[]
-  year?: number
-  month?: number
-  onEdit?: (expense: VariableExpense) => void
-  onDelete?: (expense: VariableExpense) => void
+interface Category {
+  id: string;
+  name: string;
 }
 
-type SortField = 'date' | 'amount' | 'category' | 'description';
-type SortOrder = 'asc' | 'desc';
+interface VariableExpense {
+  id: string;
+  description: string;
+  amount: number;
+  date: string;
+  categoryId: string;
+  category: Category;
+}
 
-export const VariableExpensesList = ({ year, month, onEdit, onDelete }: Props) => {
+interface VariableExpensesListProps {
+  expenses: VariableExpense[];
+  onEdit?: (expense: VariableExpense) => void;
+  onDelete?: (id: string) => void;
+}
+
+export function VariableExpensesList({ expenses, onEdit, onDelete }: VariableExpensesListProps) {
   const queryClient = useQueryClient()
   const [expenseToDelete, setExpenseToDelete] = useState<VariableExpense | null>(null)
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)

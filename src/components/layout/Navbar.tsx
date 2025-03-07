@@ -6,8 +6,11 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { useAuth } from '@/context/AuthContext'
 import { Sparkles } from '@/components/ui/sparkles'
 import { cn } from '@/lib/utils'
+import { useTheme } from "@/context/ThemeContext";
+import { UserNav } from "./UserNav";
 
 export function Navbar() {
+  const { theme } = useTheme();
   const { user } = useAuth();
 
   return (
@@ -17,11 +20,11 @@ export function Navbar() {
           <Link to="/" className="mr-6 flex items-center gap-2 md:gap-3">
             <Sparkles
               className="relative h-6 w-6 transform-gpu"
-              color="var(--sparkles-color)"
-              size={2}
-              density={60}
-              speed={0.5}
-              opacity={0.3}
+              color={theme === "dark" ? "var(--sparkles-color)" : "#8350e8"}
+              size={1.2}
+              density={50}
+              speed={0.3}
+              opacity={0.2}
             />
             <span className="hidden font-bold md:inline-block">
               CoupleCents
@@ -49,3 +52,5 @@ export function Navbar() {
     </header>
   );
 }
+
+Navbar.displayName = "Navbar";

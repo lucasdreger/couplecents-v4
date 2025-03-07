@@ -1,60 +1,122 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { supabase } from '@/lib/supabaseClient'
-import { queryKeys } from '@/lib/queries'
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { supabase } from '@/lib/supabaseClient';
+import { useToast } from './use-toast';
+import { queryKeys } from '@/lib/queries';
+import { Database } from '@/types/database.types';
 
-interface Category {
-  id: string
-  name: string
-}
+type Category = Database['public']['Tables']['categories']['Row'];
+type CategoryInput = Database['public']['Tables']['categories']['Insert'];
 
-export const useCategories = () => {
-  const queryClient = useQueryClient()
+export function useCategories() {
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
 
-  const { data: categories, isLoading } = useQuery({
+  const { data: categories = [], isLoading } = useQuery<Category[]>({
     queryKey: queryKeys.categories(),
     queryFn: async () => {
       const { data, error } = await supabase
         .from('categories')
         .select('*')
-        .order('name')
-      
-      if (error) throw error
-      return data || []
-    }
-  })
+        .order('name');
 
-  const { mutate: addCategory } = useMutation({
-    mutationFn: async (name: string) => {
-      const { error } = await supabase
+      if (error) throw error;
+      return data;
+    },
+  });
+
+  const addCategory = useMutation({
+    mutationFn: async (newCategory: CategoryInput) => {
+      const { data, error } = await supabase
         .from('categories')
-        .insert({ 
-          name,
-          household_id: '00000000-0000-0000-0000-000000000000'
-        })
-      if (error) throw error
+        .insert([newCategory])
+        .select()
+        .single();
+
+      if (error) throw error;
+      return data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.categories() })
-    }
-  })
+      queryClient.invalidateQueries({ queryKey: queryKeys.categories() });
+      toast({
+        title: "Success",
+        description: "Category added successfully",
+      });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Error",
+        description: "Failed to add category",
+        variant: "destructive",
+      });
+      console.error('Error adding category:', error);
+    },
+  });
 
-  const { mutate: deleteCategory } = useMutation({
+  const updateCategory = useMutation({
+    mutationFn: async ({ id, ...category }: Partial<Category> & { id: string }) => {
+      const { data, error } = await supabase
+        .from('categories')
+        .update(category)
+        .eq('id', id)
+        .select()
+        .single();
+
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.categories() });
+      toast({
+        title: "Success",
+        description: "Category updated successfully",
+      });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Error",
+        description: "Failed to update category",
+        variant: "destructive",
+      });
+      console.error('Error updating category:', error);
+    },
+  });
+
+  const deleteCategory = useMutation({
     mutationFn: async (id: string) => {
       const { error } = await supabase
         .from('categories')
         .delete()
-        .eq('id', id)
-      if (error) throw error
+        .eq('id', id);
+
+      if (error) throw error;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.categories() })
-    }
-  })
+      queryClient.invalidateQueries({ queryKey: queryKeys.categories() });
+      toast({
+        title: "Success",
+        description: "Category deleted successfully",
+      });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Error",
+        description: "Failed to delete category",
+        variant: "destructive",
+      });
+      console.error('Error deleting category:', error);
+    },
+  });
+
+  const getCategoryById = (id: string) => {
+    return categories.find(cat => cat.id === id);
+  };
 
   return {
     categories,
     isLoading,
-    addCategory,
-    deleteCategory
-  }
+    addCategory: addCategory.mutate,
+    updateCategory: updateCategory.mutate,
+    deleteCategory: deleteCategory.mutate,
+    getCategoryById,
+  };
 }

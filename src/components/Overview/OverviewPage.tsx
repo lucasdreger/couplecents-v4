@@ -1,4 +1,3 @@
-
 import React from 'react';
 import {
   Card,
@@ -20,6 +19,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Sparkles } from '@/components/ui/sparkles';
 import { ProgressiveBlur } from '@/components/ui/progressive-blur';
 import { useTheme } from '@/context/ThemeContext';
+import { MonthlySummary, Category, VariableExpense } from '@/types/supabase';
 
 // Create a reusable error fallback component
 const ErrorFallback = ({ message }: { message: string }) => (
@@ -83,7 +83,35 @@ const TotalAssets = () => {
   );
 };
 
-export const OverviewPage: React.FC = () => {
+interface OverviewPageProps {
+  expenses: VariableExpense[];
+  categories: Category[];
+  monthlySummary: MonthlySummary | null;
+  year: number;
+  month: number;
+}
+
+export function OverviewPage({ 
+  expenses, 
+  categories, 
+  monthlySummary,
+  year,
+  month 
+}: OverviewPageProps) {
+  const categoryData = React.useMemo(() => {
+    return categories.map(category => {
+      const categoryExpenses = expenses.filter(expense => expense.category_id === category.id);
+      const total = categoryExpenses.reduce((sum, expense) => sum + expense.amount, 0);
+      return {
+        name: category.name,
+        amount: total,
+        percentage: monthlySummary?.total_expenses 
+          ? (total / monthlySummary.total_expenses) * 100 
+          : 0
+      };
+    });
+  }, [expenses, categories, monthlySummary]);
+
   const { user } = useAuth();
   const { theme } = useTheme();
   
@@ -208,7 +236,7 @@ export const OverviewPage: React.FC = () => {
       </ErrorBoundary>
     </div>
   );
-};
+}
 
 // Error Boundary Component
 class ErrorBoundary extends React.Component<
