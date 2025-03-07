@@ -18,13 +18,5 @@ export default defineConfig(({ mode }) => ({
   server: {
     host: "::",
     port: 8080
-  },
-  build: {
-    outDir: 'dist',
-    sourcemap: true,
-    chunkSizeWarningLimit: 1600,
-  },
-  optimizeDeps: {
-    exclude: ['@supabase/supabase-js'],
   }
 }));

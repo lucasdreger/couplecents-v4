@@ -1,16 +1,13 @@
-
-import { Link } from 'react-router-dom';
-import { MainNav } from '@/components/layout/MainNav';
-import { ThemeToggle } from '@/components/ui/theme-toggle';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { useAuth } from '@/context/AuthContext';
-import { Sparkles } from '@/components/ui/sparkles';
-import { cn } from '@/lib/utils';
-import { useTheme } from "@/context/ThemeContext";
-import { UserNav } from "./UserNav";
+import React from 'react'
+import { Link } from 'react-router-dom'
+import { MainNav } from '@/components/layout/MainNav'
+import { ThemeToggle } from '@/components/ui/theme-toggle'
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+import { useAuth } from '@/context/AuthContext'
+import { Sparkles } from '@/components/ui/sparkles'
+import { cn } from '@/lib/utils'
 
 export function Navbar() {
-  const { theme } = useTheme();
   const { user } = useAuth();
 
   return (
@@ -20,11 +17,11 @@ export function Navbar() {
           <Link to="/" className="mr-6 flex items-center gap-2 md:gap-3">
             <Sparkles
               className="relative h-6 w-6 transform-gpu"
-              color={theme === "dark" ? "var(--sparkles-color)" : "#8350e8"}
-              size={1.2}
-              density={50}
-              speed={0.3}
-              opacity={0.2}
+              color="var(--sparkles-color)"
+              size={2}
+              density={60}
+              speed={0.5}
+              opacity={0.3}
             />
             <span className="hidden font-bold md:inline-block">
               CoupleCents
@@ -37,12 +34,18 @@ export function Navbar() {
         <div className="flex flex-1 items-center justify-end space-x-4">
           <nav className="flex items-center space-x-2">
             <ThemeToggle />
-            <UserNav />
+            
+            <div className="relative ml-3">
+              <Avatar alt={user?.email || 'User'} className="border border-primary/20">
+                <AvatarImage src={user?.photoURL || undefined} />
+                <AvatarFallback className="bg-secondary">
+                  {user?.email?.charAt(0).toUpperCase() || 'U'}
+                </AvatarFallback>
+              </Avatar>
+            </div>
           </nav>
         </div>
       </div>
     </header>
   );
 }
-
-Navbar.displayName = "Navbar";

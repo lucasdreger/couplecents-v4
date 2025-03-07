@@ -1,110 +1,47 @@
 import { createClient } from '@supabase/supabase-js';
-import type { Database } from '@/types/database.types';
+import { Database } from '@/types/database.types';
 
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
-if (!supabaseUrl || !supabaseKey) {
-  throw new Error('Missing Supabase environment variables');
+if (!supabaseUrl || !supabaseAnonKey) {
+  console.error('Missing Supabase environment variables');
 }
 
-export const supabase = createClient<Database>(supabaseUrl, supabaseKey, {
-  auth: {
-    persistSession: true,
-    autoRefreshToken: true,
-  },
-});
+export const supabase = createClient<Database>(
+  supabaseUrl || '',
+  supabaseAnonKey || ''
+);
 
-// Type-safe helper functions for common Supabase operations
+/**
+ * Get the current authenticated user
+ */
 export async function getCurrentUser() {
-  const { data: { user }, error } = await supabase.auth.getUser();
-  if (error) throw error;
+  const { data: { user } } = await supabase.auth.getUser();
   return user;
 }
 
+/**
+ * Get the current authenticated session
+ */
 export async function getCurrentSession() {
-  const { data: { session }, error } = await supabase.auth.getSession();
-  if (error) throw error;
+  const { data: { session } } = await supabase.auth.getSession();
   return session;
 }
 
-// Type-safe select helpers
-type TableName = keyof Database['public']['Tables'];
-type Row<T extends TableName> = Database['public']['Tables'][T]['Row'];
-type InsertRow<T extends TableName> = Database['public']['Tables'][T]['Insert'];
-type UpdateRow<T extends TableName> = Database['public']['Tables'][T]['Update'];
+export const signInWithPassword = async (email: string, password: string) => {
+  return await supabase.auth.signInWithPassword({ email, password });
+};
 
-export async function selectFrom<T extends TableName>(
-  table: T,
-  options?: {
-    columns?: string;
-    filters?: Record<string, unknown>;
-    range?: [number, number];
-    orderBy?: { column: string; ascending?: boolean };
-  }
-) {
-  let query = supabase.from(table).select(options?.columns || '*');
+export const signOut = async () => {
+  return await supabase.auth.signOut();
+};
 
-  if (options?.filters) {
-    Object.entries(options.filters).forEach(([key, value]) => {
-      query = query.eq(key, value);
-    });
-  }
-
-  if (options?.range) {
-    const [from, to] = options.range;
-    query = query.range(from, to);
-  }
-
-  if (options?.orderBy) {
-    const { column, ascending = true } = options.orderBy;
-    query = query.order(column, { ascending });
-  }
-
-  const { data, error } = await query;
-  if (error) throw error;
-  return data as Row<T>[];
-}
-
-export async function insertInto<T extends TableName>(
-  table: T,
-  data: InsertRow<T> | InsertRow<T>[]
-) {
-  const { data: result, error } = await supabase
-    .from(table)
-    .insert(data)
-    .select();
-
-  if (error) throw error;
-  return result as Row<T>[];
-}
-
-export async function updateIn<T extends TableName>(
-  table: T,
-  id: string | number,
-  data: UpdateRow<T>
-) {
-  const { data: result, error } = await supabase
-    .from(table)
-    .update(data)
-    .eq('id', id)
-    .select();
-
-  if (error) throw error;
-  return result?.[0] as Row<T>;
-}
-
-export async function deleteFrom<T extends TableName>(
-  table: T,
-  id: string | number
-) {
-  const { error } = await supabase
-    .from(table)
-    .delete()
-    .eq('id', id);
-
-  if (error) throw error;
-}
+export const resetPasswordForEmail = async (email: string) => {
+  return await supabase.auth.resetPasswordForEmail(email, {
+    redirectTo: `${window.location.origin}/reset-password`,
+  });
+};
 
 // Categories
 export const getCategories = async () => {

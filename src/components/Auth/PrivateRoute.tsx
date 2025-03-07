@@ -1,30 +1,33 @@
 
-import React from "react";
-import { Navigate, useLocation } from "react-router-dom";
-import { useAuth } from "@/context/AuthContext";
-import { LoadingOverlay } from "../ui/loading-overlay";
+import { useEffect } from 'react';
+import { Navigate, Outlet, useLocation } from 'react-router-dom';
+import { useAuth } from '@/context/AuthContext';
 
-interface PrivateRouteProps {
-  children: React.ReactNode;
-  redirectTo?: string;
-}
-
-export function PrivateRoute({ 
-  children, 
-  redirectTo = "/login" 
-}: PrivateRouteProps) {
+export default function PrivateRoute() {
   const { user, loading } = useAuth();
   const location = useLocation();
 
+  // Log auth state for debugging
+  useEffect(() => {
+    console.log("PrivateRoute: user =", user?.email, "loading =", loading);
+  }, [user, loading]);
+
   if (loading) {
-    return <LoadingOverlay isLoading={true} text="Checking authentication..." />;
+    return (
+      <div className="flex h-screen w-full items-center justify-center bg-background">
+        <div className="flex flex-col items-center gap-4">
+          <div className="h-10 w-10 animate-spin rounded-full border-4 border-primary border-t-transparent"></div>
+          <p className="text-lg text-muted-foreground">Authenticating...</p>
+        </div>
+      </div>
+    );
   }
 
   if (!user) {
-    return <Navigate to={redirectTo} state={{ from: location }} replace />;
+    console.log("PrivateRoute: No user, redirecting to login");
+    return <Navigate to="/login" state={{ from: location }} replace />;
   }
 
-  return <>{children}</>;
+  console.log("PrivateRoute: User authenticated, rendering protected route");
+  return <Outlet />;
 }
-
-export default PrivateRoute;

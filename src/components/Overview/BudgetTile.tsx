@@ -6,91 +6,71 @@
  * - Total expenses
  * - Net balance
  */
-import React from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { ArrowUpIcon, ArrowDownIcon } from "lucide-react";
-import { Progress } from "@/components/ui/progress";
+import React from 'react'
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { formatCurrency } from '@/lib/utils'
+import { GlowingEffect } from '@/components/ui/glowing-effect'
+import { Progress } from '@/components/ui/progress'
 
-interface BudgetTileProps {
-  totalIncome: number;
-  totalExpenses: number;
-  savings: number;
+interface Props {
+  monthlyIncome: number
+  monthlyExpenses: number
+  monthlyBudget: number
+  remainingBudget: number
 }
 
-export function BudgetTile({ 
-  totalIncome,
-  totalExpenses,
-  savings 
-}: BudgetTileProps) {
-  const expensePercentage = totalIncome > 0 
-    ? (totalExpenses / totalIncome) * 100 
-    : 0;
-
-  const savingsPercentage = totalIncome > 0 
-    ? (savings / totalIncome) * 100 
-    : 0;
-
+export const BudgetTile = ({ monthlyIncome, monthlyExpenses, monthlyBudget, remainingBudget }: Props) => {
+  // Calculate percentage of budget used
+  const budgetPercentage = Math.min((monthlyExpenses / monthlyBudget) * 100, 100);
+  
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Budget Overview</CardTitle>
+    <Card className="relative overflow-hidden">
+      <CardHeader className="pb-2">
+        <CardTitle className="text-base font-medium">Budget Overview</CardTitle>
       </CardHeader>
-      <CardContent className="space-y-4">
-        <div className="space-y-2">
-          <div className="flex items-center justify-between">
-            <span className="text-sm font-medium">Income</span>
-            <span className="text-right font-bold">
-              {totalIncome.toLocaleString('de-DE', { 
-                style: 'currency', 
-                currency: 'EUR' 
-              })}
-            </span>
-          </div>
-          
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-1">
-              <span className="text-sm font-medium">Expenses</span>
-              <ArrowDownIcon className="h-4 w-4 text-red-500" />
-            </div>
-            <span className="text-right font-bold text-red-500">
-              {totalExpenses.toLocaleString('de-DE', { 
-                style: 'currency', 
-                currency: 'EUR' 
-              })}
-            </span>
-          </div>
-
-          <Progress 
-            value={expensePercentage} 
-            className="h-2 bg-muted"
-          />
-          
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-1">
-              <span className="text-sm font-medium">Savings</span>
-              <ArrowUpIcon className="h-4 w-4 text-green-500" />
-            </div>
-            <span className="text-right font-bold text-green-500">
-              {savings.toLocaleString('de-DE', { 
-                style: 'currency', 
-                currency: 'EUR' 
-              })}
-            </span>
-          </div>
-
-          <Progress 
-            value={savingsPercentage} 
-            className="h-2 bg-muted"
-            indicatorClassName="bg-green-500"
+      <CardContent>
+        {/* Add glowing effect to the card */}
+        <div className="absolute inset-0">
+          <GlowingEffect 
+            spread={20}
+            glow={true}
+            disabled={false}
+            proximity={40}
           />
         </div>
-
-        <div className="pt-4 border-t">
-          <div className="text-sm text-muted-foreground">
-            Savings Rate: {savingsPercentage.toFixed(1)}%
+        
+        <div className="relative space-y-4">
+          <div className="flex items-center justify-between">
+            <span className="text-sm text-muted-foreground">Monthly Income</span>
+            <span className="font-medium text-green-600">{formatCurrency(monthlyIncome)}</span>
+          </div>
+          <div className="flex items-center justify-between">
+            <span className="text-sm text-muted-foreground">Monthly Expenses</span>
+            <span className="font-medium text-red-600">{formatCurrency(monthlyExpenses)}</span>
+          </div>
+          <div className="flex items-center justify-between">
+            <span className="text-sm text-muted-foreground">Monthly Budget</span>
+            <span className="font-medium">{formatCurrency(monthlyBudget)}</span>
+          </div>
+          
+          {/* Add progress bar for visual representation */}
+          <div className="space-y-2">
+            <div className="flex items-center justify-between text-sm">
+              <span>Budget usage</span>
+              <span>{budgetPercentage.toFixed(0)}%</span>
+            </div>
+            <Progress value={budgetPercentage} className="h-2" 
+              indicator={remainingBudget >= 0 ? 'bg-green-600' : 'bg-red-600'} />
+          </div>
+          
+          <div className="flex items-center justify-between pt-2">
+            <span className="text-sm text-muted-foreground">Remaining Budget</span>
+            <span className={`font-medium ${remainingBudget >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+              {formatCurrency(remainingBudget)}
+            </span>
           </div>
         </div>
       </CardContent>
     </Card>
-  );
+  )
 }

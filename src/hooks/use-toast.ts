@@ -1,16 +1,14 @@
 import * as React from "react"
-import { toast as sonnerToast } from "sonner"
-import type { AppError } from '@/lib/errors';
 
 import type {
   ToastActionElement,
-  ToastProps as OriginalToastProps,
+  ToastProps,
 } from "@/components/ui/toast"
 
 const TOAST_LIMIT = 1
 const TOAST_REMOVE_DELAY = 1000000
 
-type ToasterToast = OriginalToastProps & {
+type ToasterToast = ToastProps & {
   id: string
   title?: React.ReactNode
   description?: React.ReactNode
@@ -141,7 +139,7 @@ function dispatch(action: Action) {
 
 type Toast = Omit<ToasterToast, "id">
 
-function createToast({ ...props }: Toast) {
+function toast({ ...props }: Toast) {
   const id = genId()
 
   const update = (props: ToasterToast) =>
@@ -170,115 +168,24 @@ function createToast({ ...props }: Toast) {
   }
 }
 
-type ToastProps = {
-  title?: string
-  description?: string
-  variant?: "default" | "destructive"
-  duration?: number
-  action?: {
-    label: string
-    onClick: () => void
-  }
-}
+function useToast() {
+  const [state, setState] = React.useState<State>(memoryState)
 
-interface ToastOptions {
-  duration?: number;
-  className?: string;
-  [key: string]: any;
-}
-
-export function useToast() {
-  const toast = ({ 
-    title, 
-    description, 
-    variant = "default", 
-    duration = 3000,
-    action
-  }: ToastProps) => {
-    const options = {
-      duration,
-      ...(action && {
-        action: {
-          label: action.label,
-          onClick: action.onClick
-        }
-      })
+  React.useEffect(() => {
+    listeners.push(setState)
+    return () => {
+      const index = listeners.indexOf(setState)
+      if (index > -1) {
+        listeners.splice(index, 1)
+      }
     }
-
-    if (variant === "destructive") {
-      sonnerToast.error(title, {
-        description,
-        ...options
-      })
-      return
-    }
-
-    sonnerToast(title || "", {
-      description,
-      ...options
-    })
-  }
-
-  const success = (message: string, options?: ToastOptions) => {
-    sonnerToast.success(message, {
-      duration: 3000,
-      className: 'bg-background border-border',
-      ...options
-    });
-  };
-
-  const error = (error: AppError | Error | unknown, options?: ToastOptions) => {
-    const message = error instanceof Error ? error.message : 'An error occurred';
-    sonnerToast.error(message, {
-      duration: 5000,
-      className: 'bg-background border-border',
-      ...options
-    });
-  };
-
-  const promise = <T>(
-    promise: Promise<T>,
-    {
-      loading = 'Loading...',
-      success = 'Success!',
-      error = 'Something went wrong',
-    }: {
-      loading?: string;
-      success?: string | ((data: T) => string);
-      error?: string | ((error: unknown) => string);
-    } = {}
-  ) => {
-    return sonnerToast.promise(promise, {
-      loading,
-      success: (data) => (typeof success === 'function' ? success(data) : success),
-      error: (err) => (typeof error === 'function' ? error(err) : error),
-      className: 'bg-background border-border'
-    });
-  };
-
-  const info = (message: string, options?: ToastOptions) => {
-    sonnerToast(message, {
-      duration: 4000,
-      className: 'bg-background border-border',
-      ...options
-    });
-  };
-
-  const warning = (message: string, options?: ToastOptions) => {
-    sonnerToast.warning(message, {
-      duration: 4000,
-      className: 'bg-background border-border',
-      ...options
-    });
-  };
+  }, [state])
 
   return {
-    success,
-    error,
-    promise,
-    info,
-    warning
-  };
+    ...state,
+    toast,
+    dismiss: (toastId?: string) => dispatch({ type: "DISMISS_TOAST", toastId }),
+  }
 }
 
-export const toast = createToast;
+export { useToast, toast }

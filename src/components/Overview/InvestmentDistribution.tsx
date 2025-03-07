@@ -1,128 +1,96 @@
-import React from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { ResponsiveContainer, PieChart, Pie, Cell, Legend, Tooltip } from 'recharts';
-import { useInvestments } from '@/hooks/useInvestments';
-import { Skeleton } from '@/components/ui/skeleton';
-import { Investment } from '@/types/supabase';
+import { useInvestments } from "@/hooks/useInvestments";
+import {
+  PieChart,
+  Pie,
+  Cell,
+  ResponsiveContainer,
+  Tooltip,
+  Legend
+} from 'recharts';
+import { Skeleton } from "@/components/ui/skeleton";
 
-interface ChartData {
-  name: string;
-  value: number;
-  color: string;
-}
+const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8', '#4B0082', '#FF1493', '#008B8B', '#8B4513', '#808000'];
 
-const CATEGORY_COLORS = {
-  stocks: '#10b981',
-  bonds: '#3b82f6',
-  crypto: '#8b5cf6',
-  real_estate: '#ef4444',
-  other: '#6b7280'
-} as const;
+// Custom label that only shows percentage inside the pie slice
+const renderCustomizedLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, percent }: any) => {
+  const RADIAN = Math.PI / 180;
+  const radius = innerRadius + (outerRadius - innerRadius) * 0.6;
+  const x = cx + radius * Math.cos(-midAngle * RADIAN);
+  const y = cy + radius * Math.sin(-midAngle * RADIAN);
 
-const CATEGORY_LABELS = {
-  stocks: 'Stocks',
-  bonds: 'Bonds',
-  crypto: 'Cryptocurrency',
-  real_estate: 'Real Estate',
-  other: 'Other'
-} as const;
+  return (
+    <text 
+      x={x} 
+      y={y} 
+      fill="white" 
+      textAnchor="middle" 
+      dominantBaseline="central"
+      fontSize="12"
+      fontWeight="bold"
+    >
+      {`${(percent * 100).toFixed(0)}%`}
+    </text>
+  );
+};
 
-export function InvestmentDistribution() {
+export const InvestmentDistribution = () => {
   const { investments, isLoading } = useInvestments();
-
-  const chartData = React.useMemo((): ChartData[] => {
-    if (!investments?.length) return [];
-
-    const categoryTotals = investments.reduce((acc, investment: Investment) => {
-      const category = investment.category;
-      acc[category] = (acc[category] || 0) + investment.amount;
-      return acc;
-    }, {} as Record<string, number>);
-
-    return Object.entries(categoryTotals)
-      .map(([category, value]) => ({
-        name: CATEGORY_LABELS[category as keyof typeof CATEGORY_LABELS],
-        value,
-        color: CATEGORY_COLORS[category as keyof typeof CATEGORY_COLORS]
-      }))
-      .sort((a, b) => b.value - a.value);
-  }, [investments]);
+  
+  const pieData = investments?.map(inv => ({
+    name: inv.name,
+    value: inv.current_value
+  }))
+  .sort((a, b) => b.value - a.value); // Sort by value descending
 
   if (isLoading) {
     return (
-      <Card>
-        <CardHeader>
-          <CardTitle>Investment Distribution</CardTitle>
-        </CardHeader>
-        <CardContent className="pt-6">
-          <Skeleton className="h-[200px] w-full" />
-        </CardContent>
-      </Card>
+      <div className="flex items-center justify-center h-[300px]">
+        <Skeleton className="h-[250px] w-[250px] rounded-full" />
+      </div>
     );
   }
 
-  const totalInvestments = chartData.reduce((sum, item) => sum + item.value, 0);
+  if (!investments?.length) {
+    return (
+      <div className="flex items-center justify-center h-[300px] text-muted-foreground">
+        No investment data available. Add some investments to see your portfolio distribution.
+      </div>
+    );
+  }
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Investment Distribution</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <div className="h-[300px]">
-          <ResponsiveContainer width="100%" height="100%">
-            <PieChart>
-              <Pie
-                data={chartData}
-                cx="50%"
-                cy="50%"
-                innerRadius={60}
-                outerRadius={80}
-                paddingAngle={2}
-                dataKey="value"
-              >
-                {chartData.map((entry, index) => (
-                  <Cell 
-                    key={`cell-${index}`} 
-                    fill={entry.color}
-                    className="stroke-background dark:stroke-background transition-colors duration-200"
-                  />
-                ))}
-              </Pie>
-              <Tooltip
-                formatter={(value: number) => [
-                  `${value.toLocaleString('de-DE', { 
-                    style: 'currency', 
-                    currency: 'EUR' 
-                  })} (${((value / totalInvestments) * 100).toFixed(1)}%)`,
-                  'Amount'
-                ]}
-              />
-              <Legend />
-            </PieChart>
-          </ResponsiveContainer>
-        </div>
-
-        <div className="mt-4 space-y-2">
-          {chartData.map((category, index) => (
-            <div key={index} className="flex items-center justify-between">
-              <div className="flex items-center space-x-2">
-                <div 
-                  className="w-3 h-3 rounded-full" 
-                  style={{ backgroundColor: category.color }}
-                />
-                <span className="text-sm font-medium">{category.name}</span>
-              </div>
-              <span className="text-sm text-muted-foreground">
-                {category.value.toLocaleString('de-DE', { 
-                  style: 'currency', 
-                  currency: 'EUR' 
-                })}
-              </span>
-            </div>
-          ))}
-        </div>
-      </CardContent>
-    </Card>
+    <div className="h-[300px]">
+      <ResponsiveContainer width="100%" height="100%">
+        <PieChart>
+          <Pie
+            data={pieData}
+            dataKey="value"
+            nameKey="name"
+            cx="50%"
+            cy="50%"
+            outerRadius={80}
+            labelLine={false}
+            label={renderCustomizedLabel}
+          >
+            {pieData?.map((_, index) => (
+              <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+            ))}
+          </Pie>
+          <Tooltip 
+            formatter={(value: number) => value.toLocaleString('de-DE', { 
+              style: 'currency', 
+              currency: 'EUR',
+              minimumFractionDigits: 2,
+              maximumFractionDigits: 2
+            })}
+          />
+          <Legend 
+            layout="horizontal"
+            verticalAlign="bottom"
+            align="center"
+          />
+        </PieChart>
+      </ResponsiveContainer>
+    </div>
   );
-}
+};

@@ -1,4 +1,3 @@
-
 import { useState } from 'react'
 import { Edit, Trash, ArrowUp, ArrowDown } from 'lucide-react'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
@@ -8,35 +7,20 @@ import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { getMonthlyExpenses, deleteVariableExpense } from '@/lib/supabase'
 import { queryKeys } from '@/lib/queries'
 import { toast } from '@/hooks/use-toast'
-import { formatCurrency } from "@/lib/utils";
+import type { VariableExpense } from '@/types/database.types'
 
-// Define the SortField and SortOrder types
-type SortField = 'date' | 'description' | 'category' | 'amount';
+interface Props {
+  expenses?: VariableExpense[]
+  year?: number
+  month?: number
+  onEdit?: (expense: VariableExpense) => void
+  onDelete?: (expense: VariableExpense) => void
+}
+
+type SortField = 'date' | 'amount' | 'category' | 'description';
 type SortOrder = 'asc' | 'desc';
 
-interface Category {
-  id: string;
-  name: string;
-}
-
-interface VariableExpense {
-  id: string;
-  description: string;
-  amount: number;
-  date: string;
-  categoryId: string;
-  category: Category;
-}
-
-interface VariableExpensesListProps {
-  expenses: VariableExpense[];
-  onEdit?: (expense: VariableExpense) => void;
-  onDelete?: (id: string) => void;
-  year?: number;
-  month?: number;
-}
-
-export function VariableExpensesList({ expenses: initialExpenses, onEdit, onDelete, year, month }: VariableExpensesListProps) {
+export const VariableExpensesList = ({ year, month, onEdit, onDelete }: Props) => {
   const queryClient = useQueryClient()
   const [expenseToDelete, setExpenseToDelete] = useState<VariableExpense | null>(null)
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
@@ -51,8 +35,8 @@ export function VariableExpensesList({ expenses: initialExpenses, onEdit, onDele
     enabled: !!year && !!month,
   });
 
-  // Use the fetched expenses or the prop-provided ones
-  const displayExpenses = year && month ? (expensesResponse?.data || []) : initialExpenses;
+  // Extract expenses from the response
+  const expenses = expensesResponse?.data || [];
 
   // Handle delete confirmation
   const handleDelete = async () => {
@@ -131,11 +115,11 @@ export function VariableExpensesList({ expenses: initialExpenses, onEdit, onDele
     return null;
   };
   
-  if (isLoading && year && month) {
+  if (isLoading) {
     return <div className="text-center py-4">Loading expenses...</div>
   }
   
-  if (!displayExpenses.length) {
+  if (!expenses.length) {
     return <div className="text-center py-4 text-muted-foreground">No expenses found for this month.</div>
   }
 
@@ -168,7 +152,7 @@ export function VariableExpensesList({ expenses: initialExpenses, onEdit, onDele
           </TableRow>
         </TableHeader>
         <TableBody>
-          {sortExpenses(displayExpenses).map((expense) => (
+          {sortExpenses(expenses).map((expense) => (
             <TableRow 
               key={expense.id}
               className={`transition-colors duration-200 ${hoveredRow === expense.id ? 'bg-accent/10' : ''}`}
