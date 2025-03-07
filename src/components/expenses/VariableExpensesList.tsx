@@ -1,3 +1,4 @@
+
 import { useState } from 'react'
 import { Edit, Trash, ArrowUp, ArrowDown } from 'lucide-react'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
@@ -7,8 +8,11 @@ import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { getMonthlyExpenses, deleteVariableExpense } from '@/lib/supabase'
 import { queryKeys } from '@/lib/queries'
 import { toast } from '@/hooks/use-toast'
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { formatCurrency } from "@/lib/utils";
+
+// Define the SortField and SortOrder types
+type SortField = 'date' | 'description' | 'category' | 'amount';
+type SortOrder = 'asc' | 'desc';
 
 interface Category {
   id: string;
@@ -28,9 +32,11 @@ interface VariableExpensesListProps {
   expenses: VariableExpense[];
   onEdit?: (expense: VariableExpense) => void;
   onDelete?: (id: string) => void;
+  year?: number;
+  month?: number;
 }
 
-export function VariableExpensesList({ expenses, onEdit, onDelete }: VariableExpensesListProps) {
+export function VariableExpensesList({ expenses: initialExpenses, onEdit, onDelete, year, month }: VariableExpensesListProps) {
   const queryClient = useQueryClient()
   const [expenseToDelete, setExpenseToDelete] = useState<VariableExpense | null>(null)
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
@@ -45,8 +51,8 @@ export function VariableExpensesList({ expenses, onEdit, onDelete }: VariableExp
     enabled: !!year && !!month,
   });
 
-  // Extract expenses from the response
-  const expenses = expensesResponse?.data || [];
+  // Use the fetched expenses or the prop-provided ones
+  const displayExpenses = year && month ? (expensesResponse?.data || []) : initialExpenses;
 
   // Handle delete confirmation
   const handleDelete = async () => {
@@ -125,11 +131,11 @@ export function VariableExpensesList({ expenses, onEdit, onDelete }: VariableExp
     return null;
   };
   
-  if (isLoading) {
+  if (isLoading && year && month) {
     return <div className="text-center py-4">Loading expenses...</div>
   }
   
-  if (!expenses.length) {
+  if (!displayExpenses.length) {
     return <div className="text-center py-4 text-muted-foreground">No expenses found for this month.</div>
   }
 
@@ -162,7 +168,7 @@ export function VariableExpensesList({ expenses, onEdit, onDelete }: VariableExp
           </TableRow>
         </TableHeader>
         <TableBody>
-          {sortExpenses(expenses).map((expense) => (
+          {sortExpenses(displayExpenses).map((expense) => (
             <TableRow 
               key={expense.id}
               className={`transition-colors duration-200 ${hoveredRow === expense.id ? 'bg-accent/10' : ''}`}

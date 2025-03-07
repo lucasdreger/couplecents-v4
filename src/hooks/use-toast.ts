@@ -1,6 +1,5 @@
 import * as React from "react"
 import { toast as sonnerToast } from "sonner"
-import { toast } from 'sonner';
 import type { AppError } from '@/lib/errors';
 
 import type {
@@ -142,7 +141,7 @@ function dispatch(action: Action) {
 
 type Toast = Omit<ToasterToast, "id">
 
-function toast({ ...props }: Toast) {
+function createToast({ ...props }: Toast) {
   const id = genId()
 
   const update = (props: ToasterToast) =>
@@ -182,6 +181,12 @@ type ToastProps = {
   }
 }
 
+interface ToastOptions {
+  duration?: number;
+  className?: string;
+  [key: string]: any;
+}
+
 export function useToast() {
   const toast = ({ 
     title, 
@@ -215,7 +220,7 @@ export function useToast() {
   }
 
   const success = (message: string, options?: ToastOptions) => {
-    toast.success(message, {
+    sonnerToast.success(message, {
       duration: 3000,
       className: 'bg-background border-border',
       ...options
@@ -224,7 +229,7 @@ export function useToast() {
 
   const error = (error: AppError | Error | unknown, options?: ToastOptions) => {
     const message = error instanceof Error ? error.message : 'An error occurred';
-    toast.error(message, {
+    sonnerToast.error(message, {
       duration: 5000,
       className: 'bg-background border-border',
       ...options
@@ -243,7 +248,7 @@ export function useToast() {
       error?: string | ((error: unknown) => string);
     } = {}
   ) => {
-    return toast.promise(promise, {
+    return sonnerToast.promise(promise, {
       loading,
       success: (data) => (typeof success === 'function' ? success(data) : success),
       error: (err) => (typeof error === 'function' ? error(err) : error),
@@ -252,7 +257,7 @@ export function useToast() {
   };
 
   const info = (message: string, options?: ToastOptions) => {
-    toast(message, {
+    sonnerToast(message, {
       duration: 4000,
       className: 'bg-background border-border',
       ...options
@@ -260,7 +265,7 @@ export function useToast() {
   };
 
   const warning = (message: string, options?: ToastOptions) => {
-    toast.warning(message, {
+    sonnerToast.warning(message, {
       duration: 4000,
       className: 'bg-background border-border',
       ...options
@@ -276,4 +281,4 @@ export function useToast() {
   };
 }
 
-export { toast }
+export const toast = createToast;
