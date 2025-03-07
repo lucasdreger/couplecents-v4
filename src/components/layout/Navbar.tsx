@@ -1,12 +1,29 @@
+
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/context/AuthContext";
 import { useTheme } from "@/context/ThemeContext";
-import { Moon, Sun, User, Coins } from "lucide-react";
+import { Moon, Sun, User, Coins, Settings, LogOut, Mail, Lock, UserCircle } from "lucide-react";
 import { Sparkles } from "@/components/ui/sparkles";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuGroup,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { useNavigate } from "react-router-dom";
 
 export function Navbar() {
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
   const { theme, setTheme } = useTheme();
+  const navigate = useNavigate();
+  
+  const handleLogout = async () => {
+    await logout();
+    navigate("/login");
+  };
   
   return (
     <nav className="border-b relative overflow-hidden">
@@ -32,12 +49,43 @@ export function Navbar() {
             )}
           </Button>
           
-          <div className="flex items-center gap-2 bg-secondary/50 px-3 py-1.5 rounded-full hover:bg-secondary/70 transition-colors duration-300">
-            <div className="bg-primary/20 p-1 rounded-full">
-              <User className="h-4 w-4 text-primary" />
-            </div>
-            <span className="text-sm font-medium">{user?.email}</span>
-          </div>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <div className="flex items-center gap-2 bg-secondary/50 px-3 py-1.5 rounded-full hover:bg-secondary/70 transition-colors duration-300 cursor-pointer">
+                <div className="bg-primary/20 p-1 rounded-full">
+                  <User className="h-4 w-4 text-primary" />
+                </div>
+                <span className="text-sm font-medium">{user?.email}</span>
+              </div>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent className="w-56" align="end" forceMount>
+              <DropdownMenuLabel>My Account</DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              <DropdownMenuGroup>
+                <DropdownMenuItem>
+                  <UserCircle className="mr-2 h-4 w-4" />
+                  <span>Profile</span>
+                </DropdownMenuItem>
+                <DropdownMenuItem>
+                  <Settings className="mr-2 h-4 w-4" />
+                  <span>Account Settings</span>
+                </DropdownMenuItem>
+                <DropdownMenuItem>
+                  <Lock className="mr-2 h-4 w-4" />
+                  <span>Change Password</span>
+                </DropdownMenuItem>
+                <DropdownMenuItem>
+                  <Mail className="mr-2 h-4 w-4" />
+                  <span>Email Preferences</span>
+                </DropdownMenuItem>
+              </DropdownMenuGroup>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem onClick={handleLogout}>
+                <LogOut className="mr-2 h-4 w-4" />
+                <span>Log out</span>
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       </div>
       
