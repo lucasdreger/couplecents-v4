@@ -79,7 +79,7 @@ export default function Login() {
         <Card className="border-border relative overflow-hidden shadow-md">
           <GlowingEffect disabled={false} />
           <CardHeader className="space-y-1 text-center">
-            <CardTitle className="text-3xl font-bold">CoupleCents</CardTitle>
+            <CardTitle className="text-3xl font-bold">Expense Empower</CardTitle>
             <CardDescription>Enter your credentials to access your account</CardDescription>
           </CardHeader>
           <CardContent>

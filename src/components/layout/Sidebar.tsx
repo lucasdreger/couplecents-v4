@@ -1,117 +1,71 @@
-import React, { useState } from 'react'
-import { useNavigate, useLocation } from 'react-router-dom'
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { motion } from "framer-motion"
-import { useAuth } from '@/context/AuthContext'
-import { 
-  LayoutDashboard, 
-  BarChart3, 
-  Receipt, 
-  Settings
-} from "lucide-react"
-
-// Import the new sidebar components
-import { 
-  Sidebar as SidebarContainer, 
-  SidebarBody, 
-  SidebarLink 
-} from "@/components/ui/sidebar"
-
-export function Sidebar() {
-  const { user } = useAuth()
-  const navigate = useNavigate()
-  const location = useLocation()
-  const [open, setOpen] = useState(false)
-
-  // Define navigation links - removed Income, Investments, and Reserves
-  const links = [
-    {
-      label: "Dashboard",
-      href: "/",
-      icon: <LayoutDashboard className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />
-    },
-    {
-      label: "Monthly Expenses",
-      href: "/monthly-expenses",
-      icon: <Receipt className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />
-    },
-    {
-      label: "Financial Analytics",
-      href: "/analytics",
-      icon: <BarChart3 className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />
-    },
-    {
-      label: "Administration",
-      href: "/administration",
-      icon: <Settings className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />
-    },
-  ]
-
-  return (
-    <SidebarContainer open={open} setOpen={setOpen} animate={true}>
-      <SidebarBody className="justify-between gap-10 border-r border-border h-full">
-        <div className="flex flex-col flex-1 overflow-y-auto overflow-x-hidden">
-          {open ? (
-            <Logo />
-          ) : (
-            <LogoIcon />
-          )}
-          
-          <div className="mt-8 flex flex-col gap-2">
-            {links.map((link, idx) => (
-              <SidebarLink 
-                key={idx} 
-                link={link}
-                className={location.pathname === link.href ? "text-primary font-medium" : ""} 
-              />
-            ))}
+import { NavLink } from "react-router-dom";
+import { LayoutDashboard, LogOut, Settings, Wallet, LineChart } from "lucide-react";
+import { cn } from "@/lib/utils";
+import { useAuth } from "@/context/AuthContext";
+import { useTheme } from "@/context/ThemeContext";
+import { Sparkles } from "@/components/ui/sparkles";
+const sidebarLinks = [{
+  title: "Overview",
+  href: "/",
+  icon: LayoutDashboard
+}, {
+  title: "Monthly Expenses",
+  href: "/monthly-expenses",
+  icon: Wallet
+}, {
+  title: "Financial Analytics",
+  href: "/analytics",
+  icon: LineChart
+}, {
+  title: "Administration",
+  href: "/administration",
+  icon: Settings
+}];
+export default function Sidebar() {
+  const {
+    signOut
+  } = useAuth();
+  const {
+    theme
+  } = useTheme();
+  return <div className="hidden w-64 flex-shrink-0 flex-col border-r border-border bg-background text-foreground md:flex relative overflow-hidden">
+      {/* Logo */}
+      <div className="flex h-16 items-center justify-between border-b border-border px-4 relative z-10">
+        <div className="flex items-center space-x-2">
+          <div className="flex h-8 w-8 items-center justify-center rounded-md bg-primary">
+            <Wallet className="h-4 w-4 text-primary-foreground" />
           </div>
+          <span className="font-bold">CoupleCents Financial</span>
         </div>
-        
-        {user && (
-          <div>
-            <SidebarLink
-              link={{
-                label: user.email ? user.email.split('@')[0] : "User",
-                href: "/profile",
-                icon: (
-                  <Avatar className="h-7 w-7 flex-shrink-0">
-                    <AvatarImage src={user.photoURL || user.user_metadata?.avatar_url || ''} />
-                    <AvatarFallback className="bg-primary/10">
-                      {user.email ? user.email.substring(0, 2).toUpperCase() : 'U'}
-                    </AvatarFallback>
-                  </Avatar>
-                ),
-              }}
-            />
-          </div>
-        )}
-      </SidebarBody>
-    </SidebarContainer>
-  )
-}
+      </div>
+      
+      {/* Application title */}
+      <div className="border-b border-border px-4 py-3 relative z-10">
+        <p className="font-medium bg-gradient-to-r from-purple-400 to-blue-500 bg-clip-text text-transparent">Financial Dashboard</p>
+        <p className="text-xs text-muted-foreground">Personal Finance</p>
+      </div>
+      
+      {/* Navigation links */}
+      <nav className="flex flex-1 flex-col gap-1 overflow-y-auto p-4 relative z-10">
+        {sidebarLinks.map(item => <NavLink key={item.title} to={item.href} className={({
+        isActive
+      }) => cn("flex items-center gap-3 rounded-md px-3 py-2 transition-colors group", isActive ? "bg-primary/10 text-primary border-l-2 border-primary font-medium" : "hover:bg-accent/50 hover:text-accent-foreground")}>
+            <item.icon className="h-5 w-5 group-hover:text-purple-500 transition-colors" />
+            <span>{item.title}</span>
+          </NavLink>)}
+      </nav>
+      
+      {/* Sign out button */}
+      <div className="border-t border-border p-4 relative z-10">
+        <button onClick={() => signOut()} className="flex w-full items-center gap-3 rounded-md px-3 py-2 text-destructive transition-colors hover:bg-destructive/10">
+          <LogOut className="h-5 w-5" />
+          <span>Sign Out</span>
+        </button>
+      </div>
 
-// Logo component for expanded sidebar
-const Logo = () => {
-  return (
-    <div className="font-normal flex space-x-2 items-center text-sm py-1 relative z-20">
-      <div className="h-5 w-6 bg-primary rounded-br-lg rounded-tr-sm rounded-tl-lg rounded-bl-sm flex-shrink-0" />
-      <motion.span
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        className="font-medium whitespace-pre text-neutral-900 dark:text-neutral-100"
-      >
-        CoupleCents
-      </motion.span>
-    </div>
-  )
-}
-
-// Logo icon for collapsed sidebar
-const LogoIcon = () => {
-  return (
-    <div className="font-normal flex space-x-2 items-center text-sm py-1 relative z-20">
-      <div className="h-5 w-6 bg-primary rounded-br-lg rounded-tr-sm rounded-tl-lg rounded-bl-sm flex-shrink-0" />
-    </div>
-  )
+      {/* Background sparkles */}
+      <div className="absolute inset-0 z-0 opacity-5">
+        <Sparkles color={theme === "dark" ? "var(--sparkles-color)" : "#8350e8"} size={1} density={100} speed={0.2} />
+      </div>
+    </div>;
 }
