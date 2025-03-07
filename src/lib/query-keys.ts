@@ -1,3 +1,4 @@
+
 import { VariableExpense, Category, Investment, Reserve, Income } from '@/types/supabase';
 
 export const createQueryKeys = {
@@ -123,6 +124,6 @@ export type QueryKeyType = typeof QueryKeys;
 export type QueryKeyPath<T> = T extends readonly (string | object)[] ? T : never;
 
 // Helper function to ensure type safety when invalidating queries
-export function getQueryKey<T extends readonly unknown[]>(key: T): T {
+export function getTypedQueryKey<T extends readonly unknown[]>(key: T): T {
   return key;
 }
