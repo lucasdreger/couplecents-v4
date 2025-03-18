@@ -1,9 +1,13 @@
+
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { supabase } from '@/lib/supabaseClient'
 import { useToast } from "@/components/ui/use-toast"
 import { FormLabel } from "@/components/ui/form"
+
+// Define the type for default income fields
+type DefaultIncomeField = 'lucas_main_income' | 'lucas_other_income' | 'camila_main_income' | 'camila_other_income';
 
 export const DefaultIncomeManagement = () => {
   const { toast } = useToast()
@@ -62,7 +66,7 @@ export const DefaultIncomeManagement = () => {
   })
 
   const formatValue = (value: number | null): string => {
-    if (value === null) return '';
+    if (value === null || value === undefined) return '';
     return value.toFixed(2).replace('.', ',');
   };
 
@@ -70,23 +74,30 @@ export const DefaultIncomeManagement = () => {
     // Remove currency symbol and any spaces
     const cleanValue = value.replace(/[€\s]/g, '').replace(',', '.');
     const number = parseFloat(cleanValue);
-    return isNaN(number) ? 0 : Number(number.toFixed(2));
+    return isNaN(number) ? 0 : number;
   };
 
   const handleInputChange = (field: DefaultIncomeField) => (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
+    
+    // Allow empty field or valid input pattern with comma as decimal separator
+    if (value === '' || /^[0-9]*,?[0-9]*$/.test(value)) {
+      // Only update the database on blur to avoid too many updates
+      // Just update the visual state for now
+      e.target.value = value;
+    }
+  };
+
+  const handleInputBlur = (field: DefaultIncomeField) => (e: React.FocusEvent<HTMLInputElement>) => {
+    const value = e.target.value;
     const numericValue = parseValue(value);
 
-    // Update the field with formatted value
+    // Update the field with numeric value
     updateIncome({
       ...defaultIncome,
       [field]: numericValue
     });
-  };
 
-  const handleInputBlur = (e: React.FocusEvent<HTMLInputElement>) => {
-    const value = e.target.value;
-    const numericValue = parseValue(value);
     // Format to always show two decimal places
     e.target.value = formatValue(numericValue);
   };
@@ -106,9 +117,9 @@ export const DefaultIncomeManagement = () => {
                 <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">€</span>
                 <Input
                   type="text"
-                  value={defaultIncome?.lucas_main_income}
-                  onChange={(e) => handleInputChange('lucas_main_income')(e)}
-                  onBlur={handleInputBlur}
+                  defaultValue={formatValue(defaultIncome?.lucas_main_income)}
+                  onChange={handleInputChange('lucas_main_income')}
+                  onBlur={handleInputBlur('lucas_main_income')}
                   className="pl-7 text-right"
                   placeholder="0,00"
                 />
@@ -120,9 +131,9 @@ export const DefaultIncomeManagement = () => {
                 <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">€</span>
                 <Input
                   type="text"
-                  value={defaultIncome?.lucas_other_income}
-                  onChange={(e) => handleInputChange('lucas_other_income')(e)}
-                  onBlur={handleInputBlur}
+                  defaultValue={formatValue(defaultIncome?.lucas_other_income)}
+                  onChange={handleInputChange('lucas_other_income')}
+                  onBlur={handleInputBlur('lucas_other_income')}
                   className="pl-7 text-right"
                   placeholder="0,00"
                 />
@@ -138,9 +149,9 @@ export const DefaultIncomeManagement = () => {
                 <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">€</span>
                 <Input
                   type="text"
-                  value={defaultIncome?.camila_main_income}
-                  onChange={(e) => handleInputChange('camila_main_income')(e)}
-                  onBlur={handleInputBlur}
+                  defaultValue={formatValue(defaultIncome?.camila_main_income)}
+                  onChange={handleInputChange('camila_main_income')}
+                  onBlur={handleInputBlur('camila_main_income')}
                   className="pl-7 text-right"
                   placeholder="0,00"
                 />
@@ -152,9 +163,9 @@ export const DefaultIncomeManagement = () => {
                 <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">€</span>
                 <Input
                   type="text"
-                  value={defaultIncome?.camila_other_income}
-                  onChange={(e) => handleInputChange('camila_other_income')(e)}
-                  onBlur={handleInputBlur}
+                  defaultValue={formatValue(defaultIncome?.camila_other_income)}
+                  onChange={handleInputChange('camila_other_income')}
+                  onBlur={handleInputBlur('camila_other_income')}
                   className="pl-7 text-right"
                   placeholder="0,00"
                 />
