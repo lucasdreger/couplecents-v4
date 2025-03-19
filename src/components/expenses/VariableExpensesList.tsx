@@ -1,6 +1,6 @@
 import { useState } from 'react'
-import { Edit, Trash, ArrowUp, ArrowDown } from 'lucide-react'
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
+import { Edit, Trash, ArrowUp, ArrowDown, Calculator } from 'lucide-react'
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow, TableFooter } from "@/components/ui/table"
 import { Button } from "@/components/ui/button"
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog"
 import { useQuery, useQueryClient } from '@tanstack/react-query'
@@ -28,24 +28,22 @@ export const VariableExpensesList = ({ year, month, onEdit, onDelete }: Props) =
   const [sortOrder, setSortOrder] = useState<SortOrder>('desc');
   const [hoveredRow, setHoveredRow] = useState<string | null>(null);
 
-  // Fetch expenses if year and month are provided
   const { data: expensesResponse, isLoading } = useQuery({
     queryKey: queryKeys.expenses(year || 0, month || 0),
     queryFn: () => getMonthlyExpenses(year || 0, month || 0),
     enabled: !!year && !!month,
   });
 
-  // Extract expenses from the response
   const expenses = expensesResponse?.data || [];
+  
+  const totalAmount = expenses.reduce((sum, expense) => sum + Number(expense.amount), 0) || 0;
 
-  // Handle delete confirmation
   const handleDelete = async () => {
     if (!expenseToDelete) return
     
     try {
       await deleteVariableExpense(expenseToDelete.id)
       
-      // Invalidate and refetch
       queryClient.invalidateQueries({ 
         queryKey: queryKeys.expenses(year || 0, month || 0) 
       })
@@ -98,16 +96,13 @@ export const VariableExpensesList = ({ year, month, onEdit, onDelete }: Props) =
 
   const handleSortChange = (field: SortField) => {
     if (field === sortBy) {
-      // Toggle order if clicking the same field
       setSortOrder(current => current === 'asc' ? 'desc' : 'asc');
     } else {
-      // Set new field and default to descending order
       setSortBy(field);
       setSortOrder('desc');
     }
   };
   
-  // Get the appropriate sort icon for a column
   const getSortIcon = (field: SortField) => {
     if (field === sortBy) {
       return sortOrder === 'asc' ? <ArrowUp className="ml-2 h-4 w-4" /> : <ArrowDown className="ml-2 h-4 w-4" />;
@@ -191,6 +186,18 @@ export const VariableExpensesList = ({ year, month, onEdit, onDelete }: Props) =
             </TableRow>
           ))}
         </TableBody>
+        <TableFooter>
+          <TableRow>
+            <TableCell colSpan={3} className="font-medium">Total Variable Expenses</TableCell>
+            <TableCell className="text-right font-medium">
+              <div className="flex items-center justify-end gap-2">
+                <Calculator className="h-4 w-4" />
+                {totalAmount.toLocaleString('de-DE', { style: 'currency', currency: 'EUR' })}
+              </div>
+            </TableCell>
+            <TableCell></TableCell>
+          </TableRow>
+        </TableFooter>
       </Table>
       
       <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>

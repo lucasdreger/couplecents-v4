@@ -16,7 +16,6 @@ import { AlertCircle } from "lucide-react";
 import type { VariableExpense } from '@/types/database.types';
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 
-// Error fallback component
 const ErrorFallback = ({ error, resetErrorBoundary }: { error: any, resetErrorBoundary: any }) => {
   return (
     <div className="p-6 bg-red-50 border border-red-200 rounded-md">
@@ -37,7 +36,6 @@ export function MonthlyExpenses() {
   const currentMonth = new Date().getMonth() + 1;
   const queryClient = useQueryClient();
   
-  // Start with 2025 by default
   const defaultYear = 2025;
   
   const [selectedYear, setSelectedYear] = useState(defaultYear);
@@ -46,13 +44,11 @@ export function MonthlyExpenses() {
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [expenseToEdit, setExpenseToEdit] = useState<VariableExpense | null>(null);
   
-  // Get monthly expenses data
   const { data: expenses } = useQuery({
     queryKey: queryKeys.expenses(selectedYear, selectedMonth),
     queryFn: () => getMonthlyExpenses(selectedYear, selectedMonth)
   });
   
-  // Get monthly income data
   const { data: income } = useQuery({
     queryKey: ['income', selectedYear, selectedMonth],
     queryFn: async () => {
@@ -66,18 +62,15 @@ export function MonthlyExpenses() {
     }
   });
   
-  // Get fixed expenses data
   const { data: fixedExpenses } = useQuery({
     queryKey: ['fixed-expenses', selectedYear, selectedMonth],
     queryFn: async () => {
-      // First get all fixed expenses
       const { data: allFixedExpenses, error: expensesError } = await supabase
         .from('fixed_expenses')
         .select('*, categories(name)');
         
       if (expensesError) throw expensesError;
       
-      // Then get status for this month/year
       const { data: statusData, error: statusError } = await supabase
         .from('monthly_fixed_expense_status')
         .select('*')
@@ -86,7 +79,6 @@ export function MonthlyExpenses() {
         
       if (statusError) throw statusError;
       
-      // Merge the data
       return allFixedExpenses.map(expense => ({
         ...expense,
         status: statusData?.find(status => status.fixed_expense_id === expense.id)
@@ -94,7 +86,6 @@ export function MonthlyExpenses() {
     }
   });
   
-  // Get credit card bill status
   const { data: creditCardBill } = useQuery({
     queryKey: ['credit-card-bill', selectedYear, selectedMonth],
     queryFn: async () => {
@@ -108,7 +99,6 @@ export function MonthlyExpenses() {
     }
   });
   
-  // Calculate total income (salaries)
   const totalIncome = income ? (
     (income.lucas_main_income || 0) + 
     (income.lucas_other_income || 0) + 
@@ -116,30 +106,23 @@ export function MonthlyExpenses() {
     (income.camila_other_income || 0)
   ) : 0;
   
-  // Calculate total variable expenses
   const totalVariableExpenses = expenses?.data?.reduce((sum, expense) => sum + Number(expense.amount), 0) || 0;
   
-  // Calculate total fixed expenses
-  const totalFixedExpenses = fixedExpenses?.reduce((sum, expense) => sum + Number(expense.amount), 0) || 0;
+  const totalFixedExpenses = fixedExpenses?.reduce((sum, expense) => sum + Number(expense.estimated_amount), 0) || 0;
   
-  // Calculate total expenses
   const totalExpenses = totalVariableExpenses + totalFixedExpenses;
   
-  // Calculate balance
   const balance = totalIncome - totalExpenses;
   
-  // Check for uncompleted tasks
   useEffect(() => {
     let count = 0;
     
-    // Check fixed expenses with uncompleted status
     if (fixedExpenses) {
       count += fixedExpenses.filter(expense => 
         expense.status_required && (!expense.status || !expense.status.completed)
       ).length;
     }
     
-    // Check credit card bill transfer if needed
     if (creditCardBill) {
       const needsTransfer = creditCardBill.transfer_completed === false && 
         creditCardBill.amount > 0;
@@ -151,13 +134,10 @@ export function MonthlyExpenses() {
     setUncheckedTasksCount(count);
   }, [fixedExpenses, creditCardBill]);
   
-  // Generate years for dropdown (from 2025 to current year + 2)
-  // Ensure 2025 is included in the range
   const startYear = Math.min(2025, defaultYear);
   const endYear = Math.max(currentYear + 2, defaultYear + 2);
   const years = Array.from({ length: endYear - startYear + 1 }, (_, i) => startYear + i);
   
-  // Month names for display
   const monthNames = [
     'January', 'February', 'March', 'April', 'May', 'June',
     'July', 'August', 'September', 'October', 'November', 'December'
@@ -175,7 +155,6 @@ export function MonthlyExpenses() {
     try {
       await addVariableExpense(expenseData);
       
-      // Invalidate the expenses query to refresh the list
       queryClient.invalidateQueries({ 
         queryKey: queryKeys.expenses(selectedYear, selectedMonth) 
       });
@@ -208,7 +187,6 @@ export function MonthlyExpenses() {
       
       await updateVariableExpense(expenseToEdit.id, expenseData);
       
-      // Invalidate the expenses query to refresh the list
       queryClient.invalidateQueries({ 
         queryKey: queryKeys.expenses(selectedYear, selectedMonth) 
       });
@@ -280,7 +258,6 @@ export function MonthlyExpenses() {
       )}
       
       <div className="grid gap-6 mb-6">
-        {/* Total Budget Card - Moved to top */}
         <Card>
           <CardHeader className="pb-2">
             <CardTitle>Total Budget</CardTitle>
@@ -310,7 +287,6 @@ export function MonthlyExpenses() {
           </CardContent>
         </Card>
 
-        {/* Monthly Income Card */}
         <ErrorBoundary FallbackComponent={ErrorFallback}>
           <Card>
             <CardHeader className="pb-2">
@@ -378,7 +354,6 @@ export function MonthlyExpenses() {
         </ErrorBoundary>
       </div>
       
-      {/* Edit Expense Dialog */}
       <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
         <DialogContent>
           <ExpenseForm
