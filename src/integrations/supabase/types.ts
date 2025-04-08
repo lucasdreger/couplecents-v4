@@ -9,6 +9,27 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      auto_increment_history: {
+        Row: {
+          id: string
+          month: number
+          processed_at: string
+          year: number
+        }
+        Insert: {
+          id?: string
+          month: number
+          processed_at?: string
+          year: number
+        }
+        Update: {
+          id?: string
+          month?: number
+          processed_at?: string
+          year?: number
+        }
+        Relationships: []
+      }
       categories: {
         Row: {
           created_at: string
@@ -116,8 +137,51 @@ export type Database = {
           },
         ]
       }
+      investment_auto_increment: {
+        Row: {
+          amount: number
+          created_at: string
+          fixed_expense_id: string | null
+          id: string
+          investment_id: string
+          updated_at: string
+        }
+        Insert: {
+          amount?: number
+          created_at?: string
+          fixed_expense_id?: string | null
+          id?: string
+          investment_id: string
+          updated_at?: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          fixed_expense_id?: string | null
+          id?: string
+          investment_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "investment_auto_increment_fixed_expense_id_fkey"
+            columns: ["fixed_expense_id"]
+            isOneToOne: false
+            referencedRelation: "fixed_expenses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "investment_auto_increment_investment_id_fkey"
+            columns: ["investment_id"]
+            isOneToOne: false
+            referencedRelation: "investments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       investment_history: {
         Row: {
+          auto_updated: boolean
           created_at: string
           id: string
           investment_id: string
@@ -126,6 +190,7 @@ export type Database = {
           updated_by: string
         }
         Insert: {
+          auto_updated?: boolean
           created_at?: string
           id?: string
           investment_id: string
@@ -134,6 +199,7 @@ export type Database = {
           updated_by: string
         }
         Update: {
+          auto_updated?: boolean
           created_at?: string
           id?: string
           investment_id?: string
@@ -324,8 +390,51 @@ export type Database = {
         }
         Relationships: []
       }
+      reserve_auto_increment: {
+        Row: {
+          amount: number
+          created_at: string
+          fixed_expense_id: string | null
+          id: string
+          reserve_id: string
+          updated_at: string
+        }
+        Insert: {
+          amount?: number
+          created_at?: string
+          fixed_expense_id?: string | null
+          id?: string
+          reserve_id: string
+          updated_at?: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          fixed_expense_id?: string | null
+          id?: string
+          reserve_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reserve_auto_increment_fixed_expense_id_fkey"
+            columns: ["fixed_expense_id"]
+            isOneToOne: false
+            referencedRelation: "fixed_expenses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reserve_auto_increment_reserve_id_fkey"
+            columns: ["reserve_id"]
+            isOneToOne: false
+            referencedRelation: "reserves"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       reserve_history: {
         Row: {
+          auto_updated: boolean
           created_at: string
           id: string
           new_value: number
@@ -334,6 +443,7 @@ export type Database = {
           updated_by: string
         }
         Insert: {
+          auto_updated?: boolean
           created_at?: string
           id?: string
           new_value: number
@@ -342,6 +452,7 @@ export type Database = {
           updated_by: string
         }
         Update: {
+          auto_updated?: boolean
           created_at?: string
           id?: string
           new_value?: number
@@ -542,6 +653,10 @@ export type Database = {
         Returns: undefined
       }
       load_default_income: {
+        Args: { p_year: number; p_month: number }
+        Returns: undefined
+      }
+      process_monthly_auto_increments: {
         Args: { p_year: number; p_month: number }
         Returns: undefined
       }

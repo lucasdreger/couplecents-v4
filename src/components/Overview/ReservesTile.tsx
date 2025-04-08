@@ -1,3 +1,4 @@
+
 import { useState, useRef, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -5,9 +6,11 @@ import { Input } from "@/components/ui/input";
 import { Progress } from "@/components/ui/progress";
 import { useReserves } from "@/hooks/useReserves";
 import { useAuth } from "@/context/AuthContext";
-import { PencilIcon, CheckIcon, XIcon } from "lucide-react";
+import { PencilIcon, CheckIcon, XIcon, CalendarCheckIcon } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
+import { AutoIncrementConfig } from "@/components/management/AutoIncrementConfig";
+import { useAutoIncrements } from "@/hooks/useAutoIncrements";
 
 interface Reserve {
   id: string;
@@ -22,9 +25,12 @@ interface Reserve {
 export const ReservesTile = () => {
   const { user } = useAuth();
   const { reserves, loading, updateValue } = useReserves();
+  const { getConfigForItem } = useAutoIncrements();
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editValue, setEditValue] = useState<string>('');
   const [hoveredId, setHoveredId] = useState<string | null>(null);
+  const [configOpen, setConfigOpen] = useState(false);
+  const [selectedReserve, setSelectedReserve] = useState<Reserve | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   
   // Format date as DD/MM/YYYY
@@ -37,6 +43,11 @@ export const ReservesTile = () => {
     setEditingId(reserve.id);
     // Format the value as currency but without the € symbol
     setEditValue(reserve.current_value.toFixed(2).replace('.', ','));
+  };
+
+  const handleConfigureAutoIncrement = (reserve: Reserve) => {
+    setSelectedReserve(reserve);
+    setConfigOpen(true);
   };
   
   // Select all text in input when it appears
@@ -64,6 +75,10 @@ export const ReservesTile = () => {
 
   const handleCancel = () => {
     setEditingId(null);
+  };
+
+  const hasAutoIncrement = (reserveId: string) => {
+    return !!getConfigForItem('reserve', reserveId);
   };
   
   // Ensure reserves is an array before using
@@ -98,7 +113,15 @@ export const ReservesTile = () => {
                   <div className="space-y-2">
                     <div className="flex justify-between items-center">
                       <div>
-                        <h4 className="font-medium">{reserve.name}</h4>
+                        <div className="flex items-center gap-2">
+                          <h4 className="font-medium">{reserve.name}</h4>
+                          {hasAutoIncrement(reserve.id) && (
+                            <CalendarCheckIcon
+                              className="h-4 w-4 text-green-500"
+                              title="Auto-increment configured"
+                            />
+                          )}
+                        </div>
                         <p className="text-xs text-muted-foreground">
                           {reserve.category}
                         </p>
@@ -147,14 +170,26 @@ export const ReservesTile = () => {
                               </p>
                             )}
                           </div>
-                          <Button 
-                            size="icon" 
-                            variant="ghost" 
-                            onClick={() => handleEdit(reserve)}
-                            className="h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity duration-200"
-                          >
-                            <PencilIcon className="h-4 w-4" />
-                          </Button>
+                          <div className="flex opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                            <Button 
+                              size="icon" 
+                              variant="ghost" 
+                              onClick={() => handleEdit(reserve)}
+                              className="h-8 w-8"
+                              title="Edit value"
+                            >
+                              <PencilIcon className="h-4 w-4" />
+                            </Button>
+                            <Button
+                              size="icon"
+                              variant="ghost"
+                              onClick={() => handleConfigureAutoIncrement(reserve)}
+                              className="h-8 w-8"
+                              title="Configure auto-increment"
+                            >
+                              <CalendarCheckIcon className="h-4 w-4" />
+                            </Button>
+                          </div>
                         </div>
                       )}
                     </div>
@@ -181,6 +216,16 @@ export const ReservesTile = () => {
           </div>
         )}
       </CardContent>
+
+      {selectedReserve && (
+        <AutoIncrementConfig
+          type="reserve"
+          itemId={selectedReserve.id}
+          itemName={selectedReserve.name}
+          open={configOpen}
+          onOpenChange={setConfigOpen}
+        />
+      )}
     </Card>
   );
 };
