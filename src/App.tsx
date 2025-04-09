@@ -23,10 +23,13 @@ const queryClient = new QueryClient({
   },
 });
 
-// Create router
+// Get the base URL from import.meta.env
+const baseUrl = import.meta.env.BASE_URL || '/';
+
+// Create router with the correct base URL
 const router = createBrowserRouter([
   {
-    path: "/login",
+    path: "login",
     element: <Login />
   },
   {
@@ -36,19 +39,19 @@ const router = createBrowserRouter([
         element: <DashboardLayout />,
         children: [
           {
-            path: "/",
+            path: "",
             element: <Dashboard />
           },
           {
-            path: "/monthly-expenses",
+            path: "monthly-expenses",
             element: <MonthlyExpenses />
           },
           {
-            path: "/analytics",
+            path: "analytics",
             element: <FinancialAnalytics />
           },
           {
-            path: "/administration",
+            path: "administration",
             element: <Administration />
           }
         ]
@@ -59,7 +62,9 @@ const router = createBrowserRouter([
     path: "*",
     element: <NotFound />
   }
-]);
+], {
+  basename: baseUrl
+});
 
 function App() {
   return (
