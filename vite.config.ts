@@ -18,7 +18,7 @@ export default defineConfig(({ mode }) => ({
     host: "::",
     port: 8080
   },
-  base: '/couplecents-v4/', // Add this line for GitHub Pages - replace with your repository name
+  base: './', // Changed from '/couplecents-v4/' to './' for relative paths
   build: {
     outDir: 'dist',
     emptyOutDir: true,
