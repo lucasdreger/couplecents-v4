@@ -1,0 +1,19 @@
+diff a/index.html b/index.html	(rejected hunks)
+@@ -4,14 +4,13 @@
+     <meta charset="UTF-8">
+     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+     <title>Couplecents V4</title>
+-    <!-- Using relative path for favicon -->
+     <link rel="icon" type="image/svg+xml" href="./favicon.ico" />
+     <meta name="description" content="Couplecents - Finance management application for couples" />
+-  <script type="module" crossorigin src="./assets/index-Dj8HVQGv.js"></script>
+-  <link rel="stylesheet" crossorigin href="./assets/index-BojIpoXH.css">
++    <!-- Include the built JS and CSS files directly -->
++    <script type="module" src="./assets/index-Dj8HVQGv.js"></script>
++    <link rel="stylesheet" href="./assets/index-BojIpoXH.css">
+ </head>
+ <body>
+     <div id="root"></div>
+-    <!-- Using relative path for the script -->
+ </body>
+ </html>
