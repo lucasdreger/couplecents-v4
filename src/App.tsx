@@ -11,6 +11,7 @@ import { MonthlyExpenses } from '@/pages/MonthlyExpenses';
 import Administration from '@/pages/Administration';
 import FinancialAnalytics from '@/pages/FinancialAnalytics';
 import NotFound from '@/pages/NotFound';
+import { useEffect } from 'react';
 
 // Create a client
 const queryClient = new QueryClient({
@@ -25,6 +26,8 @@ const queryClient = new QueryClient({
 
 // Get the base URL from import.meta.env
 const baseUrl = import.meta.env.BASE_URL || '/';
+
+console.log('App initialization - Base URL:', baseUrl);
 
 // Create router with the correct base URL
 const router = createBrowserRouter([
@@ -67,6 +70,10 @@ const router = createBrowserRouter([
 });
 
 function App() {
+  useEffect(() => {
+    console.log('App mounted - Current pathname:', window.location.pathname);
+  }, []);
+  
   return (
     <QueryClientProvider client={queryClient}>
       <ThemeProvider defaultTheme="system" storageKey="expense-empower-theme">
