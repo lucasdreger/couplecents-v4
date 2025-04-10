@@ -5,11 +5,13 @@ import { useAuth } from '@/context/AuthContext';
 export default function PrivateRoute() {
   const { user, loading } = useAuth();
   const location = useLocation();
+  const isCustomDomain = window.location.hostname === 'couplecents.lucasdreger.com';
 
   // Log auth state for debugging
   useEffect(() => {
     console.log("PrivateRoute: user =", user?.email, "loading =", loading);
-  }, [user, loading]);
+    console.log("PrivateRoute: isCustomDomain =", isCustomDomain);
+  }, [user, loading, isCustomDomain]);
 
   if (loading) {
     console.log("PrivateRoute: Still loading...");
@@ -23,18 +25,13 @@ export default function PrivateRoute() {
     );
   }
 
-  // TEMPORARY: For GitHub Pages debugging - allow access regardless of auth status
-  console.log("PrivateRoute: TEMPORARY - Bypassing auth check for debugging");
-  return <Outlet />;
-
-  // Commented out for debugging
-  /*
-  if (!user) {
-    console.log("PrivateRoute: No user, redirecting to login");
-    return <Navigate to="/login" state={{ from: location }} replace />;
+  // Show actual content if user is authenticated
+  if (user) {
+    console.log("PrivateRoute: User authenticated, rendering protected route");
+    return <Outlet />;
   }
-
-  console.log("PrivateRoute: User authenticated, rendering protected route");
-  return <Outlet />;
-  */
+  
+  // If no user, redirect to login page
+  console.log("PrivateRoute: No user, redirecting to login");
+  return <Navigate to="/login" state={{ from: location }} replace />;
 }

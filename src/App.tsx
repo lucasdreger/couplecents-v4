@@ -1,4 +1,4 @@
-import { RouterProvider, createBrowserRouter, createHashRouter } from 'react-router-dom';
+import { RouterProvider, createBrowserRouter } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Toaster } from 'sonner';
 import { AuthProvider } from '@/context/AuthContext';
@@ -256,15 +256,11 @@ const baseUrl = import.meta.env.BASE_URL || '/';
 
 // Check if we're on GitHub Pages or custom domain
 const isGitHubPages = window.location.hostname.includes('github.io');
-// Check if we're on custom domain
 const isCustomDomain = window.location.hostname === 'couplecents.lucasdreger.com';
 
-console.log('App initialization - Base URL:', baseUrl);
-console.log('Is GitHub Pages:', isGitHubPages);
-console.log('Is Custom Domain:', isCustomDomain);
-
-// Create routes configuration
-const routes = [
+// Use BrowserRouter for all environments now
+// This is simpler and works better with the custom domain
+const router = createBrowserRouter([
   {
     path: "login",
     element: <Login />
@@ -299,66 +295,114 @@ const routes = [
     path: "*",
     element: <NotFound />
   }
-];
+], {
+  basename: baseUrl
+});
 
-// Use HashRouter for GitHub Pages and BrowserRouter for custom domain or local environment
-// For custom domain, we can use BrowserRouter which gives cleaner URLs
-const router = isGitHubPages && !isCustomDomain
-  ? createHashRouter(routes) 
-  : createBrowserRouter(routes, { basename: baseUrl });
+// Simple fallback display component that shows no matter what
+function EmergencyContent() {
+  return (
+    <div style={{
+      position: 'fixed',
+      top: 0,
+      left: 0,
+      right: 0,
+      bottom: 0,
+      background: 'white',
+      padding: '20px',
+      zIndex: 1000,
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center',
+      justifyContent: 'center'
+    }}>
+      <h1 style={{ fontSize: '24px', marginBottom: '20px' }}>CoupleCents</h1>
+      <p style={{ marginBottom: '10px' }}>Loading your financial dashboard...</p>
+      <div style={{ 
+        width: '50px', 
+        height: '50px', 
+        border: '5px solid #f3f3f3',
+        borderTop: '5px solid #3498db',
+        borderRadius: '50%',
+        animation: 'spin 1s linear infinite'
+      }}></div>
+      <style>{`
+        @keyframes spin {
+          0% { transform: rotate(0deg); }
+          100% { transform: rotate(360deg); }
+        }
+      `}</style>
+    </div>
+  );
+}
 
 function App() {
+  const [showEmergency, setShowEmergency] = useState(false);
+  
   useEffect(() => {
-    console.log('App mounted - Current pathname:', window.location.pathname);
+    // Add critical inline styles to ensure visibility
+    const style = document.createElement('style');
+    style.textContent = `
+      #root, body, html {
+        display: block !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+        height: 100% !important;
+      }
+    `;
+    document.head.appendChild(style);
     
-    // Add debug info to console
-    console.log('Window URL:', window.location.href);
-    console.log('Using router type:', (isGitHubPages && !isCustomDomain) ? 'HashRouter' : 'BrowserRouter');
+    console.log('App mounted - Domain type:', {
+      isCustomDomain,
+      isGitHubPages,
+      hostname: window.location.hostname,
+      pathname: window.location.pathname
+    });
     
-    // Check for CSS visibility problems and fix them if needed
-    if (isGitHubPages || isCustomDomain) {
-      console.log('Ensuring visibility for hosted environment...');
-      // Force elements to be visible after a short delay to ensure React has rendered
-      setTimeout(() => {
-        const rootElement = document.getElementById('root');
-        if (rootElement) {
-          rootElement.style.visibility = 'visible';
-          rootElement.style.opacity = '1';
-          
-          // Also ensure the app container is visible
-          const appContainer = rootElement.firstElementChild;
-          if (appContainer instanceof HTMLElement) {
-            appContainer.style.visibility = 'visible';
-            appContainer.style.opacity = '1';
-            appContainer.style.display = 'block';
-          }
-        }
-      }, 100);
-    }
+    // If after 5 seconds content isn't showing, display emergency content
+    const timer = setTimeout(() => {
+      const rootEl = document.getElementById('root');
+      const appContent = rootEl?.querySelector('[data-dashboard]');
+      
+      if (!appContent) {
+        console.log('No dashboard content detected after timeout, showing emergency content');
+        setShowEmergency(true);
+      }
+    }, 5000);
+    
+    return () => {
+      clearTimeout(timer);
+      document.head.removeChild(style);
+    };
   }, []);
-
+  
   return (
     <>
+      {/* Emergency content that shows if main app doesn't render */}
+      {showEmergency && <EmergencyContent />}
+      
       {/* Always visible debug overlay */}
       <DebugOverlay />
       
       {/* Normal app structure */}
-      <QueryClientProvider client={queryClient}>
-        <ThemeProvider defaultTheme="system" storageKey="expense-empower-theme">
-          <AuthProvider>
-            <RouterProvider router={router} />
-            <Toaster 
-              position="top-right" 
-              richColors 
-              closeButton
-              toastOptions={{
-                style: { background: 'var(--background)', color: 'var(--foreground)' },
-                className: 'border border-border shadow-lg',
-              }}
-            />
-          </AuthProvider>
-        </ThemeProvider>
-      </QueryClientProvider>
+      <div data-app-root="true" style={{ display: 'block', minHeight: '100vh' }}>
+        <QueryClientProvider client={queryClient}>
+          <ThemeProvider defaultTheme="system" storageKey="expense-empower-theme">
+            <AuthProvider>
+              <RouterProvider router={router} />
+              <Toaster 
+                position="top-right" 
+                richColors 
+                closeButton
+                toastOptions={{
+                  style: { background: 'var(--background)', color: 'var(--foreground)' },
+                  className: 'border border-border shadow-lg',
+                }}
+              />
+            </AuthProvider>
+          </ThemeProvider>
+        </QueryClientProvider>
+      </div>
     </>
   );
 }

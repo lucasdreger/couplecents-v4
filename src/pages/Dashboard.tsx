@@ -7,7 +7,7 @@ export const Dashboard = () => {
   const [showFallback, setShowFallback] = useState(false);
   
   useEffect(() => {
-    console.log('Dashboard component mounted - showing real application');
+    console.log('Dashboard component mounted - showing real application content');
   }, []);
 
   // Simple test UI (now hidden by default)
@@ -50,6 +50,10 @@ export const Dashboard = () => {
     );
   }
 
-  // Regular dashboard content (now shown by default)
-  return <OverviewPage />;
+  // Regular dashboard content with data-dashboard attribute for detection
+  return (
+    <div data-dashboard="true" style={{ display: 'block', minHeight: '100vh' }}>
+      <OverviewPage />
+    </div>
+  );
 };
