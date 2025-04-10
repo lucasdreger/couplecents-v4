@@ -1,4 +1,5 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   Card,
   CardContent,
@@ -24,6 +25,16 @@ import { useTheme } from '@/context/ThemeContext';
 const ErrorFallback = ({ message }: { message: string }) => (
   <div className="p-4 border border-red-200 rounded-md bg-red-50 text-red-700">
     {message}
+  </div>
+);
+
+// Loading component
+const LoadingOverview = () => (
+  <div className="flex h-screen w-full items-center justify-center">
+    <div className="flex flex-col items-center space-y-4">
+      <div className="h-12 w-12 animate-spin rounded-full border-4 border-primary border-t-transparent"></div>
+      <p className="text-lg text-muted-foreground">Loading CoupleCents...</p>
+    </div>
   </div>
 );
 
@@ -83,8 +94,10 @@ const TotalAssets = () => {
 };
 
 export const OverviewPage: React.FC = () => {
-  const { user } = useAuth();
+  const { user, loading } = useAuth();
   const { theme } = useTheme();
+  const navigate = useNavigate();
+  const [redirecting, setRedirecting] = useState(false);
   
   const today = new Date();
   const formattedDate = today.toLocaleDateString('en-GB', {
@@ -93,8 +106,23 @@ export const OverviewPage: React.FC = () => {
     year: 'numeric'
   });
   
-  if (!user) {
-    return <ErrorFallback message="Please log in to view this page" />;
+  // Handle authentication and redirection
+  useEffect(() => {
+    if (!loading && !user) {
+      console.log('No user found, redirecting to login page');
+      setRedirecting(true);
+      // Short delay to ensure state updates before navigating
+      const redirectTimer = setTimeout(() => {
+        navigate('/login');
+      }, 100);
+      
+      return () => clearTimeout(redirectTimer);
+    }
+  }, [user, loading, navigate]);
+  
+  // Show loading state while auth is being checked or during redirect
+  if (loading || redirecting) {
+    return <LoadingOverview />;
   }
   
   return (
