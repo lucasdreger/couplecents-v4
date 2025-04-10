@@ -258,38 +258,35 @@ const baseUrl = import.meta.env.BASE_URL || '/';
 const isGitHubPages = window.location.hostname.includes('github.io');
 const isCustomDomain = window.location.hostname === 'couplecents.lucasdreger.com';
 
-// Use BrowserRouter for all environments now
-// This is simpler and works better with the custom domain
+console.log('App initialization - Environment:', {
+  baseUrl,
+  isGitHubPages,
+  isCustomDomain,
+  hostname: window.location.hostname,
+  pathname: window.location.pathname
+});
+
+// Use simple routing for the custom domain
 const router = createBrowserRouter([
   {
     path: "login",
     element: <Login />
   },
   {
-    element: <PrivateRoute />,
-    children: [
-      {
-        element: <DashboardLayout />,
-        children: [
-          {
-            path: "",
-            element: <Dashboard />
-          },
-          {
-            path: "monthly-expenses",
-            element: <MonthlyExpenses />
-          },
-          {
-            path: "analytics",
-            element: <FinancialAnalytics />
-          },
-          {
-            path: "administration",
-            element: <Administration />
-          }
-        ]
-      }
-    ]
+    path: "",
+    element: <Dashboard />
+  },
+  {
+    path: "monthly-expenses",
+    element: <MonthlyExpenses />
+  },
+  {
+    path: "analytics",
+    element: <FinancialAnalytics />
+  },
+  {
+    path: "administration",
+    element: <Administration />
   },
   {
     path: "*",
@@ -299,8 +296,8 @@ const router = createBrowserRouter([
   basename: baseUrl
 });
 
-// Simple fallback display component that shows no matter what
-function EmergencyContent() {
+// Simple loading component
+function LoadingScreen() {
   return (
     <div style={{
       position: 'fixed',
@@ -332,12 +329,30 @@ function EmergencyContent() {
           100% { transform: rotate(360deg); }
         }
       `}</style>
+      
+      <div style={{ marginTop: '20px', textAlign: 'center' }}>
+        <p>If loading takes too long, try signing in again</p>
+        <button 
+          onClick={() => window.location.href = '/login'} 
+          style={{
+            marginTop: '10px',
+            padding: '8px 16px',
+            backgroundColor: '#3b82f6',
+            color: 'white',
+            border: 'none',
+            borderRadius: '4px',
+            cursor: 'pointer'
+          }}
+        >
+          Go to Login
+        </button>
+      </div>
     </div>
   );
 }
 
 function App() {
-  const [showEmergency, setShowEmergency] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   
   useEffect(() => {
     // Add critical inline styles to ensure visibility
@@ -352,23 +367,17 @@ function App() {
     `;
     document.head.appendChild(style);
     
-    console.log('App mounted - Domain type:', {
+    console.log('App mounted - Environment:', {
       isCustomDomain,
       isGitHubPages,
       hostname: window.location.hostname,
       pathname: window.location.pathname
     });
     
-    // If after 5 seconds content isn't showing, display emergency content
+    // Remove loading screen after short delay
     const timer = setTimeout(() => {
-      const rootEl = document.getElementById('root');
-      const appContent = rootEl?.querySelector('[data-dashboard]');
-      
-      if (!appContent) {
-        console.log('No dashboard content detected after timeout, showing emergency content');
-        setShowEmergency(true);
-      }
-    }, 5000);
+      setIsLoading(false);
+    }, 2000);
     
     return () => {
       clearTimeout(timer);
@@ -378,8 +387,8 @@ function App() {
   
   return (
     <>
-      {/* Emergency content that shows if main app doesn't render */}
-      {showEmergency && <EmergencyContent />}
+      {/* Loading screen */}
+      {isLoading && <LoadingScreen />}
       
       {/* Always visible debug overlay */}
       <DebugOverlay />
