@@ -4,26 +4,36 @@
   <meta charset="utf-8">
   <title>Page Not Found</title>
   <script>
-    // Single Page Apps for GitHub Pages
+    // Single Page Apps for GitHub Pages and custom domain
     // This script takes the current URL and converts the path to a query parameter
-    // When redirected to the index.html page, the path will be reconstructed from the
-    // query parameter and the app will navigate to the correct route
+    // When redirected to the index.html page, the path will be reconstructed
     
-    // This works for GitHub Pages hosted at a path like: https://username.github.io/repo-name/
     (function() {
+      // Get the current hostname
+      var hostname = window.location.hostname;
+      var isCustomDomain = hostname === 'couplecents.lucasdreger.com';
+      var isGitHubPages = hostname.includes('github.io');
+      
       // Get the path from URL (removing any query and hash)
       var path = window.location.pathname;
       
-      // If the path doesn't have the repo name (due to 404 redirect), add it back
-      var pathSegments = path.split('/');
-      var repoName = 'couplecents-v4'; // Your repository name
-      
-      // Save the URL to localStorage
-      var url = window.location.pathname + window.location.search + window.location.hash;
-      localStorage.setItem('spa-redirect', url);
-      
-      // Redirect to the root of the app
-      window.location.href = '/' + repoName;
+      // Handle redirects differently based on domain
+      if (isGitHubPages && !isCustomDomain) {
+        // For GitHub Pages, we need to include the repository name
+        var repoName = 'couplecents-v4'; // Your repository name
+        
+        // Save the URL to localStorage
+        var url = window.location.pathname + window.location.search + window.location.hash;
+        localStorage.setItem('spa-redirect', url);
+        
+        // Redirect to the root of the app with repository name
+        window.location.href = '/' + repoName;
+      } else {
+        // For custom domain, we can use standard SPA redirect technique
+        // Save the path and redirect to the root
+        localStorage.setItem('spa-redirect', path + window.location.search + window.location.hash);
+        window.location.href = '/';
+      }
     })();
   </script>
 </head>
