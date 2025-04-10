@@ -3,15 +3,69 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Couplecents V4</title>
-    <!-- Using relative path for favicon -->
+    <title>CoupleCents - Financial Dashboard</title>
     <link rel="icon" type="image/svg+xml" href="./assets/favicon-BcfTmYIr.ico" />
-    <meta name="description" content="Couplecents - Finance management application for couples" />
+    <meta name="description" content="CoupleCents - Finance management application for couples" />
+    
+    <!-- Custom domain detection script -->
+    <script>
+        (function() {
+            // Check if we're on the custom domain
+            const isCustomDomain = window.location.hostname === 'couplecents.lucasdreger.com';
+            const urlParams = new URLSearchParams(window.location.search);
+            const forceApp = urlParams.has('forceApp');
+            
+            // If on custom domain and not forcing app view, redirect to static landing page
+            if (isCustomDomain && !forceApp && window.location.pathname === '/') {
+                window.location.replace('/landing.html');
+            }
+            
+            // Log info for debugging
+            console.log('Domain detection:', {
+                hostname: window.location.hostname,
+                isCustomDomain,
+                forceApp,
+                path: window.location.pathname
+            });
+        })();
+    </script>
   <script type="module" crossorigin src="./assets/index-CVuuO0or.js"></script>
   <link rel="stylesheet" crossorigin href="./assets/index-ZkI0H7HU.css">
 </head>
 <body>
     <div id="root"></div>
-    <!-- Using relative path for the script -->
+    
+    <!-- Emergency fallback script - Shows content if React fails to load -->
+    <script>
+        setTimeout(function() {
+            const root = document.getElementById('root');
+            // Check if React has rendered anything substantial
+            if (root && (!root.children.length || root.children.length < 2)) {
+                console.log('Potential rendering issue detected - displaying fallback content');
+                
+                // Create emergency content
+                const fallback = document.createElement('div');
+                fallback.style.padding = '20px';
+                fallback.style.fontFamily = 'system-ui, sans-serif';
+                fallback.style.margin = '0 auto';
+                fallback.style.maxWidth = '800px';
+                
+                fallback.innerHTML = `
+                    <div style="background: linear-gradient(to right, #6366f1, #8b5cf6); padding: 20px; border-radius: 8px; color: white; margin-bottom: 20px;">
+                        <h1 style="margin: 0 0 10px 0;">CoupleCents Dashboard</h1>
+                        <p>Your financial partner for better budgeting</p>
+                    </div>
+                    <p>The application couldn't load correctly. Please try one of these options:</p>
+                    <div style="margin: 20px 0;">
+                        <a href="/landing.html" style="display: inline-block; background: #6366f1; color: white; padding: 10px 20px; border-radius: 4px; text-decoration: none; margin-right: 10px;">View Static Version</a>
+                        <a href="/login" style="display: inline-block; background: #4b5563; color: white; padding: 10px 20px; border-radius: 4px; text-decoration: none;">Go to Login</a>
+                    </div>
+                `;
+                
+                // If root is empty, append the fallback
+                root.appendChild(fallback);
+            }
+        }, 3000);
+    </script>
 </body>
 </html>
