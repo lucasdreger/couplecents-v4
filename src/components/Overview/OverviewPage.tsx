@@ -30,7 +30,7 @@ const ErrorFallback = ({ message }: { message: string }) => (
 
 // Loading component
 const LoadingOverview = () => (
-  <div className="flex h-screen w-full items-center justify-center">
+  <div className="flex h-screen w-full items-center justify-center" style={{ display: 'flex', minHeight: '100vh' }}>
     <div className="flex flex-col items-center space-y-4">
       <div className="h-12 w-12 animate-spin rounded-full border-4 border-primary border-t-transparent"></div>
       <p className="text-lg text-muted-foreground">Loading CoupleCents...</p>
@@ -94,9 +94,10 @@ const TotalAssets = () => {
 };
 
 export const OverviewPage: React.FC = () => {
-  const { user, loading } = useAuth();
+  const { user, loading, isInitialized } = useAuth();
   const { theme } = useTheme();
   const navigate = useNavigate();
+  const [forceShow, setForceShow] = useState(false);
   
   const today = new Date();
   const formattedDate = today.toLocaleDateString('en-GB', {
@@ -107,19 +108,30 @@ export const OverviewPage: React.FC = () => {
   
   // Handle authentication and redirection
   useEffect(() => {
-    if (!loading && !user) {
-      console.log('No user found, redirecting to login page');
+    // Check if we're on the custom domain
+    const isCustomDomain = window.location.hostname === 'couplecents.lucasdreger.com';
+    
+    // Add a timeout to ensure we show something
+    const timer = setTimeout(() => {
+      console.log("OverviewPage: Safety timeout reached, forcing content to show");
+      setForceShow(true);
+    }, 5000);
+
+    if (!loading && !user && !isCustomDomain && !forceShow) {
+      console.log('OverviewPage: No user found, redirecting to login page');
       navigate('/login');
     }
-  }, [user, loading, navigate]);
+    
+    return () => clearTimeout(timer);
+  }, [user, loading, navigate, forceShow]);
   
   // Show loading state while auth is being checked
-  if (loading) {
+  if (loading && !forceShow) {
     return <LoadingOverview />;
   }
   
   return (
-    <div className="container mx-auto p-6 space-y-6">
+    <div className="container mx-auto p-6 space-y-6" style={{ display: 'block', visibility: 'visible' }}>
       {/* Header with greeting and date */}
       <div className="bg-gradient-to-r from-primary/10 to-primary/5 rounded-lg p-6 shadow-sm relative overflow-hidden">
         <div className="flex justify-between items-center z-10 relative">
@@ -157,7 +169,9 @@ export const OverviewPage: React.FC = () => {
           <CardDescription>Combined value of investments and reserves</CardDescription>
         </CardHeader>
         <CardContent>
-          <TotalAssets />
+          <ErrorBoundary fallback={<ErrorFallback message="Error loading assets data" />}>
+            <TotalAssets />
+          </ErrorBoundary>
         </CardContent>
       </Card>
 

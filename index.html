@@ -1,24 +1,90 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CoupleCents - Financial Dashboard</title>
-    <link rel="icon" type="image/svg+xml" href="./favicon.ico" />
-    <meta name="description" content="CoupleCents - Finance management application for couples" />
-    
-    <!-- Fix for rendering issues -->
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="CoupleCents - Financial partner for better budgeting" />
+    <meta name="theme-color" content="#8350e8" />
+    <title>CoupleCents</title>
+    <!-- Critical CSS to prevent FOUC -->
     <style>
-        #root, body, html {
-            display: block !important;
-            visibility: visible !important;
-            opacity: 1 !important;
-            height: 100% !important;
-        }
+      #root, body, html {
+        display: block !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+        height: 100% !important;
+      }
+      
+      /* Ensure the loading spinner is visible */
+      .initial-loader {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        width: 100vw;
+        position: fixed;
+        top: 0;
+        left: 0;
+        background: #f9fafb;
+      }
+      
+      .dark .initial-loader {
+        background: #1e1e2e;
+      }
+      
+      .initial-loader__spinner {
+        width: 40px;
+        height: 40px;
+        border: 4px solid rgba(131, 80, 232, 0.2);
+        border-top-color: #8350e8;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+      }
+      
+      @keyframes spin {
+        to { transform: rotate(360deg); }
+      }
+      
+      /* Force content visibility */
+      [data-app-root="true"], [data-dashboard="true"] {
+        display: block !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+        height: auto !important;
+        min-height: 100vh !important;
+      }
     </style>
-</head>
-<body>
-    <div id="root"></div>
-    <script type="module" src="./src/main.tsx"></script>
-</body>
+    <!-- Preload important fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <script>
+      // Force content to display after a timeout
+      setTimeout(function() {
+        var root = document.getElementById('root');
+        if (root) {
+          root.style.cssText = 'display: block !important; visibility: visible !important; opacity: 1 !important;';
+        }
+        document.body.style.cssText = 'display: block !important; visibility: visible !important; opacity: 1 !important;';
+        
+        // Remove any initial loader after content is ready
+        var loader = document.querySelector('.initial-loader');
+        if (loader) {
+          loader.style.display = 'none';
+        }
+      }, 3000);
+    </script>
+  </head>
+  <body>
+    <!-- Initial loading state -->
+    <div class="initial-loader">
+      <div class="initial-loader__spinner"></div>
+    </div>
+    
+    <!-- Root element for React -->
+    <div id="root" style="display: block; min-height: 100vh"></div>
+    
+    <!-- Entry point -->
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
 </html>

@@ -1,4 +1,3 @@
-
 import { 
   createContext, 
   useContext, 
@@ -14,6 +13,7 @@ interface AuthContextType {
   user: User | null;
   session: Session | null;
   loading: boolean;
+  isInitialized: boolean;
   signIn: (email: string, password: string) => Promise<{ data: any; error: any }>;
   signUp: (email: string, password: string) => Promise<{ data: any; error: any }>;
   signOut: () => Promise<void>;
@@ -26,21 +26,32 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
+  const [isInitialized, setIsInitialized] = useState(false);
 
   useEffect(() => {
     console.log("AuthProvider: initializing");
+    let isSubscribed = true;
+    
     // Get the initial session
     const getInitialSession = async () => {
       try {
         console.log("AuthProvider: getting initial session");
         const { data: { session: initialSession } } = await supabase.auth.getSession();
         console.log("AuthProvider: got initial session", initialSession);
-        setSession(initialSession);
-        setUser(initialSession?.user ?? null);
-        setLoading(false);
+        
+        // Only update state if component is still mounted
+        if (isSubscribed) {
+          setSession(initialSession);
+          setUser(initialSession?.user ?? null);
+          setLoading(false);
+          setIsInitialized(true);
+        }
       } catch (error) {
         console.error("Error getting initial session:", error);
-        setLoading(false);
+        if (isSubscribed) {
+          setLoading(false);
+          setIsInitialized(true);
+        }
       }
     };
 
@@ -48,16 +59,34 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     // Set up auth state change listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (_event, session) => {
-        console.log("AuthProvider: auth state changed", _event, session?.user?.email);
-        setSession(session);
-        setUser(session?.user ?? null);
-        setLoading(false);
+      (_event, newSession) => {
+        console.log("AuthProvider: auth state changed", _event, newSession?.user?.email);
+        
+        if (isSubscribed) {
+          setSession(newSession);
+          setUser(newSession?.user ?? null);
+          setLoading(false);
+          setIsInitialized(true);
+        }
       }
     );
 
-    return () => subscription.unsubscribe();
-  }, []);
+    // Add a safety timeout to prevent infinite loading
+    const safetyTimeout = setTimeout(() => {
+      if (isSubscribed && loading) {
+        console.log("AuthProvider: Safety timeout reached, forcing loading to complete");
+        setLoading(false);
+        setIsInitialized(true);
+      }
+    }, 5000);
+
+    // Cleanup function
+    return () => {
+      isSubscribed = false;
+      clearTimeout(safetyTimeout);
+      subscription.unsubscribe();
+    };
+  }, [loading]);
 
   const signIn = async (email: string, password: string) => {
     try {
@@ -135,13 +164,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     user,
     session,
     loading,
+    isInitialized,
     signIn,
     signUp,
     signOut,
     resetPassword,
   };
 
-  console.log("AuthProvider rendering, user:", user?.email);
+  console.log("AuthProvider rendering, user:", user?.email, "loading:", loading, "initialized:", isInitialized);
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
 
