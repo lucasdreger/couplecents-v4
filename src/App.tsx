@@ -1,4 +1,4 @@
-import { RouterProvider, createBrowserRouter } from 'react-router-dom';
+import { RouterProvider, createBrowserRouter, createHashRouter } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Toaster } from 'sonner';
 import { AuthProvider } from '@/context/AuthContext';
@@ -253,11 +253,13 @@ const queryClient = new QueryClient({
 
 // Get the base URL from import.meta.env
 const baseUrl = import.meta.env.BASE_URL || '/';
+const isGitHubPages = window.location.hostname.includes('github.io');
 
 console.log('App initialization - Base URL:', baseUrl);
+console.log('Is GitHub Pages:', isGitHubPages);
 
-// Create router with the correct base URL
-const router = createBrowserRouter([
+// Create routes configuration
+const routes = [
   {
     path: "login",
     element: <Login />
@@ -292,20 +294,41 @@ const router = createBrowserRouter([
     path: "*",
     element: <NotFound />
   }
-], {
-  basename: baseUrl
-});
+];
+
+// Use HashRouter for GitHub Pages and BrowserRouter for other environments
+// HashRouter uses URLs like /#/page instead of /page, which works better on GitHub Pages
+const router = isGitHubPages 
+  ? createHashRouter(routes) 
+  : createBrowserRouter(routes, { basename: baseUrl });
 
 function App() {
   useEffect(() => {
     console.log('App mounted - Current pathname:', window.location.pathname);
-
-    // Add more detailed DOM structure logging
-    const rootElement = document.getElementById('root');
-    console.log('Root element:', rootElement);
-    if (rootElement) {
-      console.log('Root children count:', rootElement.childNodes.length);
-      console.log('Root HTML:', rootElement.innerHTML);
+    
+    // Add debug info to console
+    console.log('Window URL:', window.location.href);
+    console.log('Using router type:', isGitHubPages ? 'HashRouter' : 'BrowserRouter');
+    
+    // Check for CSS visibility problems and fix them if on GitHub Pages
+    if (isGitHubPages) {
+      console.log('GitHub Pages detected, ensuring visibility...');
+      // Force elements to be visible after a short delay to ensure React has rendered
+      setTimeout(() => {
+        const rootElement = document.getElementById('root');
+        if (rootElement) {
+          rootElement.style.visibility = 'visible';
+          rootElement.style.opacity = '1';
+          
+          // Also ensure the app container is visible
+          const appContainer = rootElement.firstElementChild;
+          if (appContainer instanceof HTMLElement) {
+            appContainer.style.visibility = 'visible';
+            appContainer.style.opacity = '1';
+            appContainer.style.display = 'block';
+          }
+        }
+      }, 100);
     }
   }, []);
 
@@ -313,15 +336,15 @@ function App() {
     <>
       {/* Always visible debug overlay */}
       <DebugOverlay />
-
+      
       {/* Normal app structure */}
       <QueryClientProvider client={queryClient}>
         <ThemeProvider defaultTheme="system" storageKey="expense-empower-theme">
           <AuthProvider>
             <RouterProvider router={router} />
-            <Toaster
-              position="top-right"
-              richColors
+            <Toaster 
+              position="top-right" 
+              richColors 
               closeButton
               toastOptions={{
                 style: { background: 'var(--background)', color: 'var(--foreground)' },
