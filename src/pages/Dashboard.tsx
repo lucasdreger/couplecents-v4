@@ -1,15 +1,16 @@
 import { OverviewPage } from '@/components/Overview/OverviewPage';
 import { useEffect, useState } from 'react';
 
-// Modified Dashboard to include a fallback direct rendering for testing
+// Modified Dashboard to show the real application content by default
 export const Dashboard = () => {
-  const [showFallback, setShowFallback] = useState(true);
+  // Set showFallback to false by default to show the real application
+  const [showFallback, setShowFallback] = useState(false);
   
   useEffect(() => {
-    console.log('Dashboard component mounted - showing test UI');
+    console.log('Dashboard component mounted - showing real application');
   }, []);
 
-  // Simple test UI that should appear even if the rest of the app has issues
+  // Simple test UI (now hidden by default)
   if (showFallback) {
     return (
       <div style={{ 
@@ -49,6 +50,6 @@ export const Dashboard = () => {
     );
   }
 
-  // Regular dashboard content
+  // Regular dashboard content (now shown by default)
   return <OverviewPage />;
 };
