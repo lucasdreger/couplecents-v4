@@ -97,7 +97,6 @@ export const OverviewPage: React.FC = () => {
   const { user, loading } = useAuth();
   const { theme } = useTheme();
   const navigate = useNavigate();
-  const [redirecting, setRedirecting] = useState(false);
   
   const today = new Date();
   const formattedDate = today.toLocaleDateString('en-GB', {
@@ -110,18 +109,12 @@ export const OverviewPage: React.FC = () => {
   useEffect(() => {
     if (!loading && !user) {
       console.log('No user found, redirecting to login page');
-      setRedirecting(true);
-      // Short delay to ensure state updates before navigating
-      const redirectTimer = setTimeout(() => {
-        navigate('/login');
-      }, 100);
-      
-      return () => clearTimeout(redirectTimer);
+      navigate('/login');
     }
   }, [user, loading, navigate]);
   
-  // Show loading state while auth is being checked or during redirect
-  if (loading || redirecting) {
+  // Show loading state while auth is being checked
+  if (loading) {
     return <LoadingOverview />;
   }
   

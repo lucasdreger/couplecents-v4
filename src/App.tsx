@@ -254,39 +254,37 @@ const queryClient = new QueryClient({
 // Get the base URL from import.meta.env
 const baseUrl = import.meta.env.BASE_URL || '/';
 
-// Check if we're on GitHub Pages or custom domain
-const isGitHubPages = window.location.hostname.includes('github.io');
-const isCustomDomain = window.location.hostname === 'couplecents.lucasdreger.com';
-
-console.log('App initialization - Environment:', {
-  baseUrl,
-  isGitHubPages,
-  isCustomDomain,
-  hostname: window.location.hostname,
-  pathname: window.location.pathname
-});
-
-// Use simple routing for the custom domain
+// Use BrowserRouter for all environments
 const router = createBrowserRouter([
   {
     path: "login",
     element: <Login />
   },
   {
-    path: "",
-    element: <Dashboard />
-  },
-  {
-    path: "monthly-expenses",
-    element: <MonthlyExpenses />
-  },
-  {
-    path: "analytics",
-    element: <FinancialAnalytics />
-  },
-  {
-    path: "administration",
-    element: <Administration />
+    element: <PrivateRoute />,
+    children: [
+      {
+        element: <DashboardLayout />,
+        children: [
+          {
+            path: "",
+            element: <Dashboard />
+          },
+          {
+            path: "monthly-expenses",
+            element: <MonthlyExpenses />
+          },
+          {
+            path: "analytics",
+            element: <FinancialAnalytics />
+          },
+          {
+            path: "administration",
+            element: <Administration />
+          }
+        ]
+      }
+    ]
   },
   {
     path: "*",
@@ -296,64 +294,7 @@ const router = createBrowserRouter([
   basename: baseUrl
 });
 
-// Simple loading component
-function LoadingScreen() {
-  return (
-    <div style={{
-      position: 'fixed',
-      top: 0,
-      left: 0,
-      right: 0,
-      bottom: 0,
-      background: 'white',
-      padding: '20px',
-      zIndex: 1000,
-      display: 'flex',
-      flexDirection: 'column',
-      alignItems: 'center',
-      justifyContent: 'center'
-    }}>
-      <h1 style={{ fontSize: '24px', marginBottom: '20px' }}>CoupleCents</h1>
-      <p style={{ marginBottom: '10px' }}>Loading your financial dashboard...</p>
-      <div style={{ 
-        width: '50px', 
-        height: '50px', 
-        border: '5px solid #f3f3f3',
-        borderTop: '5px solid #3498db',
-        borderRadius: '50%',
-        animation: 'spin 1s linear infinite'
-      }}></div>
-      <style>{`
-        @keyframes spin {
-          0% { transform: rotate(0deg); }
-          100% { transform: rotate(360deg); }
-        }
-      `}</style>
-      
-      <div style={{ marginTop: '20px', textAlign: 'center' }}>
-        <p>If loading takes too long, try signing in again</p>
-        <button 
-          onClick={() => window.location.href = '/login'} 
-          style={{
-            marginTop: '10px',
-            padding: '8px 16px',
-            backgroundColor: '#3b82f6',
-            color: 'white',
-            border: 'none',
-            borderRadius: '4px',
-            cursor: 'pointer'
-          }}
-        >
-          Go to Login
-        </button>
-      </div>
-    </div>
-  );
-}
-
 function App() {
-  const [isLoading, setIsLoading] = useState(true);
-  
   useEffect(() => {
     // Add critical inline styles to ensure visibility
     const style = document.createElement('style');
@@ -367,30 +308,16 @@ function App() {
     `;
     document.head.appendChild(style);
     
-    console.log('App mounted - Environment:', {
-      isCustomDomain,
-      isGitHubPages,
-      hostname: window.location.hostname,
-      pathname: window.location.pathname
-    });
-    
-    // Remove loading screen after short delay
-    const timer = setTimeout(() => {
-      setIsLoading(false);
-    }, 2000);
+    console.log('App mounted - Current pathname:', window.location.pathname);
     
     return () => {
-      clearTimeout(timer);
       document.head.removeChild(style);
     };
   }, []);
   
   return (
     <>
-      {/* Loading screen */}
-      {isLoading && <LoadingScreen />}
-      
-      {/* Always visible debug overlay */}
+      {/* Debug overlay */}
       <DebugOverlay />
       
       {/* Normal app structure */}
